@@ -8,7 +8,7 @@ at https://github.com/mlfoundations/task_vectors and
 https://github.com/gortizji/tangent_task_arithmetic
 """
 
-import open_clip
+import open_clip # Check whether this should be regular CLIP
 import torch
 
 from src import utils
