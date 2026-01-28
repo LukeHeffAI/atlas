@@ -1,0 +1,25 @@
+# Stable Diffusion XL configuration
+# Optimized for RTX 4090 (24GB VRAM)
+
+model_id: "stabilityai/stable-diffusion-xl-base-1.0"
+device: "cuda"
+
+# Generation parameters
+guidance_scale: 7.5
+num_inference_steps: 50
+height: 1024
+width: 1024
+
+# Memory optimizations
+enable_attention_slicing: true
+use_fp16: true
+cpu_offload: false  # Set to true if running out of memory
+
+# Batch size (adjust based on GPU memory)
+batch_size: 4  # Safe for RTX 4090
+
+# Random seed for reproducibility
+seed: 42
+
+# Negative prompt to improve quality (optional)
+negative_prompt: "blurry, low quality, distorted, deformed, ugly"

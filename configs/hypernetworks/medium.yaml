@@ -1,0 +1,37 @@
+# Medium hypernetwork configuration for better performance
+# Suitable for 4x A100, faster training (~3-5 hours)
+
+text_encoder: "openai/clip-vit-large-patch14"
+freeze_text_encoder: true
+
+# Architecture
+hidden_dims: [512, 512, 256]
+dropout: 0.1
+
+# Training
+meta_lr: 5e-5
+inner_lr: 1e-3
+meta_epochs: 200
+episodes_per_epoch: 40
+meta_batch_size: 8
+
+# Task vectors
+num_task_vectors: 22
+use_blockwise: true
+
+# Meta-training datasets (8 diverse datasets)
+meta_train_datasets:
+  - CIFAR10
+  - EuroSAT
+  - MNIST
+  - DTD
+  - GTSRB
+  - Food101
+  - STL10
+  - SVHN
+
+# Meta-validation datasets
+meta_val_datasets:
+  - Cars
+  - SUN397
+  - RESISC45
