@@ -296,3 +296,73 @@ class TwoAsymetricTransform:
  
     def __call__(self, x, *args, **kwargs):
         return [self.transform(x, *args, **kwargs), self.transform2(x, *args, **kwargs)]
+
+
+# Text-based adaptation utilities
+
+def load_text_descriptions(dataset_name, args, source=None):
+    """Load text descriptions for a dataset.
+
+    Args:
+        dataset_name: Name of the dataset (e.g., "CIFAR10", "EuroSAT")
+        args: Parsed arguments containing text_source, text_variant, etc.
+        source: Optional override for args.text_source
+
+    Returns:
+        Dictionary mapping class names to list of text descriptions
+        Format: {"class1": ["desc1", "desc2", ...], "class2": [...], ...}
+    """
+    import re
+    from src.text_descriptions.loaders import TextDescriptionLoader
+    from src.text_descriptions.templates import generate_template_descriptions
+    from src.datasets.registry import get_dataset
+
+    # Normalize dataset name - strip split suffixes for description lookup
+    base_name = re.sub(r'(Val|Test)$', '', dataset_name)
+
+    loader = TextDescriptionLoader()
+    source = source or getattr(args, 'text_source', 'manual')
+
+    # Try to load descriptions
+    try:
+        if source == "templates":
+            # Use existing CLIP templates as fallback
+            # Get class names from dataset
+            from src.modeling import ImageEncoder
+            image_encoder = ImageEncoder(args)
+            preprocess = image_encoder.train_preprocess
+            dummy_dataset = get_dataset(
+                dataset_name,
+                preprocess,
+                location=args.data_location,
+                batch_size=1
+            )
+            classnames = dummy_dataset.classnames
+            descriptions = generate_template_descriptions(base_name, classnames)
+        else:
+            # Load from manual or generated (use base_name for file lookup)
+            variant = getattr(args, 'text_variant', None) if source == "generated" else None
+            descriptions = loader.load_descriptions(
+                base_name,
+                source=source,
+                variant=variant
+            )
+    except FileNotFoundError as e:
+        print(f"Warning: {e}")
+        print(f"Falling back to template-based descriptions...")
+
+    # TODO: why fall back again?
+        # Fallback to templates
+        from src.modeling import ImageEncoder
+        image_encoder = ImageEncoder(args)
+        preprocess = image_encoder.train_preprocess
+        dummy_dataset = get_dataset(
+            dataset_name,  # Keep original name for data loading
+            preprocess,
+            location=args.data_location,
+            batch_size=1
+        )
+        classnames = dummy_dataset.classnames
+        descriptions = generate_template_descriptions(base_name, classnames)
+
+    return descriptions
