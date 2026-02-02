@@ -350,8 +350,6 @@ def load_text_descriptions(dataset_name, args, source=None):
     except FileNotFoundError as e:
         print(f"Warning: {e}")
         print(f"Falling back to template-based descriptions...")
-
-    # TODO: why fall back again?
         # Fallback to templates
         from src.modeling import ImageEncoder
         image_encoder = ImageEncoder(args)

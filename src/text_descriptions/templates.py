@@ -24,14 +24,9 @@ def generate_template_descriptions(
     # Get templates for this dataset
     try:
         templates = get_templates(dataset_name)
-    except: # TODO: why do this rather than call get_default_templates directly?
-        # Fallback to generic templates
-        templates = [
-            lambda c: f"a photo of a {c}.",
-            lambda c: f"a photo of {c}.",
-            lambda c: f"an image of a {c}.",
-            lambda c: f"a {c}.",
-        ]
+    except AssertionError:
+        # Fallback to generic templates if dataset-specific ones unavailable
+        templates = get_default_templates()
 
     descriptions = {}
     for class_name in class_names:
