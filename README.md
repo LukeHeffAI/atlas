@@ -89,17 +89,48 @@ This section documents recent extensions to the aTLAS framework for text-based z
 
 Two complementary approaches are implemented:
 
-1. **Hypernetwork-based**: A neural network that takes text descriptions and predicts optimal aTLAS coefficients
-2. **Synthetic Data**: Generate task-specific images from text using text-to-image models, then fine-tune to create synthetic task vectors
+1. **Hypernetwork-based** (Primary): A neural network that takes text descriptions and predicts optimal aTLAS coefficients through meta-learning
+2. **Synthetic Data** (Complementary): Generate task-specific images from text using text-to-image models, then fine-tune to create synthetic task vectors
+
+### Quick Start
+
+```bash
+# 1. Meta-train the hypernetwork on diverse tasks
+MODEL=ViT-B-32
+python src/learn_text_to_coef.py \
+    --model $MODEL \
+    --meta-train-datasets CIFAR10,EuroSAT,DTD,GTSRB,SVHN,Food101 \
+    --meta-val-datasets Caltech101,Flowers102 \
+    --hypernetwork-arch medium \
+    --text-source manual \
+    --meta-epochs 50 \
+    --episodes-per-epoch 10 \
+    --blockwise-coef
+
+# 2. Evaluate on a new task using only text descriptions
+python src/eval_text_adaptation.py \
+    --model $MODEL \
+    --dataset Cars \
+    --approach hypernetwork \
+    --hypernetwork-checkpoint checkpoints/$MODEL/hypernetworks/text_to_coef/meta_trained.pt \
+    --text-source manual
+```
 
 ### Text-to-Coefficient Hypernetwork
 
 The hypernetwork learns to map text descriptions to aTLAS coefficients through meta-learning on a diverse set of tasks.
 
 #### Architecture
-- Text encoder: CLIP text encoder (frozen)
-- MLP: Predicts blockwise coefficients from text embeddings
-- Architectures: `small` (256,128), `medium` (512,256), `large` (1024,512,256)
+- **Text encoder**: CLIP text encoder (frozen by default)
+- **MLP layers**: Transform text embeddings to coefficient space
+- **Output layer**: Produces blockwise or global coefficients
+
+Architecture sizes:
+| Size | Hidden Dimensions | Use Case |
+|------|-------------------|----------|
+| `small` | [512, 256] | Rapid prototyping, single GPU |
+| `medium` | [512, 512, 256] | Production use, best balance |
+| `large` | [768, 512, 512, 256] | Research, maximum performance |
 
 #### Meta-Training
 ```bash
@@ -120,8 +151,18 @@ Key arguments:
 - `--meta-val-datasets`: Comma-separated list of validation tasks
 - `--hypernetwork-arch`: Architecture size (small/medium/large)
 - `--text-source`: Source of text descriptions (manual/templates/generated)
+- `--text-aggregate`: How to aggregate multiple descriptions (mean/max/median)
 - `--meta-epochs`: Number of meta-training epochs
 - `--episodes-per-epoch`: Episodes per epoch
+- `--meta-lr`: Meta-learning rate (default: 1e-4)
+- `--meta-batch-size`: Batch size for episodes (default: 4)
+
+#### Meta-Training Process
+1. **Episode sampling**: Randomly select a task from meta-train datasets
+2. **Coefficient prediction**: Hypernetwork predicts coefficients from text descriptions
+3. **Evaluation**: Apply predicted coefficients to compose task vectors
+4. **Gradient flow**: Backpropagate through predicted coefficients to update hypernetwork
+5. **Validation**: Every 5 epochs, evaluate on meta-val datasets and save best model
 
 ### Text Descriptions
 
@@ -156,9 +197,51 @@ Each JSON file maps class names to lists of descriptions:
 #### Available Descriptions
 Manual descriptions are provided for: CIFAR10, EuroSAT, DTD, GTSRB, SVHN, Food101, Caltech101, Flowers102, Cars
 
+#### Generating Descriptions with LLMs
+
+```bash
+# Generate with GPT-4o
+python -m src.text_descriptions.generators \
+    --dataset CIFAR10 \
+    --classes airplane automobile bird cat deer dog frog horse ship truck \
+    --llm gpt4o \
+    --num-descriptions 15 \
+    --diversity medium \
+    --output-dir data/text_descriptions
+
+# Generate with Claude
+python -m src.text_descriptions.generators \
+    --dataset CIFAR10 \
+    --classes airplane automobile bird cat deer dog frog horse ship truck \
+    --llm claude \
+    --num-descriptions 15 \
+    --diversity medium \
+    --output-dir data/text_descriptions
+```
+
+**Requirements**: Set `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` environment variable.
+
+### Synthetic Data Generation
+
+Generate task-specific images from text descriptions using text-to-image models:
+
+```bash
+python src/generate_synthetic_data.py \
+    --dataset CIFAR10 \
+    --text-source manual \
+    --t2i-backend stable_diffusion \
+    --t2i-model stabilityai/stable-diffusion-xl-base-1.0 \
+    --num-images-per-class 100 \
+    --output-dir data/synthetic_images
+```
+
+Supported T2I backends:
+- `stable_diffusion` / `sdxl`: Stable Diffusion XL (local, free)
+- `dalle` / `dall-e`: DALL-E 3 (API, paid)
+
 ### Analysis Scripts
 
-Scripts for analyzing experiment results:
+Scripts for analyzing experiment results are located in `scripts/`:
 
 ```bash
 # Analyze hypernetwork architecture ablations
@@ -166,22 +249,63 @@ python scripts/analyze_hypernetwork_size.py \
     --results-dir checkpoints/ViT-B-32/hypernetwork \
     --output ablation_hypernetwork_size.pdf
 
-# Analyze text source ablations
+# Analyze text source ablations (manual vs generated vs templates)
 python scripts/analyze_text_ablation.py \
     --results-dir checkpoints/ViT-B-32/text_adapted \
     --output ablation_text_source.pdf
 
-# Analyze synthetic image quality
+# Analyze synthetic image quality (FID, IS, LPIPS)
 python scripts/analyze_synthetic_quality.py \
     --synthetic-dir data/synthetic_images \
+    --real-dataset CIFAR10 \
     --output synthetic_quality_comparison.pdf
+```
+
+### Evaluation
+
+Evaluate text-adapted models on held-out datasets:
+
+```bash
+MODEL=ViT-B-32
+
+# Hypernetwork approach
+python src/eval_text_adaptation.py \
+    --model $MODEL \
+    --dataset Flowers102 \
+    --approach hypernetwork \
+    --hypernetwork-checkpoint checkpoints/$MODEL/hypernetworks/text_to_coef/meta_trained.pt \
+    --text-source manual \
+    --text-aggregate mean
+
+# Synthetic approach
+python src/eval_text_adaptation.py \
+    --model $MODEL \
+    --dataset Flowers102 \
+    --approach synthetic \
+    --synthetic-backend stable_diffusion
+
+# Both approaches combined
+python src/eval_text_adaptation.py \
+    --model $MODEL \
+    --dataset Flowers102 \
+    --approach both \
+    --hypernetwork-checkpoint checkpoints/$MODEL/hypernetworks/text_to_coef/meta_trained.pt \
+    --synthetic-backend stable_diffusion
 ```
 
 ### New Dependencies
 
 The text-based extensions require additional packages:
 ```bash
-pip install transformers==4.30.0  # For text encoders (compatible with PyTorch 1.13)
+# Required for text encoders in hypernetwork
+pip install transformers==4.30.0  # Compatible with PyTorch 1.13
+
+# Optional: for LLM-based description generation
+pip install openai      # For GPT-4o descriptions
+pip install anthropic   # For Claude descriptions
+
+# Optional: for DALL-E image generation
+pip install openai      # DALL-E 3 API
 ```
 
 ### File Structure (New)
@@ -190,24 +314,39 @@ pip install transformers==4.30.0  # For text encoders (compatible with PyTorch 1
 src/
 ├── hypernetworks/
 │   ├── __init__.py
-│   └── text_to_coef.py       # Hypernetwork architecture
+│   ├── base.py               # Abstract base class for hypernetworks
+│   └── text_to_coef.py       # Text-to-coefficient hypernetwork
 ├── text_descriptions/
 │   ├── __init__.py
-│   ├── loaders.py            # Load descriptions from files
-│   └── templates.py          # Generate CLIP-style templates
-├── text2image/               # Synthetic image generation (planned)
+│   ├── loaders.py            # Load/save descriptions from files
+│   ├── generators.py         # LLM-based description generation
+│   └── templates.py          # CLIP-style template generation
+├── text2image/
+│   ├── __init__.py
+│   ├── base.py               # Abstract base for T2I backends
+│   ├── stable_diffusion.py   # Stable Diffusion / SDXL backend
+│   ├── dalle.py              # DALL-E 3 backend
+│   └── registry.py           # Backend factory and registration
+├── datasets/
+│   └── synthetic.py          # Synthetic dataset loader
 ├── learn_text_to_coef.py     # Meta-training script
-└── eval_text_adaptation.py   # Evaluation script
+├── eval_text_adaptation.py   # Evaluation script
+└── generate_synthetic_data.py # Synthetic image generation
 
 data/
 └── text_descriptions/
     ├── manual/               # Human-written descriptions
+    │   ├── CIFAR10.json
+    │   ├── EuroSAT.json
+    │   └── ...
     └── generated/            # LLM-generated descriptions
+        ├── CIFAR10_gpt4o.json
+        └── CIFAR10_claude.json
 
 scripts/
-├── analyze_hypernetwork_size.py
-├── analyze_text_ablation.py
-└── analyze_synthetic_quality.py
+├── analyze_hypernetwork_size.py  # Architecture ablation analysis
+├── analyze_text_ablation.py      # Text source comparison
+└── analyze_synthetic_quality.py  # Synthetic image quality metrics
 ```
 
 ## Acknowledgement
