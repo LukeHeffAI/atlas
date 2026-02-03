@@ -1,9 +1,28 @@
-# Extension Roadmap for Text-Based LoRA Adaptation
+# Extension Roadmap for Text-Based aTLAS Adaptation
 
-This document contains detailed implementation plans for extending the text-based LoRA adaptation system beyond the core implementation.
+This document contains detailed implementation plans for extending the text-based aTLAS coefficient prediction system beyond the core implementation.
+
+**Note**: The core text-to-coefficient hypernetwork is now implemented in `src/hypernetworks/text_to_coef.py`. This roadmap covers future extensions.
 
 Created: 2026-01-13
-Last Updated: 2026-01-13
+Last Updated: 2026-02-03
+
+## Current Implementation Status
+
+The following components are **implemented**:
+- ✅ `TextToCoefHypernetwork` - Predicts aTLAS coefficients from text descriptions
+- ✅ `TextConditionedWeightedImageEncoder` - Applies hypernetwork-predicted coefficients
+- ✅ `learn_text_to_coef.py` - Meta-training script with episode-based learning
+- ✅ `eval_text_adaptation.py` - Evaluation script
+- ✅ Text description loaders and LLM generators
+- ✅ Text-to-image backend registry (Stable Diffusion, DALL-E)
+
+The following are **planned** (documented in this roadmap):
+- ⬜ Full LoRA weight prediction
+- ⬜ Multi-modal hypernetwork (text + images)
+- ⬜ Cross-model generalization
+- ⬜ Domain-specific adaptation
+- ⬜ Task composition
 
 ---
 
@@ -1616,7 +1635,7 @@ python src/eval_text_adaptation.py \
 
 ## Summary
 
-This extension roadmap provides detailed implementation plans for 6 major directions to extend the text-based LoRA adaptation system. Each section includes:
+This extension roadmap provides detailed implementation plans for 6 major directions to extend the text-based aTLAS coefficient prediction system. Each section includes:
 
 1. **Clear objectives** and motivation
 2. **Architecture designs** with code snippets
@@ -1643,3 +1662,10 @@ This extension roadmap provides detailed implementation plans for 6 major direct
 2. Implement core components following this plan
 3. Run ablations and comparisons
 4. Write paper sections documenting findings
+
+## Related Documentation
+
+- `README.md` - Project overview and quick start guide
+- `CLAUDE.md` - Development guidance for Claude Code
+- `DATASETS.md` - Dataset preparation instructions
+- `CHECKPOINTS.md` - Checkpoint download and organization
