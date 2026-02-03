@@ -199,6 +199,149 @@ def parse_arguments():
         help="Run atlas x K where the task vectors are randomly partitioned n times (few-shot only)",
     )
 
+    # Text-to-Image arguments
+    parser.add_argument(
+        "--t2i-backend",
+        type=str,
+        default="stable_diffusion",
+        choices=["stable_diffusion", "sdxl", "dalle", "dall-e"],
+        help="Text-to-image backend to use for synthetic data generation",
+    )
+    parser.add_argument(
+        "--t2i-model",
+        type=str,
+        default="stabilityai/stable-diffusion-xl-base-1.0",
+        help="Specific model ID for T2I backend",
+    )
+    parser.add_argument(
+        "--t2i-config",
+        type=str,
+        default=None,
+        help="Path to T2I configuration YAML file",
+    )
+    parser.add_argument(
+        "--num-images-per-class",
+        type=int,
+        default=50,
+        help="Number of synthetic images to generate per class",
+    )
+
+    # Text description arguments
+    parser.add_argument(
+        "--text-source",
+        type=str,
+        default="manual",
+        choices=["manual", "generated", "templates"],
+        help="Source of text descriptions for T2I generation or hypernetwork",
+    )
+    parser.add_argument(
+        "--text-variant",
+        type=str,
+        default=None,
+        help="Variant of generated text (e.g., gpt4o, claude) when text-source=generated",
+    )
+    parser.add_argument(
+        "--text-aggregate",
+        type=str,
+        default="mean",
+        choices=["mean", "max", "median"],
+        help="How to aggregate multiple text descriptions for hypernetwork",
+    )
+
+    # Synthetic task vector arguments
+    parser.add_argument(
+        "--use-synthetic-tv",
+        action="store_true",
+        default=False,
+        help="Use synthetic task vector generated from T2I images in addition to real task vectors",
+    )
+    parser.add_argument(
+        "--synthetic-backend",
+        type=str,
+        default="stable_diffusion",
+        help="T2I backend used to generate synthetic images (for loading synthetic checkpoints)",
+    )
+
+    # Hypernetwork arguments
+    parser.add_argument(
+        "--hypernetwork-arch",
+        type=str,
+        default="small",
+        choices=["small", "medium", "large"],
+        help="Hypernetwork architecture size for text-to-coefficient prediction",
+    )
+    parser.add_argument(
+        "--hypernetwork-checkpoint",
+        type=str,
+        default=None,
+        help="Path to pre-trained hypernetwork checkpoint",
+    )
+    parser.add_argument(
+        "--freeze-text-encoder",
+        action="store_true",
+        default=True,
+        help="Freeze text encoder during hypernetwork training",
+    )
+    parser.add_argument(
+        "--init-from-hypernetwork",
+        action="store_true",
+        default=False,
+        help="Initialize coefficients from hypernetwork predictions before fine-tuning",
+    )
+
+    # Meta-learning arguments
+    parser.add_argument(
+        "--meta-train-datasets",
+        type=lambda x: x.split(","),
+        default=None,
+        help="Comma-separated list of datasets for meta-training hypernetwork",
+    )
+    parser.add_argument(
+        "--meta-val-datasets",
+        type=lambda x: x.split(","),
+        default=None,
+        help="Comma-separated list of datasets for meta-validation",
+    )
+    parser.add_argument(
+        "--meta-lr",
+        type=float,
+        default=1e-4,
+        help="Learning rate for meta-training (outer loop)",
+    )
+    parser.add_argument(
+        "--inner-lr",
+        type=float,
+        default=1e-3,
+        help="Inner loop learning rate for MAML-style meta-learning",
+    )
+    parser.add_argument(
+        "--meta-epochs",
+        type=int,
+        default=100,
+        help="Number of meta-training epochs",
+    )
+    parser.add_argument(
+        "--episodes-per-epoch",
+        type=int,
+        default=20,
+        help="Number of episodes (task samples) per meta-training epoch",
+    )
+    parser.add_argument(
+        "--meta-batch-size",
+        type=int,
+        default=4,
+        help="Batch size for meta-training episodes",
+    )
+
+    # Text adaptation mode
+    parser.add_argument(
+        "--text-adaptation-mode",
+        type=str,
+        default="hypernetwork",
+        choices=["synthetic", "hypernetwork", "both"],
+        help="Which text-based adaptation approach to use",
+    )
+
     parsed_args = parser.parse_args()
     parsed_args.device = "cuda" if torch.cuda.is_available() else "cpu"
 
