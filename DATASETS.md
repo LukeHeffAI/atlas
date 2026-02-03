@@ -1,6 +1,8 @@
-# Dataset preparation
+# Dataset Preparation
 
 All datasets are assumed to located under directory `~/data/`. The directory should be created if it does not already exist. To change the location of the datasets, override the default value of the argument `--data-location` in `atlas/src/args.py`. Most of the datasets will be downloaded automatically when running related training/inference scripts. However, several datasets require manual download and setup, and have been highlighted below.
+
+## Supported Datasets
 
 * Cars - [manual setup required](#setup-guide-for-stanford-cars-dataset)
 * DTD - [manual setup required](#setup-guide-for-dtd)
@@ -304,3 +306,66 @@ Download the extracted mid-frames [here](https://drive.google.com/file/d/10Jqome
         └── *.jpg
     └── ...
 ```
+
+## Synthetic Datasets (Text-Based Adaptation)
+
+For text-based zero-shot adaptation, synthetic datasets can be generated from text descriptions using text-to-image models. Generated images are stored under `~/data/synthetic_images/`.
+
+### Generating Synthetic Images
+
+```bash
+python src/generate_synthetic_data.py \
+    --dataset CIFAR10 \
+    --text-source manual \
+    --t2i-backend stable_diffusion \
+    --num-images-per-class 100 \
+    --output-dir ~/data/synthetic_images
+```
+
+### Synthetic Dataset Structure
+
+```
+└── synthetic_images
+    └── CIFAR10
+        └── stable_diffusion
+            └── airplane
+                └── 0000.png
+                └── 0001.png
+                └── ...
+            └── automobile
+                └── ...
+            └── ...
+    └── EuroSAT
+        └── ...
+```
+
+### Loading Synthetic Datasets
+
+Synthetic datasets are loaded using the `SyntheticDataset` class in `src/datasets/synthetic.py`:
+
+```python
+from src.datasets.synthetic import SyntheticDataset
+
+dataset = SyntheticDataset(
+    root="~/data/synthetic_images/CIFAR10/stable_diffusion",
+    transform=preprocess
+)
+```
+
+## Text Descriptions
+
+Text descriptions used for synthetic image generation and hypernetwork training are stored under `~/data/text_descriptions/`:
+
+```
+└── text_descriptions
+    └── manual
+        └── CIFAR10.json
+        └── EuroSAT.json
+        └── ...
+    └── generated
+        └── CIFAR10_gpt4o.json
+        └── CIFAR10_claude.json
+        └── ...
+```
+
+See the main [README.md](README.md#text-descriptions) for details on the text description format.
