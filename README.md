@@ -4,12 +4,14 @@
 
 # Task Vectors with Learned Anisotropic Scaling
 
-This repository contains the official PyTorch implementation for the NeurIPS'24 paper
+This repository contains and extends the official PyTorch implementation for the NeurIPS'24 paper
 > Frederic Z. Zhang, Paul Albert, Cristian Rodriguez-Opazo, Anton van den Hengel, Ehsan Abbasnejad.
 _Knowledge Composition using Task Vectors with Learned Anisotropic Scaling_.
 In Advances in Neural Information Processing Systems (NeurIPS), 2024.
 
 <a href="http://arxiv.org/abs/2407.02880">Preprint</a>
+
+Extension details begin further in this document, "Extension: Text-Based Zero-Shot Adaptation" section. 
 
 ## Abstract
 > ...<br/>This paper builds on properties of task vectors and aims to answer (1) whether components of task vectors, particularly parameter blocks, exhibit similar characteristics, and (2) how such blocks can be used to enhance knowledge composition and transfer. To this end, we introduce aTLAS, an algorithm that linearly combines parameter blocks with different learned coefficients, resulting in anisotropic scaling at the task vector level. We show that such linear combinations explicitly exploit the low intrinsic dimensionality of pre-trained models, with only a few coefficients being the learnable parameters. Furthermore, composition of parameter blocks enables modular learning that effectively leverages the already learned representations, thereby reducing the dependency on large amounts of data. We demonstrate the effectiveness of our method in task arithmetic, few-shot recognition and test-time adaptation, with supervised or unsupervised objectives. In particular, we show that (1) learned anisotropic scaling allows task vectors to be more disentangled, causing less interference in composition; (2) task vector composition excels with scarce or no labelled data and is less prone to domain shift, thus leading to better generalisability; (3) mixing the most informative parameter blocks across different task vectors prior to training can reduce the memory footprint and improve the flexibility of knowledge transfer. Moreover, we show the potential of aTLAS as a parameter-efficient fine-tuning method, particularly with less data, and demonstrate that it can be easily scaled up for higher performance.
@@ -41,43 +43,70 @@ export PYTHONPATH="$PYTHONPATH:/path/to/atlas"
 
 ## Reproducing experiment results
 
+### Running Experiments with Scripts
+
+For convenience, we provide shell scripts that automate common workflows:
+
+```bash
+# Task negation
+./scripts/run_task_negation.sh [MODEL]
+
+# Task addition
+./scripts/run_task_addition.sh [MODEL]
+
+# Few-shot adaptation (all shot settings)
+./scripts/run_few_shot.sh [MODEL]
+
+# Test-time adaptation
+./scripts/run_test_time_adaptation.sh [MODEL]
+
+# Parameter-efficient fine-tuning
+./scripts/run_parameter_efficient.sh [MODEL] [PARTITION]
+
+# Meta-train hypernetwork
+./scripts/run_hypernetwork_training.sh [MODEL] [ARCH] [EPOCHS]
+
+# Evaluate text adaptation
+./scripts/run_text_evaluation.sh [MODEL] [DATASET] [APPROACH]
+
+# Run all core experiments
+./scripts/run_all_experiments.sh [MODEL]
+```
+
+All scripts default to `ViT-B-32` if no model is specified.
+
 ### 1. Task negation
 ```bash
-MODEL=ViT-B-32
-python src/learn_task_negation.py --model=$MODEL --blockwise-coef 
+python src/learn_task_negation.py --model=ViT-B-32 --blockwise-coef
 ```
-Detailed performance is saved at `/path/to/atlas/checkpoints/$MODEL/learned_negations.json`.
+Detailed performance is saved at `/path/to/atlas/checkpoints/ViT-B-32/learned_negations.json`.
 ### 2. Task addition
 ```bash
-MODEL=ViT-B-32
-python src/learn_task_addition.py --model=$MODEL --blockwise-coef 
+python src/learn_task_addition.py --model=ViT-B-32 --blockwise-coef
 ```
-Detailed performance is saved at `/path/to/atlas/checkpoints/$MODEL/learned_additions.json`.
+Detailed performance is saved at `/path/to/atlas/checkpoints/ViT-B-32/learned_additions.json`.
 ### 3. Few-shot adaptation
 ```bash
-MODEL=ViT-B-32
 # aTLAS for different few-shot settings
 for SHOT in 1 2 4 8 16;do
-    python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample $SHOT
+    python src/learn_few_shots.py --model=ViT-B-32 --blockwise-coef --subsample $SHOT
 done
 # aTLAS with LP++ or Tip
 for SHOT in 1 2 4 8 16;do
-    python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample $SHOT --adapter tip
-    python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample $SHOT --adapter lpp
+    python src/learn_few_shots.py --model=ViT-B-32 --blockwise-coef --subsample $SHOT --adapter tip
+    python src/learn_few_shots.py --model=ViT-B-32 --blockwise-coef --subsample $SHOT --adapter lpp
 done
 ```
 ### 4. Test-time adaptation
 ```bash
-MODEL=ViT-B-32
-python src/learn_ufm.py --model=$MODEL --blockwise-coef
+python src/learn_ufm.py --model=ViT-B-32 --blockwise-coef
 ```
 ### 5. Parameter-efficient fine-tuning
 ```bash
-MODEL=ViT-B-32
 PARTITION=10
 # aTLAS with K partitions using different percentage of data (aTLAS x K)
 for PERC in 0.01 0.05 0.1 0.25 0.35 0.5 1.0;do
-    python src/learn_few_shots.py --model=$MODEL --partition $PATITION --subsample $PERC
+    python src/learn_few_shots.py --model=ViT-B-32 --partition $PARTITION --subsample $PERC
 done
 ```
 
@@ -96,9 +125,8 @@ Two complementary approaches are implemented:
 
 ```bash
 # 1. Meta-train the hypernetwork on diverse tasks
-MODEL=ViT-B-32
 python src/learn_text_to_coef.py \
-    --model $MODEL \
+    --model ViT-B-32 \
     --meta-train-datasets CIFAR10,EuroSAT,DTD,GTSRB,SVHN,Food101 \
     --meta-val-datasets Caltech101,Flowers102 \
     --hypernetwork-arch medium \
@@ -109,10 +137,10 @@ python src/learn_text_to_coef.py \
 
 # 2. Evaluate on a new task using only text descriptions
 python src/eval_text_adaptation.py \
-    --model $MODEL \
+    --model ViT-B-32 \
     --dataset Cars \
     --approach hypernetwork \
-    --hypernetwork-checkpoint checkpoints/$MODEL/hypernetworks/text_to_coef/meta_trained.pt \
+    --hypernetwork-checkpoint checkpoints/ViT-B-32/hypernetworks/text_to_coef/meta_trained.pt \
     --text-source manual
 ```
 
@@ -134,9 +162,8 @@ Architecture sizes:
 
 #### Meta-Training
 ```bash
-MODEL=ViT-B-32
 python src/learn_text_to_coef.py \
-    --model $MODEL \
+    --model ViT-B-32 \
     --meta-train-datasets CIFAR10,EuroSAT,DTD,GTSRB,SVHN,Food101 \
     --meta-val-datasets Caltech101,Flowers102 \
     --hypernetwork-arch medium \
@@ -266,30 +293,28 @@ python scripts/analyze_synthetic_quality.py \
 Evaluate text-adapted models on held-out datasets:
 
 ```bash
-MODEL=ViT-B-32
-
 # Hypernetwork approach
 python src/eval_text_adaptation.py \
-    --model $MODEL \
+    --model ViT-B-32 \
     --dataset Flowers102 \
     --approach hypernetwork \
-    --hypernetwork-checkpoint checkpoints/$MODEL/hypernetworks/text_to_coef/meta_trained.pt \
+    --hypernetwork-checkpoint checkpoints/ViT-B-32/hypernetworks/text_to_coef/meta_trained.pt \
     --text-source manual \
     --text-aggregate mean
 
 # Synthetic approach
 python src/eval_text_adaptation.py \
-    --model $MODEL \
+    --model ViT-B-32 \
     --dataset Flowers102 \
     --approach synthetic \
     --synthetic-backend stable_diffusion
 
 # Both approaches combined
 python src/eval_text_adaptation.py \
-    --model $MODEL \
+    --model ViT-B-32 \
     --dataset Flowers102 \
     --approach both \
-    --hypernetwork-checkpoint checkpoints/$MODEL/hypernetworks/text_to_coef/meta_trained.pt \
+    --hypernetwork-checkpoint checkpoints/ViT-B-32/hypernetworks/text_to_coef/meta_trained.pt \
     --synthetic-backend stable_diffusion
 ```
 
