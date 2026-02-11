@@ -4,7 +4,7 @@ import pickle
 import numpy as np
 import torch
 import tqdm
-from src.datasets.common import maybe_dictionarize
+from datasets.common import maybe_dictionarize
 from torch.utils.data.sampler import BatchSampler
 import itertools
 
@@ -293,7 +293,7 @@ class TwoAsymetricTransform:
     def __init__(self, transform, transform2):
         self.transform = transform
         self.transform2 = transform2
- 
+
     def __call__(self, x, *args, **kwargs):
         return [self.transform(x, *args, **kwargs), self.transform2(x, *args, **kwargs)]
 

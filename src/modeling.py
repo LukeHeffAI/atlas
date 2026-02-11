@@ -11,7 +11,7 @@ https://github.com/gortizji/tangent_task_arithmetic
 import open_clip # Check whether this should be regular CLIP
 import torch
 
-from src import utils
+import utils
 
 
 class ImageEncoder(torch.nn.Module):

@@ -15,8 +15,8 @@ import torch
 import torch.nn as nn
 from functorch import jvp, make_functional_with_buffers
 
-from src.modeling import ImageEncoder
-from src.utils import DotDict
+from modeling import ImageEncoder
+from utils import DotDict
 
 
 class LinearizedModel(nn.Module):

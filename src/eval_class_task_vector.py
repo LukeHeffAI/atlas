@@ -8,9 +8,9 @@ Australian Institute for Machine Learning
 import json
 import numpy as np
 
-from src.args import parse_arguments
-from src.eval import eval_single_dataset
-from src.task_vectors import LinearizedTaskVector, NonLinearTaskVector
+from args import parse_arguments
+from eval import eval_single_dataset
+from task_vectors import LinearizedTaskVector, NonLinearTaskVector
 
 def main(args, eval_datasets):
     accuracies = {}
