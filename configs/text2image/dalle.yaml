@@ -17,3 +17,6 @@ rate_limit_delay: 1.0
 # Pricing (2026):
 # - Standard 1024x1024: $0.040 per image
 # - HD 1024x1792 or 1792x1024: $0.120 per image
+pricing:
+  standard: 0.040
+  hd: 0.120
