@@ -10,9 +10,9 @@ num_inference_steps: 50
 height: 1024
 width: 1024
 
-# Memory optimizations
-enable_attention_slicing: true
-use_fp16: true
+# Memory optimizations, set to True for memory saving settings
+enable_attention_slicing: false
+use_fp16: false
 cpu_offload: false  # Set to true if running out of memory
 
 # Batch size (adjust based on GPU memory)

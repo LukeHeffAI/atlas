@@ -9,7 +9,7 @@ model: "dall-e-3"
 # Image parameters
 size: "1024x1024"  # Options: "1024x1024", "1024x1792", "1792x1024"
 quality: "standard"  # Options: "standard" ($0.040), "hd" ($0.120)
-style: "natural"  # Options: "natural", "vivid"
+style: "photorealistic"  # Options: "natural", "vivid"
 
 # Rate limiting (seconds between API calls)
 rate_limit_delay: 1.0
