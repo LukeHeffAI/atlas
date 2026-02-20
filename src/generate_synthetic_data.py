@@ -14,7 +14,6 @@ Usage:
 """
 
 import os
-import random
 import argparse
 from pathlib import Path
 from typing import Dict, List
@@ -250,28 +249,68 @@ def main():
     output_base = Path(args.output_dir) / backend.name / args.dataset
     print(f"\nOutput directory: {output_base}")
 
-    # Generate images for each class
-    print(f"\nGenerating {args.num_images_per_class} images per class...")
-    total_images = len(descriptions) * args.num_images_per_class
-    print(f"Total images to generate: {total_images}")
+    # Pre-scan existing images to compute actual generation counts and cost
+    class_existing = {}
+    class_to_generate = {}
+    for class_name in descriptions:
+        class_dir = output_base / class_name
+        existing = sorted(class_dir.glob("*.png")) if class_dir.exists() else []
+        class_existing[class_name] = existing
+        if args.force_regenerate:
+            class_to_generate[class_name] = args.num_images_per_class
+        else:
+            class_to_generate[class_name] = max(0, args.num_images_per_class - len(existing))
+
+    actual_total = sum(class_to_generate.values())
+    skipped_total = sum(
+        min(len(class_existing[c]), args.num_images_per_class)
+        for c in descriptions
+        if not args.force_regenerate
+    )
+
+    print(f"Images already on disk (will skip): {skipped_total}")
+    print(f"Images to generate: {actual_total}")
 
     if args.t2i_backend.lower() in ["dalle", "dall-e"]:
-        cost_estimate_standard = total_images * config['pricing']['standard']
-        cost_estimate_hd = total_images * config['pricing']['hd']
+        cost_estimate_standard = actual_total * config['pricing']['standard']
+        cost_estimate_hd = actual_total * config['pricing']['hd']
         print(f"Estimated cost:\n\t- ${cost_estimate_standard:.2f} (standard quality)\n\t- ${cost_estimate_hd:.2f} (hd quality)")
 
     for class_name, class_descriptions in tqdm(descriptions.items(), desc="Classes"):
-        print(f"\nGenerating images for class: {class_name}")
-
-        # Create class directory
         class_dir = output_base / class_name
         class_dir.mkdir(parents=True, exist_ok=True)
 
-        # Generate prompts
+        existing = class_existing[class_name]
+        n_needed = class_to_generate[class_name]
+
+        if args.force_regenerate:
+            # Remove existing images and regenerate from scratch
+            for p in existing:
+                p.unlink()
+            existing = []
+
+        if len(existing) >= args.num_images_per_class:
+            # More images exist than requested — no generation needed.
+            # Selection of first-N vs random subset is handled at load time via SyntheticDataset.
+            print(f"\n  {class_name}: {len(existing)} images exist, using {args.num_images_per_class} "
+                  f"({'random sample' if args.shuffle_existing else 'first N'} at load time)")
+            continue
+
+        if n_needed == 0:
+            print(f"\n  {class_name}: already has {len(existing)} images, skipping")
+            continue
+
+        print(f"\nGenerating {n_needed} images for class: {class_name} "
+              f"({len(existing)} already exist, {args.num_images_per_class} requested)")
+
+        # Determine the starting index for new images (continue numbering after existing)
+        next_index = len(existing) if not args.force_regenerate else 0
+
+        # Generate prompts for only the missing images
         prompts = generate_prompts_for_class(
             class_name,
             class_descriptions,
-            args.num_images_per_class
+            n_needed
         )
 
         # Generate images in batches
@@ -280,9 +319,9 @@ def main():
             batch_size=args.batch_size
         )
 
-        # Save images
+        # Save images, starting after the last existing index
         for i, image in enumerate(images):
-            image_path = class_dir / f"{i:05d}.png"
+            image_path = class_dir / f"{next_index + i:05d}.png"
             image.save(image_path)
 
         print(f"  Saved {len(images)} images to {class_dir}")
@@ -291,7 +330,7 @@ def main():
     print("Synthetic image generation complete!")
     print(f"Output directory: {output_base}")
     print(f"Total classes: {len(descriptions)}")
-    print(f"Total images: {total_images}")
+    print(f"Total images generated: {actual_total}")
     print("=" * 80)
 
 
