@@ -36,7 +36,9 @@ class SyntheticDataset(VisionDataset):
         t2i_backend: str,
         transform: Optional[Callable] = None,
         split: str = "train",
-        train_val_split: float = 0.8
+        train_val_split: float = 0.8,
+        max_images_per_class: Optional[int] = None,
+        shuffle_selection: bool = False,
     ):
         """Initialize synthetic dataset.
 
@@ -47,6 +49,8 @@ class SyntheticDataset(VisionDataset):
             transform: Optional transform to apply to images
             split: Dataset split ("train" or "val")
             train_val_split: Fraction of data to use for training (default: 0.8)
+            max_images_per_class: If set, cap each class at this many images.
+            shuffle_selection: When capping, randomly sample rather than taking the first N.
         """
         super().__init__(root=root, transform=transform)
 
@@ -72,11 +76,17 @@ class SyntheticDataset(VisionDataset):
 
         self.class_to_idx = {c: i for i, c in enumerate(self.classes)}
 
-        # Load all image paths
+        # Load image paths, optionally capping per class
         self.samples = []
         for class_name in self.classes:
             class_dir = self.dataset_path / class_name
-            for img_path in sorted(class_dir.glob("*.png")):
+            paths = sorted(class_dir.glob("*.png"))
+            if max_images_per_class is not None and len(paths) > max_images_per_class:
+                if shuffle_selection:
+                    paths = random.sample(paths, max_images_per_class)
+                else:
+                    paths = paths[:max_images_per_class]
+            for img_path in paths:
                 self.samples.append((str(img_path), self.class_to_idx[class_name]))
 
         # Split into train/val
@@ -133,7 +143,9 @@ class SyntheticDatasetWrapper:
         t2i_backend: str = "stable_diffusion",
         batch_size: int = 128,
         num_workers: int = 8,
-        train_val_split: float = 0.8
+        train_val_split: float = 0.8,
+        max_images_per_class: Optional[int] = None,
+        shuffle_selection: bool = False,
     ):
         """Initialize synthetic dataset wrapper.
 
@@ -145,6 +157,8 @@ class SyntheticDatasetWrapper:
             batch_size: Batch size for dataloaders
             num_workers: Number of workers for dataloaders
             train_val_split: Fraction for train split
+            max_images_per_class: If set, cap each class at this many images.
+            shuffle_selection: When capping, randomly sample rather than taking the first N.
         """
         # Create datasets
         self.train_dataset = SyntheticDataset(
@@ -153,7 +167,9 @@ class SyntheticDatasetWrapper:
             t2i_backend=t2i_backend,
             transform=preprocess,
             split="train",
-            train_val_split=train_val_split
+            train_val_split=train_val_split,
+            max_images_per_class=max_images_per_class,
+            shuffle_selection=shuffle_selection,
         )
 
         self.test_dataset = SyntheticDataset(
@@ -162,7 +178,9 @@ class SyntheticDatasetWrapper:
             t2i_backend=t2i_backend,
             transform=preprocess,
             split="val",
-            train_val_split=train_val_split
+            train_val_split=train_val_split,
+            max_images_per_class=max_images_per_class,
+            shuffle_selection=shuffle_selection,
         )
 
         # Create dataloaders
@@ -185,7 +203,16 @@ class SyntheticDatasetWrapper:
         self.classnames = self.train_dataset.classnames
 
 
-def get_synthetic_dataset(dataset_name, preprocess, location, batch_size, num_workers, t2i_backend="stable_diffusion"):
+def get_synthetic_dataset(
+    dataset_name,
+    preprocess,
+    location,
+    batch_size,
+    num_workers,
+    t2i_backend="stable_diffusion",
+    max_images_per_class=None,
+    shuffle_selection=False,
+):
     """Factory function to create a synthetic dataset.
 
     Args:
@@ -195,6 +222,8 @@ def get_synthetic_dataset(dataset_name, preprocess, location, batch_size, num_wo
         batch_size: Batch size
         num_workers: Number of workers
         t2i_backend: T2I backend name
+        max_images_per_class: If set, cap each class at this many images.
+        shuffle_selection: When capping, randomly sample rather than taking the first N.
 
     Returns:
         SyntheticDatasetWrapper instance
@@ -205,5 +234,7 @@ def get_synthetic_dataset(dataset_name, preprocess, location, batch_size, num_wo
         dataset_name=dataset_name,
         t2i_backend=t2i_backend,
         batch_size=batch_size,
-        num_workers=num_workers
+        num_workers=num_workers,
+        max_images_per_class=max_images_per_class,
+        shuffle_selection=shuffle_selection,
     )
