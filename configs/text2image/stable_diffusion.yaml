@@ -11,8 +11,8 @@ height: 1024
 width: 1024
 
 # Memory optimizations, set to True for memory saving settings
-enable_attention_slicing: True
-use_fp16: false
+enable_attention_slicing: true
+use_fp16: true
 cpu_offload: false  # Set to true if running out of memory
 
 # Batch size (adjust based on GPU memory)
