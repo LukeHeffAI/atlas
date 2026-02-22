@@ -11,7 +11,31 @@ import time
 
 import torch
 import torch.nn as nn
-from functorch import jvp, make_functional_with_buffers
+from torch.func import jvp, functional_call
+
+
+def make_functional_with_buffers(model, disable_autograd_tracking=False):
+    """Compatibility shim: replicate the old functorch API using torch.func utilities."""
+    param_names = []
+    params = []
+    buffer_names = []
+    buffers = []
+    for name, p in model.named_parameters():
+        param_names.append(name)
+        params.append(p if not disable_autograd_tracking else p.detach().requires_grad_(p.requires_grad))
+    for name, b in model.named_buffers():
+        buffer_names.append(name)
+        buffers.append(b)
+
+    def func(params_list, buffers_list, *args, **kwargs):
+        state = {}
+        for n, p in zip(param_names, params_list):
+            state[n] = p
+        for n, b in zip(buffer_names, buffers_list):
+            state[n] = b
+        return functional_call(model, state, args, kwargs)
+
+    return func, params, buffers
 
 from src.args import parse_arguments
 from src.datasets.common import get_dataloader, maybe_dictionarize

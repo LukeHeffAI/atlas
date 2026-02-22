@@ -13,10 +13,34 @@ import os
 
 import torch
 import torch.nn as nn
-from functorch import jvp, make_functional_with_buffers
+from torch.func import jvp, functional_call
 
 from modeling import ImageEncoder
 from utils import DotDict
+
+
+def make_functional_with_buffers(model, disable_autograd_tracking=False):
+    """Compatibility shim: replicate the old functorch API using torch.func utilities."""
+    param_names = []
+    params = []
+    buffer_names = []
+    buffers = []
+    for name, p in model.named_parameters():
+        param_names.append(name)
+        params.append(p if not disable_autograd_tracking else p.detach().requires_grad_(p.requires_grad))
+    for name, b in model.named_buffers():
+        buffer_names.append(name)
+        buffers.append(b)
+
+    def func(params_list, buffers_list, *args, **kwargs):
+        state = {}
+        for n, p in zip(param_names, params_list):
+            state[n] = p
+        for n, b in zip(buffer_names, buffers_list):
+            state[n] = b
+        return functional_call(model, state, args, kwargs)
+
+    return func, params, buffers
 
 
 class LinearizedModel(nn.Module):
@@ -61,14 +85,10 @@ class LinearizedModel(nn.Module):
         for p in self.params:
             p.requires_grad = True
 
-    def _apply(self, fn):
-        """Override method to relocate buffer list
-
-        NOTE: This function signature is for PyTorch 1.13.1.
-        Newer verions have added another optional argument `recurse=True`.
-        """
-        new_self = super()._apply(fn=fn)
-        new_self.buffers0 = (fn(x) for x in new_self.buffers0)
+    def _apply(self, fn, recurse=True):
+        """Override method to relocate buffer list."""
+        new_self = super()._apply(fn=fn, recurse=recurse)
+        new_self.buffers0 = [fn(x) for x in new_self.buffers0]
         return new_self
 
     def __call__(self, x) -> torch.Tensor:
