@@ -11,7 +11,7 @@ height: 1024
 width: 1024
 
 # Memory optimizations, set to True for memory saving settings
-enable_attention_slicing: false
+enable_attention_slicing: True
 use_fp16: false
 cpu_offload: false  # Set to true if running out of memory
 
