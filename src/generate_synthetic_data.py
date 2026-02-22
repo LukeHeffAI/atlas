@@ -15,13 +15,15 @@ Usage:
 
 import os
 import argparse
+import random
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 import yaml
 from tqdm import tqdm
 
 from text_descriptions.loaders import TextDescriptionLoader
 from text2image.registry import get_t2i_backend
+from diversity_modifiers import load_diversity_modifiers
 
 
 def parse_arguments():
@@ -122,6 +124,19 @@ def parse_arguments():
         )
     )
 
+    # Diversity modifiers
+    parser.add_argument(
+        "--diversity-modifiers-dir",
+        type=str,
+        default="data/diversity_modifiers",
+        help="Directory containing diversity modifier JSON files"
+    )
+    parser.add_argument(
+        "--no-diversity-modifiers",
+        action="store_true",
+        help="Disable diversity modifiers (use legacy cycling behavior)"
+    )
+
     # Device configuration
     parser.add_argument(
         "--device",
@@ -166,27 +181,46 @@ def load_t2i_config(backend_name: str, config_path: str = None) -> Dict:
 def generate_prompts_for_class(
     class_name: str,
     descriptions: List[str],
-    num_images: int
+    num_images: int,
+    modifiers: Optional[Dict[str, List[str]]] = None,
+    seed: int = 42
 ) -> List[str]:
-    """Generate prompts for a class by cycling through descriptions.
+    """Generate diverse prompts for a class by combining descriptions with modifiers.
+
+    Each prompt is composed by cycling through base descriptions and randomly
+    sampling one modifier per dimension, producing unique prompts even when
+    num_images >> len(descriptions).
 
     Args:
         class_name: Name of the class
         descriptions: List of text descriptions
         num_images: Number of images to generate
+        modifiers: Dict mapping dimension names to lists of modifier strings.
+                   If None, falls back to a simple quality suffix.
+        seed: Random seed for reproducible modifier sampling
 
     Returns:
         List of prompts (length = num_images)
     """
     if not descriptions:
-        # Fallback to simple template
         descriptions = [f"a photo of a {class_name}"]
+
+    rng = random.Random(seed)
 
     prompts = []
     for i in range(num_images):
-        # Cycle through descriptions
-        desc = f'{descriptions[i % len(descriptions)]}, hyper-realistic, high quality, 4k resolution'
-        prompts.append(desc)
+        desc = descriptions[i % len(descriptions)]
+
+        if modifiers:
+            # Sample one modifier per dimension
+            parts = [desc]
+            for dim_name, dim_values in modifiers.items():
+                parts.append(rng.choice(dim_values))
+            prompt = ", ".join(parts) + ", hyper-realistic, 4k resolution"
+        else:
+            prompt = f"{desc}, hyper-realistic, 4k resolution"
+
+        prompts.append(prompt)
 
     return prompts
 
@@ -238,6 +272,18 @@ def generate_for_dataset(args, dataset_name: str, backend):
     print(f"Loaded descriptions for {len(descriptions)} classes")
     for class_name, descs in list(descriptions.items())[:3]:
         print(f"  {class_name}: {len(descs)} descriptions")
+
+    # Load diversity modifiers
+    modifiers = None
+    if not args.no_diversity_modifiers:
+        try:
+            modifiers = load_diversity_modifiers(
+                dataset_name, base_path=args.diversity_modifiers_dir
+            )
+            dim_summary = {k: len(v) for k, v in modifiers.items()}
+            print(f"Loaded diversity modifiers: {dim_summary}")
+        except FileNotFoundError:
+            print("No diversity modifiers found, using legacy prompt style")
 
     # Setup output directory
     output_base = Path(args.output_dir) / backend.name / dataset_name
@@ -302,17 +348,24 @@ def generate_for_dataset(args, dataset_name: str, backend):
         next_index = len(existing) if not args.force_regenerate else 0
 
         # Generate prompts for only the missing images
+        # Use a per-class seed derived from the base seed and class name
+        class_seed = args.seed + hash(class_name) % (2**31)
         prompts = generate_prompts_for_class(
             class_name,
             class_descriptions,
-            n_needed
+            n_needed,
+            modifiers=modifiers,
+            seed=class_seed
         )
 
-        # Generate images in batches
+        # Generate images in batches.
+        original_seed = backend.seed
+        backend.seed = args.seed + next_index
         images = backend.batch_generate(
             prompts=prompts,
             batch_size=args.batch_size
         )
+        backend.seed = original_seed
 
         # Save images, starting after the last existing index
         for i, image in enumerate(images):
