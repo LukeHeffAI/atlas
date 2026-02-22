@@ -183,7 +183,7 @@ def generate_prompts_for_class(
     prompts = []
     for i in range(num_images):
         # Cycle through descriptions
-        desc = descriptions[i % len(descriptions)]
+        desc = f'{descriptions[i % len(descriptions)]}, hyper-realistic, high quality, 4k resolution'
         prompts.append(desc)
 
     return prompts
