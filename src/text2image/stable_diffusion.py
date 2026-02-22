@@ -8,7 +8,11 @@ from typing import List, Optional, Dict, Any
 import torch
 from PIL import Image
 from .base import Text2ImageBackend
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+hf_token = os.getenv("HF_TOKEN")
 
 class StableDiffusionBackend(Text2ImageBackend):
     """Stable Diffusion XL backend for text-to-image generation.
@@ -67,10 +71,10 @@ class StableDiffusionBackend(Text2ImageBackend):
         # Load pipeline
         try:
             self.pipe = StableDiffusionXLPipeline.from_pretrained(
-                self.model_id,
-                torch_dtype=dtype,
-                use_safetensors=True,
-                variant="fp16" if self.use_fp16 else None
+            self.model_id,
+            torch_dtype=dtype,
+            use_safetensors=True,
+            variant="fp16" if self.use_fp16 else None
             )
         except:
             # Fallback: load without variant specification
