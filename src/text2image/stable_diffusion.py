@@ -61,7 +61,7 @@ class StableDiffusionBackend(Text2ImageBackend):
 
     def _load_model(self):
         """Load Stable Diffusion model with optimizations."""
-        from diffusers import StableDiffusionXLPipeline, DiffusionPipeline
+        from diffusers import StableDiffusionXLPipeline, DiffusionPipeline # type: ignore[attr-defined]
 
         print(f"Loading Stable Diffusion model: {self.model_id}")
 
@@ -147,7 +147,7 @@ class StableDiffusionBackend(Text2ImageBackend):
 
         # Generate images
         try:
-            output = self.pipe(
+            output = self.pipe( # type: ignore[attr-defined]
                 prompt=prompts,
                 num_images_per_prompt=num_images_per_prompt,
                 guidance_scale=guidance_scale,
@@ -157,7 +157,7 @@ class StableDiffusionBackend(Text2ImageBackend):
                 generator=generator,
                 negative_prompt=negative_prompt
             )
-            images = output.images
+            images = output.images # type: ignore[attr-defined]
         except Exception as e:
             print(f"Error generating images: {e}")
             # Clear CUDA cache and retry with smaller batch
@@ -169,7 +169,7 @@ class StableDiffusionBackend(Text2ImageBackend):
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        return images
+        return images # type: ignore[attr-defined]
 
     def batch_generate(
         self,
