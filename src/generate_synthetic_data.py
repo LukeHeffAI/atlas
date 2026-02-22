@@ -5,7 +5,7 @@ synthetic images for dataset classes based on text descriptions.
 
 Usage:
     python src/generate_synthetic_data.py \
-        --dataset CIFAR10 \
+        --datasets CIFAR10 EuroSAT DTD \
         --text-source manual \
         --t2i-backend stable_diffusion \
         --num-images-per-class 100 \
@@ -31,10 +31,12 @@ def parse_arguments():
 
     # Dataset and text configuration
     parser.add_argument(
-        "--dataset",
+        "--datasets",
         type=str,
+        nargs="+",
         required=True,
-        help="Dataset name (e.g., CIFAR10, EuroSAT)"
+        metavar="DATASET",
+        help="One or more dataset names (e.g., CIFAR10 EuroSAT DTD)"
     )
     parser.add_argument(
         "--text-source",
@@ -189,11 +191,16 @@ def generate_prompts_for_class(
     return prompts
 
 
-def main():
-    args = parse_arguments()
+def generate_for_dataset(args, dataset_name: str, backend):
+    """Generate synthetic images for a single dataset.
 
+    Args:
+        args: Parsed CLI arguments
+        dataset_name: Name of the dataset to process
+        backend: Initialized T2I backend (shared across datasets)
+    """
     print("=" * 80)
-    print(f"Generating synthetic images for {args.dataset}")
+    print(f"Generating synthetic images for {dataset_name}")
     print("=" * 80)
 
     # Load text descriptions
@@ -210,12 +217,12 @@ def main():
                     "--classes argument required when using template mode"
                 )
             descriptions = generate_template_descriptions(
-                args.dataset,
+                dataset_name,
                 args.classes
             )
         else:
             descriptions = loader.load_descriptions(
-                args.dataset,
+                dataset_name,
                 source=args.text_source,
                 variant=args.text_variant
             )
@@ -232,21 +239,8 @@ def main():
     for class_name, descs in list(descriptions.items())[:3]:
         print(f"  {class_name}: {len(descs)} descriptions")
 
-    # Load T2I backend configuration
-    print(f"\nInitializing T2I backend: {args.t2i_backend}...")
-    config = load_t2i_config(args.t2i_backend, args.t2i_config)
-
-    # Override config with command-line arguments
-    if args.t2i_model:
-        config['model_id'] = args.t2i_model
-    config['device'] = args.device
-    config['seed'] = args.seed
-
-    # Create backend
-    backend = get_t2i_backend(args.t2i_backend, config)
-
     # Setup output directory
-    output_base = Path(args.output_dir) / backend.name / args.dataset
+    output_base = Path(args.output_dir) / backend.name / dataset_name
     print(f"\nOutput directory: {output_base}")
 
     # Pre-scan existing images to compute actual generation counts and cost
@@ -272,6 +266,7 @@ def main():
     print(f"Images to generate: {actual_total}")
 
     if args.t2i_backend.lower() in ["dalle", "dall-e"]:
+        config = load_t2i_config(args.t2i_backend, args.t2i_config)
         cost_estimate_standard = actual_total * config['pricing']['standard']
         cost_estimate_hd = actual_total * config['pricing']['hd']
         print(f"Estimated cost:\n\t- ${cost_estimate_standard:.2f} (standard quality)\n\t- ${cost_estimate_hd:.2f} (hd quality)")
@@ -327,11 +322,27 @@ def main():
         print(f"  Saved {len(images)} images to {class_dir}")
 
     print("\n" + "=" * 80)
-    print("Synthetic image generation complete!")
+    print(f"Synthetic image generation complete for {dataset_name}!")
     print(f"Output directory: {output_base}")
     print(f"Total classes: {len(descriptions)}")
     print(f"Total images generated: {actual_total}")
     print("=" * 80)
+
+
+def main():
+    args = parse_arguments()
+
+    # Initialize backend once (loading SD/SDXL models is expensive)
+    config = load_t2i_config(args.t2i_backend, args.t2i_config)
+    if args.t2i_model:
+        config['model_id'] = args.t2i_model
+    config['device'] = args.device
+    config['seed'] = args.seed
+    print(f"\nInitializing T2I backend: {args.t2i_backend}...")
+    backend = get_t2i_backend(args.t2i_backend, config)
+
+    for dataset_name in args.datasets:
+        generate_for_dataset(args, dataset_name, backend)
 
 
 if __name__ == "__main__":
