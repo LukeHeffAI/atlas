@@ -117,7 +117,7 @@ def train(task_vectors, args, comp_acc={}):
 
     if type(args.subsample) == int:
         if os.path.isfile(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt") and args.seed == 1:
-            to_keep = torch.load(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt")
+            to_keep = torch.load(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt", weights_only=False)
         else:
             to_keep = get_n_shots(dataset.train_dataset, args.subsample, classification_head.out_features, args)
             torch.save(to_keep, f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt")
@@ -131,7 +131,7 @@ def train(task_vectors, args, comp_acc={}):
             
     else:
         if os.path.isfile(f"{args.save}/{target_dataset}/{args.subsample}_{args.seed}.pt") and args.seed == 1:
-            to_keep = torch.load(f"{args.save}/{target_dataset}/{args.subsample}_{args.seed}.pt")
+            to_keep = torch.load(f"{args.save}/{target_dataset}/{args.subsample}_{args.seed}.pt", weights_only=False)
         else:
             to_keep = torch.randperm(len(dataset_index))[:int(len(dataset_index)*args.subsample)]
             torch.save(to_keep, f"{args.save}/{target_dataset}/{args.subsample}_{args.seed}.pt")
@@ -242,7 +242,7 @@ def train(task_vectors, args, comp_acc={}):
         with open(args.log_path, 'w') as f:
             json.dump(comp_acc, f, indent=4)
         if os.path.isfile(args.head_path):
-            heads = torch.load(args.head_path)
+            heads = torch.load(args.head_path, weights_only=False)
         else:
             heads = {}
             
@@ -367,7 +367,7 @@ def train_adapter(ddp_model, ddp_loader, args, comp_acc, which='lpp'):
             json.dump(comp_acc, f, indent=4)
             
         if os.path.isfile(args.head_path):
-            heads = torch.load(args.head_path)
+            heads = torch.load(args.head_path, weights_only=False)
         else:
             heads = {}
 
