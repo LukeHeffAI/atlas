@@ -26,6 +26,11 @@ from text2image.registry import get_t2i_backend
 from diversity_modifiers import load_diversity_modifiers
 
 
+def sanitize_class_name(name: str) -> str:
+    """Sanitize a class name for use as a filesystem directory name."""
+    return name.replace("/", "_")
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Generate synthetic images from text descriptions"
@@ -287,13 +292,28 @@ def generate_for_dataset(args, dataset_name: str, backend):
 
     # Setup output directory
     output_base = Path(args.output_dir) / backend.name / dataset_name
+    output_base.mkdir(parents=True, exist_ok=True)
     print(f"\nOutput directory: {output_base}")
+
+    # Write class_mapping.json so the loader can map sanitized folder names
+    # back to canonical class names.
+    import json as _json
+    folder_to_canonical = {}
+    for class_name in descriptions:
+        sanitized = sanitize_class_name(class_name)
+        if sanitized != class_name:
+            folder_to_canonical[sanitized] = class_name
+    if folder_to_canonical:
+        mapping_path = output_base / "class_mapping.json"
+        with open(mapping_path, "w") as f:
+            _json.dump(folder_to_canonical, f, indent=2)
+        print(f"Wrote class mapping for {len(folder_to_canonical)} sanitized names")
 
     # Pre-scan existing images to compute actual generation counts and cost
     class_existing = {}
     class_to_generate = {}
     for class_name in descriptions:
-        class_dir = output_base / class_name
+        class_dir = output_base / sanitize_class_name(class_name)
         existing = sorted(class_dir.glob("*.png")) if class_dir.exists() else []
         class_existing[class_name] = existing
         if args.force_regenerate:
@@ -318,7 +338,7 @@ def generate_for_dataset(args, dataset_name: str, backend):
         print(f"Estimated cost:\n\t- ${cost_estimate_standard:.2f} (standard quality)\n\t- ${cost_estimate_hd:.2f} (hd quality)")
 
     for class_name, class_descriptions in tqdm(descriptions.items(), desc="Classes"):
-        class_dir = output_base / class_name
+        class_dir = output_base / sanitize_class_name(class_name)
         class_dir.mkdir(parents=True, exist_ok=True)
 
         existing = class_existing[class_name]
