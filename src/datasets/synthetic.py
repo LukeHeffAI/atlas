@@ -63,11 +63,24 @@ class SyntheticDataset(VisionDataset):
                 f"--dataset {dataset_name} --t2i-backend {t2i_backend}"
             )
 
-        # Get class names from directory structure
-        self.classes = sorted([
-            d.name for d in self.dataset_path.iterdir()
-            if d.is_dir() and not d.name.startswith('.')
-        ])
+        # Get class names from directory structure.
+        # Folder names may be sanitized (e.g. "/" replaced with "_") when
+        # the canonical class name contains filesystem-unsafe characters.
+        mapping_file = self.dataset_path / "class_mapping.json"
+        if mapping_file.exists():
+            import json
+            with open(mapping_file) as f:
+                self._folder_to_class = json.load(f)
+        else:
+            self._folder_to_class = {}
+
+        self._class_to_folder = {}
+        for d in sorted(self.dataset_path.iterdir()):
+            if d.is_dir() and not d.name.startswith('.'):
+                canonical = self._folder_to_class.get(d.name, d.name)
+                self._class_to_folder[canonical] = d.name
+
+        self.classes = sorted(self._class_to_folder.keys())
 
         if not self.classes:
             raise ValueError(
@@ -79,7 +92,7 @@ class SyntheticDataset(VisionDataset):
         # Load image paths, optionally capping per class
         self.samples = []
         for class_name in self.classes:
-            class_dir = self.dataset_path / class_name
+            class_dir = self.dataset_path / self._class_to_folder[class_name]
             paths = sorted(class_dir.glob("*.png"))
             if max_images_per_class is not None and len(paths) > max_images_per_class:
                 if shuffle_selection:
@@ -201,6 +214,46 @@ class SyntheticDatasetWrapper:
         )
 
         self.classnames = self.train_dataset.classnames
+
+
+class MixedDatasetWrapper:
+    """Combines real and synthetic datasets with approximately equal samples.
+
+    Training data is balanced 50/50 between real and synthetic.
+    Test data always comes from the real dataset.
+    """
+
+    def __init__(self, real_dataset, synthetic_dataset, batch_size=128, num_workers=8):
+        real_train = real_dataset.train_dataset
+        synth_train = synthetic_dataset.train_dataset
+
+        n_real = len(real_train)
+        n_synth = len(synth_train)
+        target_per_source = min(n_real, n_synth)
+
+        if n_real > target_per_source:
+            indices = torch.randperm(n_real)[:target_per_source]
+            real_train = torch.utils.data.Subset(real_train, indices)
+        if n_synth > target_per_source:
+            indices = torch.randperm(n_synth)[:target_per_source]
+            synth_train = torch.utils.data.Subset(synth_train, indices)
+
+        self.train_dataset = torch.utils.data.ConcatDataset([real_train, synth_train])
+        self.classnames = real_dataset.classnames
+
+        # Test always on real data
+        self.test_dataset = real_dataset.test_dataset
+        self.test_loader = real_dataset.test_loader
+
+        self.train_loader = torch.utils.data.DataLoader(
+            self.train_dataset,
+            batch_size=batch_size,
+            shuffle=True,
+            num_workers=num_workers,
+            pin_memory=True,
+        )
+
+        print(f"MixedDataset: {target_per_source} real + {target_per_source} synthetic = {len(self.train_dataset)} total training samples")
 
 
 def get_synthetic_dataset(

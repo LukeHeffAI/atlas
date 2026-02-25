@@ -272,7 +272,7 @@ def train(task_vectors, args, comp_acc={}):
         with open(args.log_path, 'w') as f:
             json.dump(comp_acc, f, indent=4)
         if os.path.isfile(args.head_path):
-            heads = torch.load(args.head_path)
+            heads = torch.load(args.head_path, weights_only=False)
         else:
             heads = {}
             
@@ -397,7 +397,7 @@ def train_adapter(ddp_model, ddp_loader, args, comp_acc, which='lpp'):
             json.dump(comp_acc, f, indent=4)
             
         if os.path.isfile(args.head_path):
-            heads = torch.load(args.head_path)
+            heads = torch.load(args.head_path, weights_only=False)
         else:
             heads = {}
 

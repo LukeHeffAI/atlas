@@ -288,6 +288,36 @@ python scripts/analyze_synthetic_quality.py \
     --output synthetic_quality_comparison.pdf
 ```
 
+### Synthetic Few-Shot Adaptation
+
+Use synthetic images as training data for few-shot coefficient learning, while evaluating on real test data. This bridges the gap between zero-shot (hypernetwork) and real few-shot adaptation when real training images are unavailable.
+
+```bash
+# Few-shot with synthetic images (e.g., 4-shot on Cars)
+python src/learn_few_shots.py \
+    --model ViT-B-32 \
+    --task-vector-source synthetic \
+    --synthetic-data-location data/synthetic_images \
+    --t2i-backend stable_diffusion \
+    --blockwise-coef \
+    --subsample 4
+
+# Sweep shot counts
+for SHOT in 1 2 4 8 16; do
+    python src/learn_few_shots.py \
+        --model ViT-B-32 \
+        --task-vector-source synthetic \
+        --synthetic-data-location data/synthetic_images \
+        --t2i-backend stable_diffusion \
+        --blockwise-coef \
+        --subsample $SHOT
+done
+```
+
+**Prerequisites**: Synthetic images must be pre-generated (see [Synthetic Data Generation](#synthetic-data-generation)) at `data/synthetic_images/<backend>/<dataset>/`. Real test data is still required at `~/data/` for evaluation. Task vectors for all other datasets must exist as usual.
+
+**How it works**: When `--task-vector-source synthetic` is passed, `learn_few_shots.py` loads training images from `SyntheticDatasetWrapper` instead of the real dataset registry. The few-shot subsampling (`get_n_shots`) and evaluation (`eval_single_dataset`) operate identically to the real-data path -- only the source of training images changes.
+
 ### Evaluation
 
 Evaluate text-adapted models on held-out datasets:

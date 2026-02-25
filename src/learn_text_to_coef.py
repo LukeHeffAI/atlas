@@ -29,6 +29,7 @@ from composition import TextConditionedWeightedImageEncoder
 from datasets.registry import get_dataset
 from heads import get_classification_head
 from utils import load_text_descriptions
+from learn_few_shots import load_task_vectors
 
 
 def meta_train_episode(
@@ -148,19 +149,16 @@ def meta_train(args):
     pretrained_model = pretrained_model.cuda()
 
     # Load all task vectors
-    print("\nLoading task vectors...")
+    source = getattr(args, 'task_vector_source', 'real')
+    backend = getattr(args, 't2i_backend', 'stable_diffusion')
+    print(f"\nLoading task vectors (source={source})...")
+    all_task_vectors = load_task_vectors(args, source=source, backend=backend)
+
+    # Filter to only meta-train + meta-val datasets
     pool = args.meta_train_datasets + args.meta_val_datasets
-    task_vectors = {}
-
+    task_vectors = {k: v for k, v in all_task_vectors.items() if k in pool}
     for dataset in pool:
-        pretrained_checkpoint = f"{args.save}/{dataset}Val/zeroshot.pt"
-        finetuned_checkpoint = f"{args.save}/{dataset}Val/finetuned.pt"
-
-        if os.path.exists(pretrained_checkpoint) and os.path.exists(finetuned_checkpoint):
-            task_vectors[dataset] = NonLinearTaskVector(
-                pretrained_checkpoint,
-                finetuned_checkpoint
-            )
+        if dataset in task_vectors:
             print(f"  Loaded: {dataset}")
         else:
             print(f"  Warning: Missing checkpoints for {dataset}, skipping")
