@@ -31,6 +31,7 @@ from datasets.registry import get_dataset
 from heads import get_classification_head
 from utils import load_text_descriptions
 from eval import eval_single_dataset
+from learn_few_shots import load_task_vectors
 
 
 def evaluate_hypernetwork_approach(args):
@@ -226,6 +227,88 @@ def evaluate_synthetic_approach(args):
     return results
 
 
+def evaluate_synthetic_pool_approach(args):
+    """Evaluate hypernetwork on a fully synthetic task vector pool.
+
+    Unlike the existing 'synthetic' mode which adds a synthetic target TV to the
+    real pool, this mode replaces the entire pool with synthetic task vectors.
+
+    Args:
+        args: Parsed arguments
+
+    Returns:
+        Dictionary of results
+    """
+    print("=" * 80)
+    print("Evaluating Synthetic Pool + Hypernetwork Approach")
+    print("=" * 80)
+
+    if args.hypernetwork_checkpoint is None:
+        raise ValueError("--hypernetwork-checkpoint required for synthetic_pool approach")
+
+    # Load hypernetwork
+    print(f"Loading hypernetwork from: {args.hypernetwork_checkpoint}")
+    hypernetwork = TextToCoefHypernetwork.load(args.hypernetwork_checkpoint, device="cuda")
+    hypernetwork.eval()
+
+    # Load pretrained model
+    print("Loading pretrained model...")
+    pretrained_model = ImageEncoder(args)
+    pretrained_model = pretrained_model.cuda()
+
+    # Load synthetic task vectors (all except target)
+    backend = getattr(args, 'synthetic_backend', args.t2i_backend)
+    print(f"Loading synthetic task vectors (backend={backend})...")
+    all_synthetic_tvs = load_task_vectors(args, source="synthetic", backend=backend)
+
+    task_vectors = [v for k, v in all_synthetic_tvs.items() if k != args.dataset]
+    print(f"Loaded {len(task_vectors)} synthetic task vectors (excluding {args.dataset})")
+
+    if len(task_vectors) == 0:
+        print("Warning: No synthetic task vectors available")
+        return {}
+
+    # Load text descriptions for target dataset
+    print(f"Loading text descriptions for {args.dataset}...")
+    text_descriptions = load_text_descriptions(args.dataset, args)
+
+    # Create text-conditioned encoder with synthetic pool
+    print("Predicting coefficients from text (synthetic pool)...")
+    weighted_encoder = TextConditionedWeightedImageEncoder(
+        model=pretrained_model,
+        task_vectors=task_vectors,
+        hypernetwork=hypernetwork,
+        text_descriptions=text_descriptions,
+        text_aggregate=args.text_aggregate,
+        blockwise=args.blockwise_coef,
+    )
+
+    # Load classification head
+    classification_head = get_classification_head(args, args.dataset)
+
+    # Create classifier
+    image_classifier = ImageClassifier(weighted_encoder, classification_head)
+    image_classifier = image_classifier.cuda()
+
+    # Evaluate on real test set
+    print("\nEvaluating on real test set...")
+    results = eval_single_dataset(
+        weighted_encoder,
+        args.dataset,
+        args,
+        model=image_classifier,
+    )
+
+    print("\n" + "=" * 80)
+    print("Results:")
+    print(f"  Top-1 Accuracy: {results['top1']:.2f}%")
+    if 'top5' in results:
+        print(f"  Top-5 Accuracy: {results['top5']:.2f}%")
+    print("=" * 80)
+
+    return results
+
+
 def main():
     args = parse_arguments()
 
@@ -240,6 +323,8 @@ def main():
         results = evaluate_hypernetwork_approach(args)
     elif args.text_adaptation_mode == "synthetic":
         results = evaluate_synthetic_approach(args)
+    elif args.text_adaptation_mode == "synthetic_pool":
+        results = evaluate_synthetic_pool_approach(args)
     elif args.text_adaptation_mode == "both":
         print("Evaluating both approaches...\n")
         hyper_results = evaluate_hypernetwork_approach(args)
