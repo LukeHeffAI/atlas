@@ -75,7 +75,7 @@ class BaseHypernetwork(nn.Module, ABC):
         Returns:
             Loaded hypernetwork instance
         """
-        checkpoint = torch.load(path, map_location=device)
+        checkpoint = torch.load(path, map_location=device, weights_only=False)
         config = checkpoint['model_config']
 
         # Create instance with saved config

@@ -66,6 +66,18 @@ for SHOT in 1 2 4 8 16; do
 done
 ```
 
+**Few-Shot Adaptation with Synthetic Data:**
+```bash
+MODEL=ViT-B-32
+# Use synthetic images for training, real data for evaluation
+for SHOT in 1 2 4 8 16; do
+    python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample $SHOT \
+        --task-vector-source synthetic \
+        --synthetic-data-location data/synthetic_images \
+        --t2i-backend stable_diffusion
+done
+```
+
 **Test-Time Adaptation:**
 ```bash
 MODEL=ViT-B-32
@@ -94,6 +106,9 @@ Common arguments across scripts (see `src/args.py` for full list):
 - `--batch-size`: Batch size for training (default: 128)
 - `--lr`: Learning rate (default: 0.001)
 - `--epochs`: Number of training epochs (default: 10)
+- `--task-vector-source`: Source of training data: `real` (default), `synthetic`, or `mixed`
+- `--synthetic-data-location`: Root directory for synthetic images (default: `data/synthetic_images`)
+- `--t2i-backend`: T2I backend used for generation (default: `stable_diffusion`)
 
 ## Architecture Overview
 
@@ -138,7 +153,7 @@ Common arguments across scripts (see `src/args.py` for full list):
 
 **6. Training Scripts**
 Main experiment scripts follow the pattern `learn_*.py`:
-- `learn_few_shots.py`: Few-shot learning with task vector composition
+- `learn_few_shots.py`: Few-shot learning with task vector composition (supports `--task-vector-source synthetic` to train on synthetic images while evaluating on real data)
 - `learn_task_negation.py`: Learn coefficients for task negation
 - `learn_task_addition.py`: Learn coefficients for task addition
 - `learn_ufm.py`: Unsupervised test-time adaptation

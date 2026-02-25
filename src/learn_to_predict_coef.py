@@ -183,12 +183,12 @@ def train(task_vectors, args):
         image_encoder = LinearizedImageEncoder(args, keep_lang=False)
         image_encoder.model = LinearizedModel_(image_encoder.model, task_vectors, device=args.rank)
         if args.load is not None and args.load.endswith("pt"):
-            image_encoder.model.coef.load_state_dict(torch.load(args.load).state_dict())
+            image_encoder.model.coef.load_state_dict(torch.load(args.load, weights_only=False).state_dict())
     else:
         image_encoder = ImageEncoder(args)
         image_encoder = ImageEncoder_(image_encoder, task_vectors, device=args.rank)
         if args.load is not None and args.load.endswith("pt"):
-            image_encoder.coef.load_state_dict(torch.load(args.load).state_dict())
+            image_encoder.coef.load_state_dict(torch.load(args.load, weights_only=False).state_dict())
 
     classification_head = get_classification_head(args, test_dataset)
     model = ImageClassifier(image_encoder, classification_head)

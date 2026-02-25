@@ -112,7 +112,7 @@ def get_features(is_train, image_encoder, dataset, device):
         data = {}
         for cached_file in cached_files:
             name = os.path.splitext(os.path.basename(cached_file))[0]
-            data[name] = torch.load(cached_file)
+            data[name] = torch.load(cached_file, weights_only=False)
     else:
         print(f'Did not find cached features at {cache_dir}. Building from scratch.')
         loader = dataset.train_loader if is_train else dataset.test_loader
