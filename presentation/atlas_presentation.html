@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>aTLAS: Knowledge Composition using Task Vectors with Learned Anisotropic Scaling</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/night.css">
+<style>
+  :root {
+    --accent: #4fc3f7;
+    --accent2: #81c784;
+    --accent3: #ffb74d;
+    --accent4: #ce93d8;
+    --dim: #90a4ae;
+  }
+  .reveal { font-size: 32px; }
+  .reveal h1 { font-size: 1.6em; color: var(--accent); line-height: 1.2; }
+  .reveal h2 { font-size: 1.3em; color: var(--accent); margin-bottom: 0.5em; }
+  .reveal h3 { font-size: 1.0em; color: var(--accent2); }
+  .reveal p, .reveal li { font-size: 0.75em; line-height: 1.5; }
+  .reveal .subtitle { font-size: 0.65em; color: var(--dim); margin-top: 0.3em; }
+  .reveal .authors { font-size: 0.55em; color: #b0bec5; margin-top: 1em; }
+  .reveal .venue { font-size: 0.55em; color: var(--accent3); margin-top: 0.3em; font-style: italic; }
+  .reveal .small { font-size: 0.6em; color: var(--dim); }
+  .reveal .highlight { color: var(--accent3); font-weight: bold; }
+  .reveal .highlight-green { color: var(--accent2); font-weight: bold; }
+  .reveal .highlight-purple { color: var(--accent4); font-weight: bold; }
+  .reveal .math-block {
+    background: rgba(255,255,255,0.05);
+    border-left: 3px solid var(--accent);
+    padding: 0.5em 1em;
+    margin: 0.5em auto;
+    display: inline-block;
+    border-radius: 4px;
+    font-size: 0.85em;
+  }
+  .reveal .columns { display: flex; gap: 1.5em; align-items: flex-start; }
+  .reveal .col { flex: 1; }
+  .reveal .col-narrow { flex: 0.8; }
+
+  /* Diagram styles */
+  .diagram {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.4em; margin: 0.8em 0; flex-wrap: wrap;
+  }
+  .diagram .box {
+    padding: 0.4em 0.7em; border-radius: 6px;
+    font-size: 0.6em; font-weight: 600; text-align: center;
+    min-width: 80px;
+  }
+  .diagram .arrow {
+    font-size: 1.2em; color: var(--dim); padding: 0 0.1em;
+  }
+  .box-blue { background: rgba(79,195,247,0.15); border: 1.5px solid var(--accent); color: var(--accent); }
+  .box-green { background: rgba(129,199,132,0.15); border: 1.5px solid var(--accent2); color: var(--accent2); }
+  .box-orange { background: rgba(255,183,77,0.15); border: 1.5px solid var(--accent3); color: var(--accent3); }
+  .box-purple { background: rgba(206,147,216,0.15); border: 1.5px solid var(--accent4); color: var(--accent4); }
+  .box-dim { background: rgba(144,164,174,0.1); border: 1.5px solid var(--dim); color: var(--dim); }
+
+  /* Scaling comparison */
+  .scale-compare {
+    display: flex; gap: 2em; justify-content: center; margin: 1em 0;
+  }
+  .scale-panel {
+    text-align: center; padding: 0.8em;
+    border-radius: 8px; min-width: 180px;
+  }
+  .scale-panel h4 { font-size: 0.65em; margin-bottom: 0.5em; }
+  .bar-group { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+  .bar-row { display: flex; align-items: center; gap: 6px; width: 100%; }
+  .bar-label { font-size: 0.45em; color: var(--dim); width: 50px; text-align: right; }
+  .bar {
+    height: 14px; border-radius: 3px; transition: width 0.5s;
+  }
+  .bar-iso { background: var(--accent3); }
+  .bar-aniso { background: var(--accent2); }
+
+  /* Results grid */
+  .results-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0.6em; margin: 0.6em 0;
+  }
+  .result-card {
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px; padding: 0.6em 0.8em;
+    border-left: 3px solid var(--accent);
+    text-align: left;
+  }
+  .result-card h4 { font-size: 0.6em; margin: 0 0 0.2em 0; color: var(--accent); }
+  .result-card p { font-size: 0.5em; margin: 0; color: #cfd8dc; line-height: 1.4; }
+  .result-card .script { font-size: 0.42em; color: var(--accent3); font-family: monospace; margin-top: 0.3em; }
+  .result-card:nth-child(2) { border-left-color: var(--accent2); }
+  .result-card:nth-child(2) h4 { color: var(--accent2); }
+  .result-card:nth-child(3) { border-left-color: var(--accent3); }
+  .result-card:nth-child(3) h4 { color: var(--accent3); }
+  .result-card:nth-child(4) { border-left-color: var(--accent4); }
+  .result-card:nth-child(4) h4 { color: var(--accent4); }
+
+  /* Roadmap */
+  .roadmap {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.5em;
+    margin: 0.5em 0;
+  }
+  .roadmap-item {
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px; padding: 0.5em 0.7em;
+    display: flex; align-items: flex-start; gap: 0.5em;
+  }
+  .roadmap-item .badge {
+    font-size: 0.4em; padding: 0.2em 0.5em; border-radius: 3px;
+    font-weight: 700; white-space: nowrap; margin-top: 0.1em;
+  }
+  .badge-high { background: rgba(129,199,132,0.2); color: var(--accent2); }
+  .badge-med { background: rgba(255,183,77,0.2); color: var(--accent3); }
+  .badge-low { background: rgba(144,164,174,0.2); color: var(--dim); }
+  .roadmap-item .rm-text h4 { font-size: 0.55em; margin: 0; color: #eceff1; }
+  .roadmap-item .rm-text p { font-size: 0.42em; margin: 0.15em 0 0 0; color: #90a4ae; }
+
+  /* Pipeline diagram */
+  .pipeline {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.3em; margin: 0.8em 0;
+  }
+  .pipeline .step {
+    display: flex; flex-direction: column; align-items: center; gap: 0.2em;
+  }
+  .pipeline .step-box {
+    padding: 0.4em 0.6em; border-radius: 6px;
+    font-size: 0.5em; font-weight: 600; text-align: center;
+    min-width: 90px; line-height: 1.3;
+  }
+  .pipeline .step-label {
+    font-size: 0.38em; color: var(--dim); max-width: 100px; text-align: center;
+  }
+  .pipeline .parrow { font-size: 1em; color: var(--dim); }
+
+  /* Summary boxes */
+  .summary-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.8em;
+    margin: 0.8em 0;
+  }
+  .summary-card {
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px; padding: 0.8em;
+    text-align: center; border-top: 3px solid var(--accent);
+  }
+  .summary-card:nth-child(2) { border-top-color: var(--accent2); }
+  .summary-card:nth-child(3) { border-top-color: var(--accent3); }
+  .summary-card h4 { font-size: 0.6em; margin: 0 0 0.3em 0; }
+  .summary-card p { font-size: 0.48em; color: #b0bec5; margin: 0; line-height: 1.4; }
+  .summary-card:nth-child(1) h4 { color: var(--accent); }
+  .summary-card:nth-child(2) h4 { color: var(--accent2); }
+  .summary-card:nth-child(3) h4 { color: var(--accent3); }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============================================================ -->
+<!-- SLIDE 1: TITLE -->
+<!-- ============================================================ -->
+<section>
+  <h1 style="font-size:1.3em;">aTLAS</h1>
+  <p class="subtitle" style="font-size:0.7em;">
+    Knowledge Composition using Task Vectors<br>with Learned Anisotropic Scaling
+  </p>
+  <p class="authors">
+    Frederic Z. Zhang &middot; Paul Albert &middot; Cristian Rodriguez-Opazo<br>
+    Anton van den Hengel &middot; Ehsan Abbasnejad
+  </p>
+  <p class="venue">NeurIPS 2024 &nbsp;|&nbsp; + Text-Based Zero-Shot Extension</p>
+  <p class="small" style="margin-top: 2em;">
+    Australian Institute for Machine Learning
+  </p>
+  <aside class="notes">
+    Welcome everyone. Today I'll present aTLAS — our NeurIPS 2024 work on composing
+    knowledge from pre-trained models using task vectors with learned anisotropic scaling.
+    I'll also cover our recent extension for text-based zero-shot adaptation and
+    where we're headed next. This should be about 10 minutes — I'll leave time
+    for discussion at the end.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 2: BACKGROUND — TASK VECTORS -->
+<!-- ============================================================ -->
+<section>
+  <h2>Background: Task Vectors</h2>
+
+  <div class="diagram">
+    <div class="box box-blue">Pretrained<br>&theta;<sub>0</sub></div>
+    <div class="arrow">&xrarr;</div>
+    <div class="box box-green">Fine-tuned<br>&theta;<sub>ft</sub></div>
+    <div class="arrow">&xrarr;</div>
+    <div class="box box-orange">Task Vector<br>&tau; = &theta;<sub>ft</sub> &minus; &theta;<sub>0</sub></div>
+  </div>
+
+  <div class="columns" style="margin-top: 0.6em;">
+    <div class="col">
+      <h3>Task Arithmetic</h3>
+      <ul>
+        <li><span class="highlight-green">Add</span> vectors &rarr; combine skills</li>
+        <li><span class="highlight">Negate</span> vectors &rarr; remove knowledge</li>
+        <li><span class="highlight-purple">Scale</span> vectors &rarr; control influence</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>The Problem</h3>
+      <p>Prior work uses a <span class="highlight">single scalar</span> &alpha; for the entire task vector:</p>
+      <div class="math-block">
+        &theta; = &theta;<sub>0</sub> + &alpha; &middot; &tau;
+      </div>
+      <p class="small" style="margin-top:0.3em;">
+        All parameter blocks treated equally &mdash;<br>but they have different roles per task!
+      </p>
+    </div>
+  </div>
+
+  <aside class="notes">
+    Quick background: A task vector is simply the difference between a fine-tuned model
+    and its pretrained initialization. Ilharco et al. (2022) showed you can do arithmetic
+    on these vectors — add them to combine tasks, negate to remove knowledge.
+
+    But the standard approach uses a single scalar alpha to scale the entire vector.
+    This is isotropic — every layer, every attention head, every parameter block gets
+    the same weight. Intuitively that's suboptimal: attention layers and MLP layers
+    play very different roles for different tasks.
+
+    Implementation: see src/task_vectors.py — NonLinearTaskVector and LinearizedTaskVector
+    classes support all arithmetic operations.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 3: aTLAS — THE METHOD -->
+<!-- ============================================================ -->
+<section>
+  <h2>aTLAS: Anisotropic Scaling</h2>
+
+  <p style="font-size:0.65em; margin-bottom: 0.3em;">
+    <span class="highlight-green">Key idea:</span> Learn a
+    <span class="highlight">different coefficient per parameter block</span>
+  </p>
+
+  <div class="math-block" style="font-size: 0.9em;">
+    &theta; = &theta;<sub>0</sub> + &sum;<sub>i</sub>
+    <strong>&Lambda;</strong><sub>i</sub> &tau;<sub>i</sub>
+    &nbsp;&nbsp; where &Lambda;<sub>i</sub> = diag(&alpha;<sub>i,1</sub>, &hellip;, &alpha;<sub>i,B</sub>)
+  </div>
+
+  <div class="scale-compare">
+    <div class="scale-panel" style="background: rgba(255,183,77,0.06); border: 1px solid rgba(255,183,77,0.2);">
+      <h4 style="color: var(--accent3);">Isotropic (Prior Work)</h4>
+      <div class="bar-group">
+        <div class="bar-row"><span class="bar-label">Attn Q</span><div class="bar bar-iso" style="width:60%;"></div></div>
+        <div class="bar-row"><span class="bar-label">Attn K</span><div class="bar bar-iso" style="width:60%;"></div></div>
+        <div class="bar-row"><span class="bar-label">MLP 1</span><div class="bar bar-iso" style="width:60%;"></div></div>
+        <div class="bar-row"><span class="bar-label">MLP 2</span><div class="bar bar-iso" style="width:60%;"></div></div>
+        <div class="bar-row"><span class="bar-label">LN</span><div class="bar bar-iso" style="width:60%;"></div></div>
+      </div>
+      <p class="small" style="margin-top:0.4em;">1 parameter per task</p>
+    </div>
+    <div class="scale-panel" style="background: rgba(129,199,132,0.06); border: 1px solid rgba(129,199,132,0.2);">
+      <h4 style="color: var(--accent2);">Anisotropic (aTLAS)</h4>
+      <div class="bar-group">
+        <div class="bar-row"><span class="bar-label">Attn Q</span><div class="bar bar-aniso" style="width:85%;"></div></div>
+        <div class="bar-row"><span class="bar-label">Attn K</span><div class="bar bar-aniso" style="width:30%;"></div></div>
+        <div class="bar-row"><span class="bar-label">MLP 1</span><div class="bar bar-aniso" style="width:95%;"></div></div>
+        <div class="bar-row"><span class="bar-label">MLP 2</span><div class="bar bar-aniso" style="width:50%;"></div></div>
+        <div class="bar-row"><span class="bar-label">LN</span><div class="bar bar-aniso" style="width:15%;"></div></div>
+      </div>
+      <p class="small" style="margin-top:0.4em;">~100 parameters per task</p>
+    </div>
+  </div>
+
+  <p style="font-size: 0.55em; color: var(--dim);">
+    Variants: <strong>Blockwise</strong> (1 coef/block) &nbsp;|&nbsp;
+    <strong>Partitioned</strong> (aTLAS &times; K: K coefs/block) &nbsp;|&nbsp;
+    <strong>Linearized</strong> (convex optimization via Taylor approx.)
+  </p>
+
+  <aside class="notes">
+    Here's the core contribution. Instead of one scalar, aTLAS learns a diagonal matrix
+    Lambda per task vector — effectively one coefficient per parameter block.
+
+    For ViT-B/32 that's about 97 blocks, so roughly 100 learnable parameters per task.
+    Compare that to millions for full fine-tuning. This exploits the low intrinsic
+    dimensionality of pre-trained models.
+
+    The bar chart illustrates the difference: isotropic scaling applies the same weight
+    everywhere, while anisotropic scaling lets the model emphasize MLP layers over
+    attention keys, for example — whatever the task demands.
+
+    We also have aTLAS x K, where each block is further partitioned into K sub-groups
+    for more expressiveness (src/composition.py, see the partition parameter).
+
+    For the linearized variant, we use a first-order Taylor approximation
+    (src/linearize.py) which makes the coefficient optimization convex.
+
+    Core implementation: src/composition.py — WeightedImageEncoder class, line 52.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 4: KEY RESULTS -->
+<!-- ============================================================ -->
+<section>
+  <h2>Key Results (NeurIPS Paper)</h2>
+
+  <div class="results-grid">
+    <div class="result-card">
+      <h4>Task Negation</h4>
+      <p>Remove unwanted task knowledge while preserving target performance. Blockwise coefficients enable selective removal.</p>
+      <div class="script">src/learn_task_negation.py --blockwise-coef</div>
+    </div>
+    <div class="result-card">
+      <h4>Task Addition</h4>
+      <p>Compose multiple task vectors into a single multi-task model. Anisotropic scaling reduces inter-task interference.</p>
+      <div class="script">src/learn_task_addition.py --blockwise-coef</div>
+    </div>
+    <div class="result-card">
+      <h4>Few-Shot Adaptation</h4>
+      <p>With only 1&ndash;16 shots, learning ~100 coefficients generalizes better than fine-tuning millions of parameters.</p>
+      <div class="script">src/learn_few_shots.py --blockwise-coef --subsample K</div>
+    </div>
+    <div class="result-card">
+      <h4>Test-Time Adaptation</h4>
+      <p>Unsupervised adaptation using pseudo-label consistency (UFM). Coefficients adapt to domain shift at test time.</p>
+      <div class="script">src/learn_ufm.py --blockwise-coef</div>
+    </div>
+  </div>
+
+  <p style="font-size: 0.55em; margin-top: 0.4em;">
+    <span class="highlight-green">Takeaway:</span>
+    Blockwise coefficients &rarr; less interference, better data efficiency, ~100 params vs. millions
+  </p>
+
+  <aside class="notes">
+    The paper demonstrates aTLAS across four settings, all using CLIP models
+    (ViT-B/32, ViT-B/16, ViT-L/14, RN50, RN101) on 22 diverse datasets.
+
+    1. Task negation: Learn to subtract interfering knowledge. E.g., improve ImageNet
+       performance by negating MNIST-related features. Run:
+       python src/learn_task_negation.py --model=ViT-B-32 --blockwise-coef
+       Results saved to: checkpoints/ViT-B-32/learned_negations.json
+
+    2. Task addition: Combine multiple tasks. Learned coefficients consistently
+       outperform uniform scaling. Run:
+       python src/learn_task_addition.py --model=ViT-B-32 --blockwise-coef
+       Results: checkpoints/ViT-B-32/learned_additions.json
+
+    3. Few-shot: This is where aTLAS really shines. With 1-shot data, learning
+       only ~100 coefficients avoids overfitting that plagues full fine-tuning.
+       Supports adapters too (--adapter tip or --adapter lpp).
+       for SHOT in 1 2 4 8 16; do
+         python src/learn_few_shots.py --model=ViT-B-32 --blockwise-coef --subsample $SHOT
+       done
+
+    4. Test-time adaptation: Uses unsupervised FixMatch loss on test data.
+       python src/learn_ufm.py --model=ViT-B-32 --blockwise-coef
+
+    To regenerate all results: ./scripts/run_all_experiments.sh ViT-B-32
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 5: TEXT-BASED EXTENSION -->
+<!-- ============================================================ -->
+<section>
+  <h2>Extension: Text-Based Zero-Shot Adaptation</h2>
+
+  <p style="font-size: 0.6em; margin-bottom: 0.4em;">
+    <span class="highlight">Can we adapt without <em>any</em> task-specific images?</span>
+    &mdash; Predict aTLAS coefficients from text descriptions alone.
+  </p>
+
+  <div class="pipeline">
+    <div class="step">
+      <div class="step-box box-orange">Text<br>Descriptions</div>
+      <div class="step-label">"a photo of a flower in bloom"</div>
+    </div>
+    <div class="parrow">&rarr;</div>
+    <div class="step">
+      <div class="step-box box-blue">CLIP Text<br>Encoder</div>
+      <div class="step-label">frozen</div>
+    </div>
+    <div class="parrow">&rarr;</div>
+    <div class="step">
+      <div class="step-box box-purple">MLP<br>Hypernetwork</div>
+      <div class="step-label">learnable</div>
+    </div>
+    <div class="parrow">&rarr;</div>
+    <div class="step">
+      <div class="step-box box-green">&Lambda;<sub>1</sub>, &hellip;, &Lambda;<sub>n</sub><br>Coefficients</div>
+      <div class="step-label">blockwise</div>
+    </div>
+    <div class="parrow">&rarr;</div>
+    <div class="step">
+      <div class="step-box box-dim">Composed<br>Model</div>
+      <div class="step-label">&theta;<sub>0</sub> + &sum;&Lambda;<sub>i</sub>&tau;<sub>i</sub></div>
+    </div>
+  </div>
+
+  <div class="columns" style="margin-top: 0.4em;">
+    <div class="col">
+      <h3>Meta-Training</h3>
+      <ul style="font-size: 0.9em;">
+        <li>Episode-based: sample task &rarr; predict coefficients from text &rarr; evaluate &rarr; backprop</li>
+        <li>Train on diverse tasks (CIFAR10, EuroSAT, DTD, ...)</li>
+        <li>Validate on held-out tasks (Caltech101, Flowers102)</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Text Sources</h3>
+      <ul style="font-size: 0.9em;">
+        <li><strong>Manual</strong> &mdash; human-written descriptions</li>
+        <li><strong>Generated</strong> &mdash; GPT-4o / Claude</li>
+        <li><strong>Templates</strong> &mdash; CLIP-style prompts</li>
+      </ul>
+      <p class="small">+ Synthetic images via Stable Diffusion / DALL-E</p>
+    </div>
+  </div>
+
+  <aside class="notes">
+    This is our new extension beyond the original paper. The question: can we skip
+    the need for task-specific images entirely?
+
+    The answer is a hypernetwork that maps text descriptions to aTLAS coefficients.
+    The pipeline: text descriptions go through a frozen CLIP text encoder, then an
+    MLP predicts the blockwise coefficients, which are applied to compose task vectors.
+
+    Meta-training uses an episode-based approach — each episode samples a random
+    task, predicts coefficients from its text descriptions, evaluates on a validation
+    split, and backpropagates the loss through the hypernetwork.
+
+    We support three text sources:
+    - Manual descriptions (data/text_descriptions/manual/)
+    - LLM-generated (python -m src.text_descriptions.generators --llm gpt4o)
+    - CLIP-style templates (automatic)
+
+    Plus a complementary synthetic data approach using Stable Diffusion or DALL-E
+    to generate images from text, then creating synthetic task vectors.
+
+    Key files:
+    - Hypernetwork: src/hypernetworks/text_to_coef.py
+    - Meta-training: src/learn_text_to_coef.py
+    - Evaluation: src/eval_text_adaptation.py
+    - Text loaders: src/text_descriptions/loaders.py
+    - T2I backends: src/text2image/
+
+    To meta-train:
+    python src/learn_text_to_coef.py \
+      --model ViT-B-32 --hypernetwork-arch medium \
+      --meta-train-datasets CIFAR10,EuroSAT,DTD,GTSRB,SVHN,Food101 \
+      --meta-val-datasets Caltech101,Flowers102 \
+      --meta-epochs 50 --episodes-per-epoch 10 --blockwise-coef
+
+    To evaluate:
+    python src/eval_text_adaptation.py \
+      --model ViT-B-32 --dataset Flowers102 --approach hypernetwork \
+      --hypernetwork-checkpoint checkpoints/ViT-B-32/hypernetworks/text_to_coef/meta_trained.pt
+
+    For ablation analysis:
+    - python scripts/analyze_hypernetwork_size.py (architecture comparison)
+    - python scripts/analyze_text_ablation.py (text source comparison)
+    - python scripts/analyze_synthetic_quality.py (synthetic image quality)
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 6: FUTURE DIRECTIONS -->
+<!-- ============================================================ -->
+<section>
+  <h2>Research Directions</h2>
+
+  <div class="roadmap">
+    <div class="roadmap-item">
+      <div><span class="badge badge-high">HIGH</span></div>
+      <div class="rm-text">
+        <h4>Ablation Studies</h4>
+        <p>Text sources, T2I backends, hypernetwork architectures. Systematic benchmarking across all configurations.</p>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div><span class="badge badge-high">HIGH</span></div>
+      <div class="rm-text">
+        <h4>Multi-Modal Hypernetwork</h4>
+        <p>Text + few example images &rarr; coefficients. Bridges zero-shot and few-shot adaptation.</p>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div><span class="badge badge-med">MED</span></div>
+      <div class="rm-text">
+        <h4>Full LoRA Prediction</h4>
+        <p>Predict weight matrices (not just scalars). Higher expressiveness for complex tasks.</p>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div><span class="badge badge-med">MED</span></div>
+      <div class="rm-text">
+        <h4>Cross-Model Transfer</h4>
+        <p>Meta-train on ViT-B/32, transfer to ViT-L/14 or RN50. Architecture-agnostic coefficient prediction.</p>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div><span class="badge badge-med">MED</span></div>
+      <div class="rm-text">
+        <h4>Domain Adaptation</h4>
+        <p>Medical imaging, satellite, microscopy. Domain-specific text encoders and synthetic data pipelines.</p>
+      </div>
+    </div>
+    <div class="roadmap-item">
+      <div><span class="badge badge-low">LATER</span></div>
+      <div class="rm-text">
+        <h4>Task Composition</h4>
+        <p>Compose text descriptions: "sparrow" + "brown" + "urban" &rarr; house sparrow. Fine-grained concept composition.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="small" style="margin-top: 0.3em;">Full details: <code>EXTENSION_ROADMAP.md</code></p>
+
+  <aside class="notes">
+    Here's where we're headed. Full details are in EXTENSION_ROADMAP.md.
+
+    HIGH PRIORITY (next 3 months):
+    1. Ablation studies — we need systematic comparison of text sources (manual vs
+       LLM-generated vs templates), T2I backends (SD vs DALL-E), and hypernetwork
+       architectures (small/medium/large). Analysis scripts already exist in scripts/.
+
+    2. Multi-modal hypernetwork — the most exciting near-term direction. Instead of
+       text-only, combine text descriptions with a few example images. This bridges
+       the gap between our zero-shot text approach and standard few-shot learning.
+       Expected +15-25% improvement on few-shot scenarios.
+       Planned file: src/hypernetworks/multimodal_to_coef.py
+
+    MEDIUM PRIORITY (6 months):
+    3. Full LoRA prediction — instead of predicting scalar coefficients, predict
+       full low-rank weight matrices. Much more expressive but harder to train.
+       Expected +10-20% on complex tasks.
+       Planned file: src/hypernetworks/text_to_lora.py
+
+    4. Cross-model generalization — can we train the hypernetwork on ViT-B/32 and
+       have it transfer to completely different architectures? This requires an
+       architecture-agnostic representation of coefficient importance.
+
+    5. Domain adaptation — applying aTLAS to specialized domains like medical imaging
+       (privacy constraints, fine-grained), satellite (large images, temporal),
+       and microscopy (novel organisms, tiny datasets).
+
+    LOWER PRIORITY (1 year):
+    6. Task composition — compose multiple text concepts for fine-grained tasks.
+       E.g., combine "bird type", "color", "habitat" descriptions to target
+       specific species. Uses compositional text encoders.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- SLIDE 7: SUMMARY -->
+<!-- ============================================================ -->
+<section>
+  <h2>Summary</h2>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <h4>NeurIPS 2024</h4>
+      <p>
+        Learned <strong>anisotropic scaling</strong> for task vector composition.
+        ~100 parameters per task. Less interference, better data efficiency across
+        negation, addition, few-shot, and TTA.
+      </p>
+    </div>
+    <div class="summary-card">
+      <h4>Text-Based Extension</h4>
+      <p>
+        <strong>Hypernetwork</strong> predicts aTLAS coefficients from text descriptions alone.
+        Meta-learned across diverse tasks. Zero images required for adaptation.
+      </p>
+    </div>
+    <div class="summary-card">
+      <h4>What's Next</h4>
+      <p>
+        Multi-modal fusion (text + images), LoRA prediction, cross-architecture
+        transfer, and domain-specific adaptation for medical/satellite/microscopy.
+      </p>
+    </div>
+  </div>
+
+  <div style="margin-top: 1.2em;">
+    <p style="font-size: 0.6em; color: var(--dim);">
+      Paper: <a href="http://arxiv.org/abs/2407.02880" style="color: var(--accent);">arxiv.org/abs/2407.02880</a>
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      Roadmap: <code style="color: var(--accent3);">EXTENSION_ROADMAP.md</code>
+    </p>
+    <p style="font-size: 0.7em; margin-top: 0.8em; color: #eceff1;">
+      Questions &amp; Discussion
+    </p>
+  </div>
+
+  <aside class="notes">
+    To wrap up:
+
+    1. The original NeurIPS paper showed that learning different coefficients per
+       parameter block — anisotropic scaling — is a simple but powerful idea for
+       task vector composition. Only ~100 learnable parameters, works across
+       four different settings.
+
+    2. Our extension removes the need for task-specific images entirely by using
+       a hypernetwork to predict coefficients from text descriptions.
+
+    3. The roadmap has exciting directions — multi-modal fusion is the most
+       promising near-term, and LoRA prediction could be a significant step up
+       in expressiveness.
+
+    Happy to take questions. Some discussion prompts:
+    - How well do you think the text-only approach can compete with few-shot?
+    - Which future direction seems most impactful?
+    - Should we prioritize LoRA prediction or multi-modal fusion?
+    - Thoughts on domain adaptation — which domain should we target first?
+  </aside>
+</section>
+
+</div><!-- /slides -->
+</div><!-- /reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  width: 1280,
+  height: 720,
+  margin: 0.06,
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  plugins: [RevealNotes]
+});
+</script>
+</body>
+</html>
