@@ -19,6 +19,16 @@ def int_or_float(value):
         return float(value)
     return int(value)
 
+def int_or_float_list(value):
+    """Parse a single int/float or a comma-separated list of int/floats.
+ 
+    Returns a scalar for single values (backward compatible) or a list for
+    comma-separated values (e.g. '1,2,4,8,16').
+    """
+    if ',' in value:
+        return [int_or_float(v.strip()) for v in value.split(',')]
+    return int_or_float(value)
+
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -62,9 +72,10 @@ def parse_arguments():
     parser.add_argument(
         "--subsample",
         default=1.0,
-        type=int_or_float,
-        help="Subsample the datasets with a float or specify the number of shots with an integer."
-    )
+        type=int_or_float_list,
+        help="Subsample the datasets with a float or specify the number of shots with an integer. "
+            "Supports comma-separated values (e.g. 1,2,4,8,16) to run multiple shot settings in one invocation."
+        )
     parser.add_argument(
         "--control-threshold",
         default=0.95,

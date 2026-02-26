@@ -9,6 +9,7 @@ Australian Institute for Machine Learning
 """
 
 import os
+import copy
 import time
 import json
 import torch
@@ -28,9 +29,9 @@ from src.datasets.common import get_dataloader, maybe_dictionarize
 from src.distributed import cleanup_ddp, distribute_loader, is_main_process, setup_ddp
 
 DATASET_POOL = [
-    "Cars", "DTD", "EuroSAT", "GTSRB", "MNIST", "RESISC45", "SUN397", "SVHN",
-    "CIFAR10", "CIFAR100", "ImageNet", "STL10", "Food101", "Caltech101", "Caltech256",
-    "FGVCAircraft", "Flowers102", "OxfordIIITPet", "CUB200", "PascalVOC", "Country211", "UCF101",
+    "Cars", "DTD", "EuroSAT", "GTSRB", "MNIST", "RESISC45", "SVHN", "CIFAR10", "CIFAR100",
+    "STL10", "Food101", "Caltech101", "Caltech256", "FGVCAircraft", "Flowers102",
+    "OxfordIIITPet", "CUB200", "PascalVOC", "Country211", "UCF101", "SUN397", "ImageNet"
 ]
 
 # DATASET_POOL = [
@@ -63,79 +64,8 @@ def load_task_vectors(args, source="real", backend="stable_diffusion"):
             print(f"Warning: Missing checkpoint for {dataset} (source={source}), skipping")
     return task_vectors
 
-
-@torch.jit.script
-def softmax_entropy(x: torch.Tensor) -> torch.Tensor:
-    """Entropy of softmax distribution from logits."""
-    return -(x.softmax(1) * x.log_softmax(1)).sum(1)
-
-def main(rank, args):
-    # Load the individual task vectors.
-    task_vectors = load_task_vectors(args, source="real")
-
-    args.rank = rank
-    if os.path.exists(args.log_path):
-        with open(args.log_path, 'r') as f:
-            all_results = json.load(f)
-    else:
-        all_results = {}
-
-    shot_key = f"{args.subsample}_shot"
-    data_amount = f"{args.subsample} shots"
-
-    comp_acc = all_results.get(shot_key, {})
-
-    for dataset, epochs in args.target_datasets.items():
-        args.target_dataset = dataset + "Val"
-        args.epochs = epochs
-        if os.path.isfile(os.path.join(f"{args.save}/{dataset}Val/", "zeroshot_accuracies.json")):
-            with open(os.path.join(f"{args.save}/{dataset}Val/", "zeroshot_accuracies.json"), 'r') as f:
-                args.zs_acc = json.load(f)
-            comp_acc[f"{dataset}Val_zeroshot"] = args.zs_acc[f"{dataset}Val"]
-        else:
-            if not hasattr(args, 'zs_acc'):
-                args.zs_acc = {}
-
-        print("=" * 100)
-        print(f"Learning task vector coefficients on {dataset} with {args.model} - {data_amount}")
-        print("=" * 100)
-
-        comp_acc = train(task_vectors, args, comp_acc)
-        all_results[shot_key] = comp_acc
-
-def train(task_vectors, args, comp_acc={}):
-
-    setup_ddp(args.rank, args.world_size, port=args.port)
-    target_dataset = args.target_dataset
-
-    assert args.finetuning_mode in [
-        "linear",
-        "standard",
-    ], "Only linear and standard fine-tuning are supported."
-
-    orig_dataset = target_dataset.replace("Val", "")
-    # Remove the task vector for the target task
-    task_vectors = [v for k, v in task_vectors.items() if orig_dataset != k]
-
-    image_encoder = ImageEncoder(args)
-    image_encoder = WeightedImageEncoder(
-        image_encoder, task_vectors, blockwise=args.blockwise_coef, partition=args.partition,
-    )
-
-    classification_head = get_classification_head(args, target_dataset)
-    model = ImageClassifier(image_encoder, classification_head)
-
-    model.freeze_head()
-    model = model.cuda()
-
-    # TIP's more aggressive random crop with horizontal flip
-    preprocess_fn = torchvision.transforms.Compose([
-        torchvision.transforms.RandomResizedCrop(
-            size=224, scale=(0.5, 1),
-            interpolation=torchvision.transforms.InterpolationMode.BICUBIC
-        ), torchvision.transforms.RandomHorizontalFlip(p=0.5),
-    ] + model.train_preprocess.transforms[-3:])
-    
+def _load_dataset_for_training(args, preprocess_fn, target_dataset, orig_dataset):
+    """Load the training dataset based on the task vector source."""
     source = getattr(args, 'task_vector_source', 'real')
     if source == 'synthetic':
         from src.datasets.synthetic import SyntheticDatasetWrapper
@@ -173,6 +103,150 @@ def train(task_vectors, args, comp_acc={}):
             batch_size=args.batch_size,
             num_workers=8,
         )
+    return dataset
+
+@torch.jit.script
+def softmax_entropy(x: torch.Tensor) -> torch.Tensor:
+    """Entropy of softmax distribution from logits."""
+    return -(x.softmax(1) * x.log_softmax(1)).sum(1)
+
+def main(rank, args):
+    # Load the individual task vectors.
+    task_vectors = load_task_vectors(args, source="real")
+
+    args.rank = rank
+
+    # Normalize subsample to a list of shot values.
+    subsample_values = args.subsample if isinstance(args.subsample, list) else [args.subsample]
+ 
+    # Cache a base ImageEncoder loaded from OpenCLIP once.
+    # Each training run will deepcopy this instead of reloading from disk.
+    base_image_encoder = ImageEncoder(args)
+
+    # Build the training preprocess transform (depends only on model, not dataset).
+    preprocess_fn = torchvision.transforms.Compose([
+        torchvision.transforms.RandomResizedCrop(
+            size=224, scale=(0.5, 1),
+            interpolation=torchvision.transforms.InterpolationMode.BICUBIC
+        ), torchvision.transforms.RandomHorizontalFlip(p=0.5),
+    ] + base_image_encoder.train_preprocess.transforms[-3:])
+
+    for dataset, epochs in args.target_datasets.items():
+        args.target_dataset = dataset + "Val"
+        args.epochs = epochs
+        target_dataset = args.target_dataset
+        orig_dataset = dataset
+ 
+        # --- Per-dataset caching: load these expensive resources once ---
+ 
+        # Cache the classification head for this dataset.
+        cached_classification_head = get_classification_head(args, target_dataset)
+ 
+        # Cache the training dataset for this target.
+        cached_dataset = _load_dataset_for_training(
+            args, preprocess_fn, target_dataset, orig_dataset,
+        )
+ 
+        # Load zero-shot accuracy once per dataset (if file exists).
+        zs_acc_path = os.path.join(f"{args.save}/{dataset}Val/", "zeroshot_accuracies.json")
+        if os.path.isfile(zs_acc_path):
+            with open(zs_acc_path, 'r') as f:
+                args.zs_acc = json.load(f)
+        else:
+            if not hasattr(args, 'zs_acc'):
+                args.zs_acc = {}
+
+        cached_resources = {
+            'image_encoder': base_image_encoder,
+            'classification_head': cached_classification_head,
+            'dataset': cached_dataset,
+        }
+
+        # --- Inner loop: iterate over shot values for this dataset ---
+        for subsample in subsample_values:
+            args.subsample = subsample
+            shot_key = f"{subsample}_shot"
+            data_amount = f"{subsample} shots"
+            args.head_path = os.path.join(args.logdir, f"learned_composition_{shot_key}.pt")
+ 
+            # Load accumulated results for this shot setting.
+            if os.path.exists(args.log_path):
+                with open(args.log_path, 'r') as f:
+                    all_results = json.load(f)
+            else:
+                all_results = {}
+
+            comp_acc = all_results.get(shot_key, {})
+ 
+            # Carry over zero-shot accuracy if already known.
+            if os.path.isfile(zs_acc_path):
+                comp_acc[f"{dataset}Val_zeroshot"] = args.zs_acc[f"{dataset}Val"]
+ 
+            print("=" * 100)
+            print(f"Learning task vector coefficients on {dataset} with {args.model} - {data_amount}")
+            print("=" * 100)
+ 
+            comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+            all_results[shot_key] = comp_acc
+ 
+def train(task_vectors, args, comp_acc={}, cached_resources=None):
+    """Train task vector coefficients for a single dataset and shot setting.
+ 
+    Args:
+        task_vectors: Dict mapping dataset names to NonLinearTaskVector objects.
+        args: Parsed arguments.
+        comp_acc: Dict accumulating accuracy results for the current shot setting.
+        cached_resources: Optional dict with pre-loaded resources to avoid redundant I/O:
+            - 'image_encoder': Base ImageEncoder (will be deepcopied)
+            - 'classification_head': Pre-loaded classification head
+            - 'dataset': Pre-loaded dataset object
+    """
+
+    setup_ddp(args.rank, args.world_size, port=args.port)
+    target_dataset = args.target_dataset
+
+    assert args.finetuning_mode in [
+        "linear",
+        "standard",
+    ], "Only linear and standard fine-tuning are supported."
+
+    orig_dataset = target_dataset.replace("Val", "")
+    # Remove the task vector for the target task
+    task_vectors = [v for k, v in task_vectors.items() if orig_dataset != k]
+
+    # Use cached ImageEncoder (deepcopy) or load fresh from disk.
+    if cached_resources is not None:
+        image_encoder = copy.deepcopy(cached_resources['image_encoder'])
+    else:
+        image_encoder = ImageEncoder(args)
+
+    image_encoder = WeightedImageEncoder(
+        image_encoder, task_vectors, blockwise=args.blockwise_coef, partition=args.partition,
+    )
+
+    # Use cached classification head or load fresh.
+    if cached_resources is not None:
+        classification_head = cached_resources['classification_head']
+    else:
+        classification_head = get_classification_head(args, target_dataset)
+    model = ImageClassifier(image_encoder, classification_head)
+
+    model.freeze_head()
+    model = model.cuda()
+
+    # Use cached dataset or load fresh.
+    if cached_resources is not None:
+        dataset = cached_resources['dataset']
+    else:
+        # TIP's more aggressive random crop with horizontal flip
+        preprocess_fn = torchvision.transforms.Compose([
+            torchvision.transforms.RandomResizedCrop(
+                size=224, scale=(0.5, 1),
+                interpolation=torchvision.transforms.InterpolationMode.BICUBIC
+            ), torchvision.transforms.RandomHorizontalFlip(p=0.5),
+        ] + model.train_preprocess.transforms[-3:])
+ 
+        dataset = _load_dataset_for_training(args, preprocess_fn, target_dataset, orig_dataset)
 
     if os.path.isfile(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt") and args.seed == 1:
         to_keep = torch.load(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt", weights_only=False)
@@ -220,7 +294,7 @@ def train(task_vectors, args, comp_acc={}):
         args.epochs * num_batches // args.num_grad_accumulation,
     )
 
-    scaler = GradScaler()    
+    scaler = GradScaler()
     if is_main_process():
         if f"{target_dataset}_zeroshot" not in comp_acc.keys():
             comp_acc[f"{target_dataset}_zeroshot"] = eval_single_dataset(image_encoder, target_dataset.replace('Val',''), args)["top1"]
@@ -456,28 +530,28 @@ def train_adapter(ddp_model, ddp_loader, args, comp_acc, which='lpp'):
 if __name__ == "__main__":
 
     target_datasets = {
-        "Cars": 35,
-        "DTD": 76,
-        "EuroSAT": 13,
-        "GTSRB": 11,
-        "MNIST": 5,
-        "RESISC45": 15,
-        "SUN397": 14,
-        "SVHN": 4,
-        "CIFAR10": 5,
-        "CIFAR100": 6,
-        "ImageNet": 10,
-        "STL10": 4,
-        "Food101": 15,
-        "Caltech256": 8,
-        "FGVCAircraft": 60,
-        "Flowers102": 40,
-        "OxfordIIITPet": 5,
-        "CUB200": 20,
-        "PascalVOC": 10,
-        "Country211": 15,
-        "UCF101": 20,
-        "Caltech101":10,
+        # "Cars": 35,
+        # "DTD": 76,
+        # "EuroSAT": 13,
+        # "GTSRB": 11,
+        # "MNIST": 5,
+        # "RESISC45": 15,
+        # "SVHN": 4,
+        # "CIFAR10": 5,
+        # "CIFAR100": 6,
+        # "STL10": 4,
+        # "Food101": 15,
+        # "Caltech256": 8,
+        # "FGVCAircraft": 60,
+        # "Flowers102": 40,
+        # "OxfordIIITPet": 5,
+        # "CUB200": 20,
+        # "PascalVOC": 10,
+        # "Country211": 15,
+        # "UCF101": 20,
+        # "Caltech101":10,
+        # "SUN397": 14,
+        "ImageNet": 10
     }
 
     args = parse_arguments()
@@ -490,15 +564,20 @@ if __name__ == "__main__":
     args.print_every = 10
 
     args.logdir += f"{args.model}"
-    args.target_datasets = {k:10 for k,v in args.target_datasets.items()} #10 epochs for few-shots using ViTs.
+    args.target_datasets = {k:1 for k,v in args.target_datasets.items()} #10 epochs for few-shots using ViTs.
 
     args.save = os.path.join(args.save, f'{args.model}')
     if args.seed is not None:
         args.logdir += f"/{args.seed}"
 
-    shot_key = f"{args.subsample}_shot"
-    args.head_path = os.path.join(args.logdir, f"learned_composition_{shot_key}.pt")
+    # log_path is shared across all shot settings (results are nested by shot_key).
     args.log_path = os.path.join(args.logdir, "learned_composition.json")
+    # head_path is set per-shot inside main() since it depends on the subsample value.
+    # For backward compatibility with single subsample, set a default here.
+    subsample_values = args.subsample if isinstance(args.subsample, list) else [args.subsample]
+    if len(subsample_values) == 1:
+        shot_key = f"{subsample_values[0]}_shot"
+        args.head_path = os.path.join(args.logdir, f"learned_composition_{shot_key}.pt")
 
     os.makedirs(args.logdir, exist_ok=True)
 
