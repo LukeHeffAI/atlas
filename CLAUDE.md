@@ -54,28 +54,27 @@ python src/learn_task_addition.py --model=$MODEL --blockwise-coef
 **Few-Shot Adaptation:**
 ```bash
 MODEL=ViT-B-32
-# Basic aTLAS for different shot settings
-for SHOT in 1 2 4 8 16; do
-    python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample $SHOT
-done
+# Basic aTLAS for all shot settings in a single run (recommended).
+# Comma-separated --subsample loads checkpoints once and iterates
+# shots per dataset, avoiding redundant I/O.
+python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample 1,2,4,8,16
+
+# Single shot setting still works for backward compatibility
+python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample 4
 
 # aTLAS with adapters (LP++ or Tip)
-for SHOT in 1 2 4 8 16; do
-    python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample $SHOT --adapter tip
-    python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample $SHOT --adapter lpp
-done
+python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample 1,2,4,8,16 --adapter tip
+python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample 1,2,4,8,16 --adapter lpp
 ```
 
 **Few-Shot Adaptation with Synthetic Data:**
 ```bash
 MODEL=ViT-B-32
 # Use synthetic images for training, real data for evaluation
-for SHOT in 1 2 4 8 16; do
-    python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample $SHOT \
-        --task-vector-source synthetic \
-        --synthetic-data-location data/synthetic_images \
-        --t2i-backend stable_diffusion
-done
+python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample 1,2,4,8,16 \
+    --task-vector-source synthetic \
+    --synthetic-data-location data/synthetic_images \
+    --t2i-backend stable_diffusion
 ```
 
 **Test-Time Adaptation:**
