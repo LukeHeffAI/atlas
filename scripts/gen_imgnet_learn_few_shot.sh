@@ -24,7 +24,7 @@ python src/learn_few_shots.py \
     --synthetic-data-location data/synthetic_images \
     --t2i-backend stable_diffusion \
     --blockwise-coef \
-    --subsample 1
+    --subsample 1,2,4
 
 
 echo "Running basic aTLAS experiments with mixed real and synthetic data..."
