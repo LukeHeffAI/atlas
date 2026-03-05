@@ -1,16 +1,16 @@
 #!/bin/bash
 set -e
 
-# echo "Generating few-shot adaptation experiments"
+echo "Generating few-shot adaptation experiments"
 
-# python src/generate_synthetic_data.py \
-#     --dataset UCF101 \
-#     --text-source manual \
-#     --t2i-backend stable_diffusion \
-#     --t2i-model stabilityai/stable-diffusion-xl-base-1.0 \
-#     --num-images-per-class 4 \
-#     --output-dir data/synthetic_images
-# echo "Synthetic data generation for ImageNet images complete!"
+python src/generate_synthetic_data.py \
+    --dataset UCF101 \
+    --text-source manual \
+    --t2i-backend stable_diffusion \
+    --t2i-model stabilityai/stable-diffusion-xl-base-1.0 \
+    --num-images-per-class 4 \
+    --output-dir data/synthetic_images
+echo "Synthetic data generation for ImageNet images complete!"
 
 MODEL=${1:-ViT-B-32}
 echo "Running few-shot adaptation experiments with model: $MODEL"
