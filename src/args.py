@@ -210,6 +210,14 @@ def parse_arguments():
         help="Run atlas x K where the task vectors are randomly partitioned n times (few-shot only)",
     )
 
+    parser.add_argument(
+        "--retry-failed",
+        action="store_true",
+        default=False,
+        help="Only run previously failed (dataset, shot) combinations from the failures log. "
+            "Successful retries are removed from the failures log automatically.",
+    )
+
     # Text-to-Image arguments
     parser.add_argument(
         "--t2i-backend",
