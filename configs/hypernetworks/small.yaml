@@ -1,0 +1,33 @@
+# Small hypernetwork configuration for fast iteration
+# Suitable for RTX 4090, fast training (~10-20 hours)
+
+text_encoder: "openai/clip-vit-base-patch32"
+freeze_text_encoder: true
+
+# Architecture
+hidden_dims: [512, 256]
+dropout: 0.1
+
+# Training
+meta_lr: 1e-4
+inner_lr: 1e-3
+meta_epochs: 100
+episodes_per_epoch: 20
+meta_batch_size: 4
+
+# Task vectors
+num_task_vectors: 22  # Size of task vector pool
+use_blockwise: true
+
+# Meta-training datasets (5-8 diverse datasets)
+meta_train_datasets:
+  - CIFAR10
+  - EuroSAT
+  - MNIST
+  - DTD
+  - GTSRB
+
+# Meta-validation datasets (held-out)
+meta_val_datasets:
+  - Cars
+  - SUN397

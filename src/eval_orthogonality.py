@@ -9,8 +9,8 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.args import parse_arguments
-from src.task_vectors import LinearizedTaskVector, NonLinearTaskVector
+from args import parse_arguments
+from task_vectors import LinearizedTaskVector, NonLinearTaskVector
 
 def main(args, eval_datasets):
 

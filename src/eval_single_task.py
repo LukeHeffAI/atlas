@@ -10,10 +10,10 @@ https://github.com/gortizji/tangent_task_arithmetic
 
 import json
 
-from src.args import parse_arguments
-from src.eval import eval_single_dataset
-from src.linearize import LinearizedImageEncoder
-from src.task_vectors import LinearizedTaskVector, NonLinearTaskVector
+from args import parse_arguments
+from eval import eval_single_dataset
+from linearize import LinearizedImageEncoder
+from task_vectors import LinearizedTaskVector, NonLinearTaskVector
 
 args = parse_arguments()
 if args.seed is not None:

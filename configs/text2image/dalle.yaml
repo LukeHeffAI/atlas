@@ -1,0 +1,22 @@
+# DALL-E 3 configuration
+# API-based generation
+
+# API key (can also be set via OPENAI_API_KEY environment variable)
+# api_key: "your-api-key-here"
+
+model: "dall-e-3"
+
+# Image parameters
+size: "1024x1024"  # Options: "1024x1024", "1024x1792", "1792x1024"
+quality: "standard"  # Options: "standard" ($0.040), "hd" ($0.120)
+style: "photorealistic"  # Options: "natural", "vivid"
+
+# Rate limiting (seconds between API calls)
+rate_limit_delay: 1.0
+
+# Pricing (2026):
+# - Standard 1024x1024: $0.040 per image
+# - HD 1024x1792 or 1792x1024: $0.120 per image
+pricing:
+  standard: 0.040
+  hd: 0.120

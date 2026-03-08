@@ -9,7 +9,30 @@ Australian Institute for Machine Learning
 import torch
 
 from torch import nn
-from functorch import jvp, make_functional_with_buffers
+from torch.func import jvp, functional_call
+
+def make_functional_with_buffers(model, disable_autograd_tracking=False):
+    """Compatibility shim: replicate the old functorch API using torch.func utilities."""
+    param_names = []
+    params = []
+    buffer_names = []
+    buffers = []
+    for name, p in model.named_parameters():
+        param_names.append(name)
+        params.append(p if not disable_autograd_tracking else p.detach().requires_grad_(p.requires_grad))
+    for name, b in model.named_buffers():
+        buffer_names.append(name)
+        buffers.append(b)
+
+    def func(params_list, buffers_list, *args, **kwargs):
+        state = {}
+        for n, p in zip(param_names, params_list):
+            state[n] = p
+        for n, b in zip(buffer_names, buffers_list):
+            state[n] = b
+        return functional_call(model, state, args, kwargs)
+
+    return func, params, buffers
 
 def mask_multiply(coefs, mask, params):
     if params.ndim != 3:
@@ -68,14 +91,10 @@ class WeightedImageEncoder(nn.Module):
         else:
             self.coef = torch.nn.Parameter(torch.zeros(len(task_vectors),))
 
-    def _apply(self, fn):
-        """Override method to relocate buffer list
-
-        NOTE: This function signature is for PyTorch 1.13.1.
-        Newer verions have added another optional argument `recurse=True`.
-        """
-        new_self = super()._apply(fn=fn)
-        new_self.buffer = (fn(x) for x in new_self.buffer)
+    def _apply(self, fn, recurse=True):
+        """Override method to relocate buffer list and task vector deltas."""
+        new_self = super()._apply(fn=fn, recurse=recurse)
+        new_self.buffer = [fn(x) for x in new_self.buffer]
         new_self.dparams = [[fn(x) for x in tv] for tv in new_self.dparams]
         if hasattr(self, 'mask_mats'):
             new_self.mask_mats = {k: fn(v) for k,v in new_self.mask_mats.items()}
@@ -121,14 +140,10 @@ class WeightedLinearizedModel(nn.Module):
         else:
             self.coef = torch.nn.Parameter(torch.zeros(len(task_vectors),))
 
-    def _apply(self, fn):
-        """Override method to relocate buffer list
-
-        NOTE: This function signature is for PyTorch 1.13.1.
-        Newer verions have added another optional argument `recurse=True`.
-        """
-        new_self = super()._apply(fn=fn)
-        new_self.buffers0 = (fn(x) for x in new_self.buffers0)
+    def _apply(self, fn, recurse=True):
+        """Override method to relocate buffer list and task vector deltas."""
+        new_self = super()._apply(fn=fn, recurse=recurse)
+        new_self.buffers0 = [fn(x) for x in new_self.buffers0]
         new_self.dparams = [[fn(x) for x in tv] for tv in new_self.dparams]
         return new_self
 
@@ -143,3 +158,125 @@ class WeightedLinearizedModel(nn.Module):
             (tuple(dparams),),
         )
         return out + dp
+
+
+class TextConditionedWeightedImageEncoder(nn.Module):
+    """Weighted image encoder with text-conditioned coefficients from hypernetwork.
+
+    This extends WeightedImageEncoder to use a hypernetwork for predicting
+    coefficients from text descriptions instead of learning them directly.
+    """
+
+    def __init__(
+        self,
+        model,
+        task_vectors,
+        hypernetwork=None,
+        text_descriptions=None,
+        text_aggregate="mean",
+        blockwise=True
+    ):
+        """Initialize text-conditioned weighted encoder.
+
+        Args:
+            model: CLIP image encoder model
+            task_vectors: List of task vectors
+            hypernetwork: Optional pre-trained hypernetwork for coefficient prediction
+            text_descriptions: Dict mapping class names to text descriptions
+            text_aggregate: How to aggregate multiple descriptions ("mean", "max", "median")
+            blockwise: Use blockwise coefficients (must match hypernetwork)
+        """
+        super().__init__()
+
+        # Decompose model
+        func, params, self.buffer = make_functional_with_buffers(model)
+        self.func = lambda p, b, x: func(p, b, x)
+        self.params = torch.nn.ParameterList(params)
+        for p in self.params:
+            p.requires_grad = False
+
+        # Copy model attributes
+        self.train_preprocess = model.train_preprocess
+        self.val_preprocess = model.val_preprocess
+        self.cache_dir = getattr(model, 'cache_dir', None)
+
+        # Store task vector deltas
+        self.dparams = [[tv.vector[k] for k in tv.vector] for tv in task_vectors]
+        self.blockwise = blockwise
+
+        # Hypernetwork for coefficient prediction
+        self.hypernetwork = hypernetwork
+        self.text_aggregate = text_aggregate
+
+        if hypernetwork is None:
+            # Standard learnable coefficients (same as WeightedImageEncoder)
+            if blockwise:
+                self.coef = torch.nn.Parameter(torch.zeros(len(task_vectors), len(self.params)))
+            else:
+                self.coef = torch.nn.Parameter(torch.zeros(len(task_vectors),))
+        else:
+            # Use hypernetwork to predict coefficients
+            if text_descriptions is None:
+                raise ValueError("text_descriptions required when using hypernetwork")
+
+            # Freeze hypernetwork during inference
+            for p in self.hypernetwork.parameters():
+                p.requires_grad = False
+
+            # Predict coefficients from text descriptions
+            with torch.no_grad():
+                predicted_coef = self.hypernetwork.predict_for_dataset(
+                    text_descriptions,
+                    aggregate=text_aggregate
+                )
+                # Remove batch dimension and store as buffer (not trainable by default)
+                self.register_buffer('coef', predicted_coef.squeeze(0))
+
+            print(f"Initialized coefficients from hypernetwork (aggregate: {text_aggregate})")
+            print(f"Coefficient shape: {self.coef.shape}")
+
+    def _apply(self, fn, recurse=True):
+        """Override to relocate buffer list and dparams when moving to device."""
+        new_self = super()._apply(fn=fn, recurse=recurse)
+        new_self.buffer = [fn(x) for x in new_self.buffer]
+        new_self.dparams = [[fn(x) for x in tv] for tv in new_self.dparams]
+        return new_self
+
+    def forward(self, x, coef=None):
+        """Forward pass with weighted task vector composition.
+
+        Args:
+            x: Input images
+            coef: Optional external coefficients (for gradient flow from hypernetwork).
+                  If None, uses self.coef.
+
+        Returns:
+            Model output
+        """
+        # Use external coef if provided (allows gradient flow from hypernetwork)
+        active_coef = coef if coef is not None else self.coef
+
+        if self.blockwise:
+            dparams = [sum([p * c[i] for p, c in zip(dp, active_coef)])
+                      for i, dp in enumerate(zip(*self.dparams))]
+        else:
+            dparams = [sum([p * c for p, c in zip(dp, active_coef)])
+                      for dp in zip(*self.dparams)]
+
+        new_params = [dp + p for dp, p in zip(dparams, self.params)]
+        return self.func(new_params, self.buffer, x)
+
+    def enable_coefficient_finetuning(self):
+        """Enable fine-tuning of coefficients after hypernetwork initialization.
+
+        This converts the buffer to a trainable parameter, allowing few-shot
+        fine-tuning of the hypernetwork-initialized coefficients.
+        """
+        if hasattr(self, 'coef') and not isinstance(self.coef, torch.nn.Parameter):
+            # Convert buffer to parameter
+            coef_data = self.coef.clone()
+            delattr(self, 'coef')
+            self.coef = torch.nn.Parameter(coef_data)
+            print("Enabled coefficient fine-tuning")
+        else:
+            print("Coefficients already trainable")

@@ -9,8 +9,10 @@ Australian Institute for Machine Learning
 """
 
 import os
+import copy
 import time
 import json
+import traceback
 import torch
 import torchvision
 
@@ -27,54 +29,288 @@ from src.heads import get_classification_head
 from src.datasets.common import get_dataloader, maybe_dictionarize
 from src.distributed import cleanup_ddp, distribute_loader, is_main_process, setup_ddp
 
+DATASET_POOL = [
+    "Cars", "DTD", "EuroSAT", "GTSRB", "MNIST", "RESISC45", "SVHN", "CIFAR10", "CIFAR100",
+    "STL10", "Food101", "Caltech101", "Caltech256", "FGVCAircraft", "Flowers102",
+    "OxfordIIITPet", "CUB200", "PascalVOC", "Country211", "UCF101", "SUN397", "ImageNet"
+]
+
+# DATASET_POOL = [
+#     "Cars", "DTD"
+# ]
+
+
+def load_task_vectors(args, source="real", backend="stable_diffusion"):
+    """Load task vectors from checkpoints.
+
+    Args:
+        args: Parsed arguments (must have args.save set to checkpoint root).
+        source: "real" for standard fine-tuned checkpoints, "synthetic" for
+                checkpoints fine-tuned on T2I-generated images.
+        backend: T2I backend name (only used when source="synthetic").
+
+    Returns:
+        Dictionary mapping dataset name to NonLinearTaskVector.
+    """
+    task_vectors = {}
+    for dataset in DATASET_POOL:
+        pretrained_checkpoint = f"{args.save}/{dataset}Val/zeroshot.pt"
+        if source == "real" or source == "mixed":
+            finetuned_checkpoint = f"{args.save}/{dataset}Val/finetuned.pt"
+        else:
+            finetuned_checkpoint = f"{args.save}/{dataset}Val/synthetic_{backend}_finetuned.pt"
+        if os.path.exists(pretrained_checkpoint) and os.path.exists(finetuned_checkpoint):
+            task_vectors[dataset] = NonLinearTaskVector(pretrained_checkpoint, finetuned_checkpoint)
+        else:
+            print(f"Warning: Missing checkpoint for {dataset} (source={source}), skipping")
+    return task_vectors
+
+def _load_dataset_for_training(args, preprocess_fn, target_dataset, orig_dataset):
+    """Load the training dataset based on the task vector source."""
+    source = getattr(args, 'task_vector_source', 'real')
+    if source == 'synthetic':
+        from src.datasets.synthetic import SyntheticDatasetWrapper
+        dataset = SyntheticDatasetWrapper(
+            preprocess=preprocess_fn,
+            location=args.synthetic_data_location,
+            dataset_name=orig_dataset,
+            t2i_backend=args.t2i_backend,
+            batch_size=args.batch_size,
+            num_workers=8,
+        )
+    elif source == 'mixed':
+        from src.datasets.synthetic import SyntheticDatasetWrapper, MixedDatasetWrapper
+        real_dataset = get_dataset(
+            target_dataset,
+            preprocess_fn,
+            location=args.data_location,
+            batch_size=args.batch_size,
+            num_workers=8,
+        )
+        synthetic_dataset = SyntheticDatasetWrapper(
+            preprocess=preprocess_fn,
+            location=args.synthetic_data_location,
+            dataset_name=orig_dataset,
+            t2i_backend=args.t2i_backend,
+            batch_size=args.batch_size,
+            num_workers=8,
+        )
+        dataset = MixedDatasetWrapper(real_dataset, synthetic_dataset, batch_size=args.batch_size, seed=args.seed)
+    else:
+        dataset = get_dataset(
+            target_dataset,
+            preprocess_fn,
+            location=args.data_location,
+            batch_size=args.batch_size,
+            num_workers=8,
+        )
+    return dataset
+
 @torch.jit.script
 def softmax_entropy(x: torch.Tensor) -> torch.Tensor:
     """Entropy of softmax distribution from logits."""
     return -(x.softmax(1) * x.log_softmax(1)).sum(1)
 
+def _failures_path(args):
+    """Path to the failures log file, next to the results log."""
+    return os.path.join(args.logdir, "failed_evaluations.json")
+
+
+def _load_failures(args):
+    """Load the set of failed (dataset, shot_key) pairs."""
+    path = _failures_path(args)
+    if os.path.isfile(path):
+        with open(path, 'r') as f:
+            return json.load(f)
+    return {}
+
+
+def _save_failures(args, failures):
+    """Save the failures dict. Remove the file entirely if empty."""
+    path = _failures_path(args)
+    if not failures:
+        if os.path.isfile(path):
+            os.remove(path)
+        return
+    with open(path, 'w') as f:
+        json.dump(failures, f, indent=4)
+
+
+def _record_failure(args, dataset, shot_key, error_msg):
+    """Record a single failure."""
+    failures = _load_failures(args)
+    failures[f"{dataset}/{shot_key}"] = {
+        "dataset": dataset,
+        "shot_key": shot_key,
+        "error": error_msg,
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }
+    _save_failures(args, failures)
+
+
+def _clear_failure(args, dataset, shot_key):
+    """Remove a failure entry after successful retry."""
+    failures = _load_failures(args)
+    key = f"{dataset}/{shot_key}"
+    if key in failures:
+        del failures[key]
+        _save_failures(args, failures)
+
+
 def main(rank, args):
     # Load the individual task vectors.
-    pool = [
-        "Cars", "DTD", "EuroSAT", "GTSRB", "MNIST", "RESISC45", "SUN397", "SVHN",
-        "CIFAR10", "CIFAR100", "ImageNet", "STL10", "Food101", "Caltech101", "Caltech256",
-        "FGVCAircraft", "Flowers102", "OxfordIIITPet", "CUB200", "PascalVOC", "Country211", "UCF101",
-    ]
-    task_vectors = {}
-    for dataset in pool:
-        pretrained_checkpoint = f"{args.save}/{dataset}Val/zeroshot.pt"
-        finetuned_checkpoint = f"{args.save}/{dataset}Val/finetuned.pt"
-        task_vectors[dataset] = NonLinearTaskVector(pretrained_checkpoint, finetuned_checkpoint)
+    task_vectors = load_task_vectors(args, source="real")
 
     args.rank = rank
-    if os.path.exists(args.log_path):
-        with open(args.log_path, 'r') as f:
-            comp_acc = json.load(f)
+
+    # Normalize subsample to a list of shot values.
+    subsample_values = args.subsample if isinstance(args.subsample, list) else [args.subsample]
+ 
+    # Cache a base ImageEncoder loaded from OpenCLIP once.
+    # Each training run will deepcopy this instead of reloading from disk.
+    base_image_encoder = ImageEncoder(args)
+
+    # Build the training preprocess transform (depends only on model, not dataset).
+    preprocess_fn = torchvision.transforms.Compose([
+        torchvision.transforms.RandomResizedCrop(
+            size=224, scale=(0.5, 1),
+            interpolation=torchvision.transforms.InterpolationMode.BICUBIC
+        ), torchvision.transforms.RandomHorizontalFlip(p=0.5),
+    ] + base_image_encoder.train_preprocess.transforms[-3:])
+
+    # If --retry-failed, load the failures log and restrict to those pairs.
+    retry_only = getattr(args, 'retry_failed', False)
+    if retry_only:
+        pending_failures = _load_failures(args)
+        if not pending_failures:
+            print("No failed evaluations to retry. Exiting.")
+            return
+        retry_set = {(v["dataset"], v["shot_key"]) for v in pending_failures.values()}
+        print(f"Retrying {len(retry_set)} previously failed evaluation(s):")
+        for ds, sk in sorted(retry_set):
+            print(f"  - {ds} / {sk}")
     else:
-        comp_acc = {}
-        
+        retry_set = None
+
+    n_succeeded, n_failed = 0, 0
+
     for dataset, epochs in args.target_datasets.items():
         args.target_dataset = dataset + "Val"
         args.epochs = epochs
-        if os.path.isfile(os.path.join(f"{args.save}/{dataset}Val/", "zeroshot_accuracies.json")):
-            with open(os.path.join(f"{args.save}/{dataset}Val/", "zeroshot_accuracies.json"), 'r') as f:
+        target_dataset = args.target_dataset
+        orig_dataset = dataset
+
+        # Check early if any subsample value for this dataset is needed.
+        if retry_set is not None:
+            needed = any((dataset, f"{s}_shot") in retry_set for s in subsample_values)
+            if not needed:
+                continue
+
+        # --- Per-dataset caching: load these expensive resources once ---
+        try:
+            # Cache the classification head for this dataset.
+            cached_classification_head = get_classification_head(args, target_dataset)
+
+            # Cache the training dataset for this target.
+            cached_dataset = _load_dataset_for_training(
+                args, preprocess_fn, target_dataset, orig_dataset,
+            )
+        except Exception as e:
+            # If per-dataset setup fails, record failure for all shots and continue.
+            error_msg = f"Dataset setup failed: {e}\n{traceback.format_exc()}"
+            print(f"\n{'!'*80}")
+            print(f"FAILED setup for {dataset}: {e}")
+            print(f"{'!'*80}\n")
+            for subsample in subsample_values:
+                shot_key = f"{subsample}_shot"
+                if retry_set is None or (dataset, shot_key) in retry_set:
+                    _record_failure(args, dataset, shot_key, error_msg)
+                    n_failed += 1
+            continue
+
+        # Load zero-shot accuracy once per dataset (if file exists).
+        zs_acc_path = os.path.join(f"{args.save}/{dataset}Val/", "zeroshot_accuracies.json")
+        if os.path.isfile(zs_acc_path):
+            with open(zs_acc_path, 'r') as f:
                 args.zs_acc = json.load(f)
-            comp_acc[f"{dataset}Val_zeroshot"] = args.zs_acc[f"{dataset}Val"]
         else:
             if not hasattr(args, 'zs_acc'):
                 args.zs_acc = {}
 
-        if type(args.subsample) == float:
-            data_amount = f"{args.subsample*100}%"
-        else:
-            data_amount = f"{args.subsample} shots"
-            
-        print("=" * 100)
-        print(f"Learning task vector coefficients on {dataset} with {args.model} - {data_amount}")
-        print("=" * 100)
+        cached_resources = {
+            'image_encoder': base_image_encoder,
+            'classification_head': cached_classification_head,
+            'dataset': cached_dataset,
+        }
 
-        comp_acc = train(task_vectors, args, comp_acc)
+        # --- Inner loop: iterate over shot values for this dataset ---
+        for subsample in subsample_values:
+            shot_key = f"{subsample}_shot"
 
-def train(task_vectors, args, comp_acc={}):
+            # Skip if not in retry set.
+            if retry_set is not None and (dataset, shot_key) not in retry_set:
+                continue
+
+            args.subsample = subsample
+            data_amount = f"{subsample} shots"
+            args.head_path = os.path.join(args.logdir, f"learned_composition_{shot_key}.pt")
+
+            # Load accumulated results for this shot setting.
+            if os.path.exists(args.log_path):
+                with open(args.log_path, 'r') as f:
+                    all_results = json.load(f)
+            else:
+                all_results = {}
+
+            comp_acc = all_results.get(shot_key, {})
+
+            # Carry over zero-shot accuracy if already known.
+            if os.path.isfile(zs_acc_path):
+                comp_acc[f"{dataset}Val_zeroshot"] = args.zs_acc[f"{dataset}Val"]
+
+            print("=" * 100)
+            print(f"Learning task vector coefficients on {dataset} with {args.model} - {data_amount}")
+            print("=" * 100)
+
+            try:
+                comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+                all_results[shot_key] = comp_acc
+                n_succeeded += 1
+                # Clear from failures log if this was a retry.
+                _clear_failure(args, dataset, shot_key)
+            except Exception as e:
+                error_msg = f"{e}\n{traceback.format_exc()}"
+                print(f"\n{'!'*80}")
+                print(f"FAILED {dataset} / {shot_key}: {e}")
+                print(f"Traceback:\n{traceback.format_exc()}")
+                print(f"{'!'*80}\n")
+                _record_failure(args, dataset, shot_key, error_msg)
+                n_failed += 1
+                continue
+
+    # Print summary.
+    print("\n" + "=" * 100)
+    print(f"Run complete: {n_succeeded} succeeded, {n_failed} failed")
+    if n_failed > 0:
+        failures = _load_failures(args)
+        print(f"Failed evaluations logged to: {_failures_path(args)}")
+        print("Re-run with --retry-failed to retry only the failed evaluations.")
+        for key, info in failures.items():
+            print(f"  - {key}: {info['error'].splitlines()[0]}")
+    print("=" * 100)
+ 
+def train(task_vectors, args, comp_acc={}, cached_resources=None):
+    """Train task vector coefficients for a single dataset and shot setting.
+ 
+    Args:
+        task_vectors: Dict mapping dataset names to NonLinearTaskVector objects.
+        args: Parsed arguments.
+        comp_acc: Dict accumulating accuracy results for the current shot setting.
+        cached_resources: Optional dict with pre-loaded resources to avoid redundant I/O:
+            - 'image_encoder': Base ImageEncoder (will be deepcopied)
+            - 'classification_head': Pre-loaded classification head
+            - 'dataset': Pre-loaded dataset object
+    """
 
     setup_ddp(args.rank, args.world_size, port=args.port)
     target_dataset = args.target_dataset
@@ -88,53 +324,61 @@ def train(task_vectors, args, comp_acc={}):
     # Remove the task vector for the target task
     task_vectors = [v for k, v in task_vectors.items() if orig_dataset != k]
 
-    image_encoder = ImageEncoder(args)
+    # Use cached ImageEncoder (deepcopy) or load fresh from disk.
+    if cached_resources is not None:
+        image_encoder = copy.deepcopy(cached_resources['image_encoder'])
+    else:
+        image_encoder = ImageEncoder(args)
+
     image_encoder = WeightedImageEncoder(
         image_encoder, task_vectors, blockwise=args.blockwise_coef, partition=args.partition,
     )
 
-    classification_head = get_classification_head(args, target_dataset)
+    # Use cached classification head or load fresh.
+    if cached_resources is not None:
+        classification_head = cached_resources['classification_head']
+    else:
+        classification_head = get_classification_head(args, target_dataset)
     model = ImageClassifier(image_encoder, classification_head)
 
     model.freeze_head()
     model = model.cuda()
 
-    # TIP's more aggressive random crop with horizontal flip
-    preprocess_fn = torchvision.transforms.Compose([
-        torchvision.transforms.RandomResizedCrop(
-            size=224, scale=(0.5, 1),
-            interpolation=torchvision.transforms.InterpolationMode.BICUBIC
-        ), torchvision.transforms.RandomHorizontalFlip(p=0.5),
-    ] + model.train_preprocess.transforms[-3:])
-    
-    dataset = get_dataset(
-        target_dataset,
-        preprocess_fn,
-        location=args.data_location,
-        batch_size=args.batch_size,
-        num_workers=8,
-    )
-
-    if type(args.subsample) == int:
-        if os.path.isfile(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt") and args.seed == 1:
-            to_keep = torch.load(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt")
-        else:
-            to_keep = get_n_shots(dataset.train_dataset, args.subsample, classification_head.out_features, args)
-            torch.save(to_keep, f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt")
-            
-        r = len(to_keep) / args.batch_size
-        if r < 10:
-            over_sampling = 10/r
-            over_sampling = int(over_sampling) + 1
-            print(f"Oversampling {over_sampling} times")
-            to_keep = torch.cat([to_keep] * over_sampling)
-            
+    # Use cached dataset or load fresh.
+    if cached_resources is not None:
+        dataset = cached_resources['dataset']
     else:
-        if os.path.isfile(f"{args.save}/{target_dataset}/{args.subsample}_{args.seed}.pt") and args.seed == 1:
-            to_keep = torch.load(f"{args.save}/{target_dataset}/{args.subsample}_{args.seed}.pt")
-        else:
-            to_keep = torch.randperm(len(dataset_index))[:int(len(dataset_index)*args.subsample)]
-            torch.save(to_keep, f"{args.save}/{target_dataset}/{args.subsample}_{args.seed}.pt")
+        # TIP's more aggressive random crop with horizontal flip
+        preprocess_fn = torchvision.transforms.Compose([
+            torchvision.transforms.RandomResizedCrop(
+                size=224, scale=(0.5, 1),
+                interpolation=torchvision.transforms.InterpolationMode.BICUBIC
+            ), torchvision.transforms.RandomHorizontalFlip(p=0.5),
+        ] + model.train_preprocess.transforms[-3:])
+ 
+        dataset = _load_dataset_for_training(args, preprocess_fn, target_dataset, orig_dataset)
+
+    # Validate subsample: this script currently only supports an integer number of shots.
+    if not isinstance(args.subsample, int):
+        raise TypeError(
+            f"--subsample must be an integer number of shots for learn_few_shots; "
+            f"got value {args.subsample!r} of type {type(args.subsample).__name__}. "
+            "Percentage subsampling with float values is not supported in this script."
+        )
+    n_shots = args.subsample
+
+    if os.path.isfile(f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt") and args.seed == 1:
+        to_keep = torch.load(f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt", weights_only=False)
+    else:
+        to_keep = get_n_shots(dataset.train_dataset, n_shots, classification_head.out_features, args)
+        torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+
+    r = len(to_keep) / args.batch_size
+    if r < 10:
+        over_sampling = 10/r
+        over_sampling = int(over_sampling) + 1
+        print(f"Oversampling {over_sampling} times")
+        to_keep = torch.cat([to_keep] * over_sampling)
         
     index_dataset = IndexWrapper(dataset.train_dataset)
     sampler = torch.utils.data.SubsetRandomSampler(to_keep)        
@@ -169,7 +413,7 @@ def train(task_vectors, args, comp_acc={}):
         args.epochs * num_batches // args.num_grad_accumulation,
     )
 
-    scaler = GradScaler()    
+    scaler = GradScaler()
     if is_main_process():
         if f"{target_dataset}_zeroshot" not in comp_acc.keys():
             comp_acc[f"{target_dataset}_zeroshot"] = eval_single_dataset(image_encoder, target_dataset.replace('Val',''), args)["top1"]
@@ -181,6 +425,9 @@ def train(task_vectors, args, comp_acc={}):
         
     best_coef = ddp_model.module.image_encoder.coef.data.clone()
     best_acc = args.zs_acc[target_dataset]
+    best_trained_acc = 0.0
+    best_trained_coef = ddp_model.module.image_encoder.coef.data.clone()
+    epoch_accs = []
     for epoch in range(args.epochs):
         for i, batch in enumerate(ddp_loader):
             start_time = time.time()
@@ -229,23 +476,41 @@ def train(task_vectors, args, comp_acc={}):
             image_encoder = ddp_model.module.image_encoder
             coef = ddp_model.module.image_encoder.coef
             acc = eval_single_dataset(image_encoder, target_dataset, args)["top1"]
+            epoch_accs.append(acc)
+            if acc > best_trained_acc:
+                best_trained_acc = acc
+                best_trained_coef = coef.data.clone()
             if acc > best_acc:
                 best_acc = acc
                 best_coef = coef.data.clone()
 
     if is_main_process():
         comp_acc[target_dataset] = best_acc
+        comp_acc[f"{target_dataset}_trained"] = best_trained_acc
+        comp_acc[f"{target_dataset}_epoch_accs"] = epoch_accs
         target_dataset = target_dataset.replace("Val", "")
         image_encoder = ddp_model.module.image_encoder
+        # Evaluate best trained coefficients on full test set
+        image_encoder.coef = torch.nn.Parameter(best_trained_coef)
+        comp_acc[f"{target_dataset}_trained"] = eval_single_dataset(image_encoder, target_dataset, args)["top1"]
+        # Evaluate overall best (may be zero-shot) on full test set
         image_encoder.coef = torch.nn.Parameter(best_coef)
         comp_acc[target_dataset] = eval_single_dataset(image_encoder, target_dataset, args)["top1"]
+        # Save nested results keyed by shot number
+        if os.path.exists(args.log_path):
+            with open(args.log_path, 'r') as f:
+                all_results = json.load(f)
+        else:
+            all_results = {}
+        shot_key = f"{args.subsample}_shot"
+        all_results[shot_key] = comp_acc
         with open(args.log_path, 'w') as f:
-            json.dump(comp_acc, f, indent=4)
+            json.dump(all_results, f, indent=4)
         if os.path.isfile(args.head_path):
-            heads = torch.load(args.head_path)
+            heads = torch.load(args.head_path, weights_only=False)
         else:
             heads = {}
-            
+
         heads[target_dataset] = best_coef
         torch.save(heads, args.head_path)
 
@@ -280,11 +545,7 @@ def train_adapter(ddp_model, ddp_loader, args, comp_acc, which='lpp'):
     
     model = ddp_model.module
     if which == 'lpp':
-        if type(args.subsample) == float:
-            shots = 100
-        else:
-            shots = args.subsample            
-        model = LPPWrapper(model, features_cache, labels, shots)
+        model = LPPWrapper(model, features_cache, labels, args.subsample)
         epochs = 300
         lr = model.lr_temp
     elif which == 'tip':
@@ -363,11 +624,19 @@ def train_adapter(ddp_model, ddp_loader, args, comp_acc, which='lpp'):
         target_dataset = target_dataset.replace("Val", "")
         image_encoder = ddp_model.module.model.image_encoder        
         comp_acc[target_dataset+f"_{which}"] = eval_single_dataset(image_encoder, target_dataset, args, model=ddp_model)["top1"]
+        # Save nested results keyed by shot number
+        if os.path.exists(args.log_path):
+            with open(args.log_path, 'r') as f:
+                all_results = json.load(f)
+        else:
+            all_results = {}
+        shot_key = f"{args.subsample}_shot"
+        all_results[shot_key] = comp_acc
         with open(args.log_path, 'w') as f:
-            json.dump(comp_acc, f, indent=4)
+            json.dump(all_results, f, indent=4)
             
         if os.path.isfile(args.head_path):
-            heads = torch.load(args.head_path)
+            heads = torch.load(args.head_path, weights_only=False)
         else:
             heads = {}
 
@@ -386,11 +655,9 @@ if __name__ == "__main__":
         "GTSRB": 11,
         "MNIST": 5,
         "RESISC45": 15,
-        "SUN397": 14,
         "SVHN": 4,
         "CIFAR10": 5,
         "CIFAR100": 6,
-        "ImageNet": 10,
         "STL10": 4,
         "Food101": 15,
         "Caltech256": 8,
@@ -402,6 +669,8 @@ if __name__ == "__main__":
         "Country211": 15,
         "UCF101": 20,
         "Caltech101":10,
+        "SUN397": 14,
+        "ImageNet": 10
     }
 
     args = parse_arguments()
@@ -414,19 +683,21 @@ if __name__ == "__main__":
     args.print_every = 10
 
     args.logdir += f"{args.model}"
-    if type(args.subsample) == float:
-        args.logdir += f"/{args.subsample*100:.0f}perc"
-    else:
-        args.logdir += f"/{args.subsample}shots"
-        args.target_datasets = {k:10 for k,v in args.target_datasets.items()}#10 epochs for few-shots using ViTs. 
-        
+    args.target_datasets = {k:10 for k,v in args.target_datasets.items()} #10 epochs for few-shots using ViTs.
+
     args.save = os.path.join(args.save, f'{args.model}')
     if args.seed is not None:
         args.logdir += f"/{args.seed}"
-        
-    args.head_path = os.path.join(args.logdir, "learned_composition.pt")
-    args.log_path = os.path.join(args.logdir, "learned_composition.json")
 
-    os.makedirs(args.logdir, exist_ok=True)      
-    
+    # log_path is shared across all shot settings (results are nested by shot_key).
+    args.log_path = os.path.join(args.logdir, "learned_composition.json")
+    # head_path is set per-shot inside main() since it depends on the subsample value.
+    # For backward compatibility with single subsample, set a default here.
+    subsample_values = args.subsample if isinstance(args.subsample, list) else [args.subsample]
+    if len(subsample_values) == 1:
+        shot_key = f"{subsample_values[0]}_shot"
+        args.head_path = os.path.join(args.logdir, f"learned_composition_{shot_key}.pt")
+
+    os.makedirs(args.logdir, exist_ok=True)
+
     torch.multiprocessing.spawn(main, args=(args,), nprocs=args.world_size)

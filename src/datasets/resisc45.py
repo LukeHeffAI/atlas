@@ -1,8 +1,6 @@
-import os
-import torch
-
 import abc
 import os
+import random
 from typing import Any, Callable, Dict, Optional, Tuple
 
 import numpy as np
@@ -183,22 +181,9 @@ class RESISC45Dataset(VisionClassificationDataset):
     * https://doi.org/10.1109/jproc.2017.2675998
     """
 
-    # url = "https://drive.google.com/file/d/1DnPSU5nVSN7xv95bpZ3XQ0JhKXZOKgIv"
-    # md5 = "d824acb73957502b00efd559fc6cfbbb"
-    # filename = "NWPU-RESISC45.rar"
     directory = "resisc45/NWPU-RESISC45"
 
     splits = ["train", "val", "test"]
-    split_urls = {
-        "train": "https://storage.googleapis.com/remote_sensing_representations/resisc45-train.txt",  # noqa: E501
-        "val": "https://storage.googleapis.com/remote_sensing_representations/resisc45-val.txt",  # noqa: E501
-        "test": "https://storage.googleapis.com/remote_sensing_representations/resisc45-test.txt",  # noqa: E501
-    }
-    split_md5s = {
-        "train": "b5a4c05a37de15e4ca886696a85c403e",
-        "val": "a0770cee4c5ca20b8c32bbd61e114805",
-        "test": "3dda9e4988b47eb1de9f07993653eb08",
-    }
     classes = [
         "airplane",
         "airport",
@@ -247,6 +232,68 @@ class RESISC45Dataset(VisionClassificationDataset):
         "wetland",
     ]
 
+    @staticmethod
+    def create_splits(
+        root: str,
+        train_ratio: float = 0.675,
+        val_ratio: float = 0.075,
+        test_ratio: float = 0.25,
+        seed: int = 42,
+    ) -> None:
+        """Create train/val/test split txt files from the NWPU-RESISC45 image directories.
+
+        Files are written to ``{root}/resisc45/resisc45-{split}.txt``, one bare
+        filename per line, as expected by the dataset loader.
+
+        Args:
+            root: Root directory containing ``resisc45/NWPU-RESISC45/``.
+            train_ratio: Fraction of images for training.
+            val_ratio: Fraction of images for validation.
+            test_ratio: Fraction of images for test.
+            seed: Random seed for reproducibility.
+        """
+        assert abs(train_ratio + val_ratio + test_ratio - 1.0) < 1e-6, (
+            "train_ratio + val_ratio + test_ratio must equal 1.0"
+        )
+
+        rng = random.Random(seed)
+        img_dir = os.path.join(root, "resisc45", "NWPU-RESISC45")
+
+        class_dirs = sorted([
+            d for d in os.listdir(img_dir)
+            if os.path.isdir(os.path.join(img_dir, d)) and not d.startswith('.')
+        ])
+
+        if not class_dirs:
+            raise FileNotFoundError(
+                f"No class sub-directories found in {img_dir}. "
+                "Make sure the NWPU-RESISC45 archive has been extracted."
+            )
+
+        split_files: dict = {'train': [], 'val': [], 'test': []}
+
+        for class_name in class_dirs:
+            class_path = os.path.join(img_dir, class_name)
+            images = sorted([
+                f for f in os.listdir(class_path)
+                if not f.startswith('.')
+            ])
+            rng.shuffle(images)
+            n = len(images)
+            n_train = round(n * train_ratio)
+            n_val = round(n * val_ratio)
+            split_files['train'].extend(images[:n_train])
+            split_files['val'].extend(images[n_train:n_train + n_val])
+            split_files['test'].extend(images[n_train + n_val:])
+
+        out_dir = os.path.join(root, "resisc45")
+        for split, files in split_files.items():
+            txt_path = os.path.join(out_dir, f"resisc45-{split}.txt")
+            with open(txt_path, 'w') as f:
+                for fname in sorted(files):
+                    f.write(fname + '\n')
+            print(f"Wrote {len(files)} filenames to {txt_path}")
+
     def __init__(
         self,
         root: str = "data",
@@ -262,6 +309,33 @@ class RESISC45Dataset(VisionClassificationDataset):
         """
         assert split in self.splits
         self.root = root
+
+        # Auto-generate split txt files if needed, but avoid overwriting
+        # partially-existing (potentially custom) splits.
+        split_dir = os.path.join(root, "resisc45")
+        split_paths = [
+            (s, os.path.join(split_dir, f"resisc45-{s}.txt"))
+            for s in self.splits
+        ]
+        split_exists = [os.path.exists(path) for _, path in split_paths]
+
+        if all(split_exists):
+            # All split files exist: respect them as-is.
+            pass
+        elif not any(split_exists):
+            # No split files exist: safe to auto-generate all.
+            self.create_splits(root)
+        else:
+            # Mixed state: some split files exist and some are missing.
+            # Avoid silently overwriting existing (possibly custom) splits.
+            existing = [name for (name, _), exists in zip(split_paths, split_exists) if exists]
+            missing = [name for (name, _), exists in zip(split_paths, split_exists) if not exists]
+            raise RuntimeError(
+                "Inconsistent RESISC45 split files detected in "
+                f"{split_dir!r}. Existing splits: {existing}. Missing splits: {missing}. "
+                "To auto-generate default splits, either remove all existing "
+                "resisc45-*.txt files or create the missing ones manually."
+            )
 
         valid_fns = set()
         with open(os.path.join(self.root, "resisc45", f"resisc45-{split}.txt")) as f:

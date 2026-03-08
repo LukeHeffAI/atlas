@@ -1,8 +1,15 @@
 import abc
+import sys
+from pathlib import Path
 
 import torch
 
-from src.linearize import LinearizedImageEncoder
+# Add project root to path to enable loading checkpoints with src.* references
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from linearize import LinearizedImageEncoder
 
 
 class _TaskVector(abc.ABC):
@@ -132,7 +139,8 @@ class NonLinearTaskVector(_TaskVector):
 
     def _load_checkpoint(self, checkpoint):
         """Load a checkpoint into a model."""
-        return torch.load(checkpoint, map_location="cpu")
+        # Use weights_only=False to support loading legacy checkpoints with pickled objects
+        return torch.load(checkpoint, map_location="cpu", weights_only=False)
 
     def apply_to_nonlinear(self, pretrained_nonlinear_checkpoint, scaling_coef=1.0):
         """Apply a task vector to a nonlinear pretrained model."""
