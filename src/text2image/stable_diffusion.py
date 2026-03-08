@@ -4,7 +4,8 @@ This module implements the Stable Diffusion XL backend for generating synthetic 
 Optimized for RTX 4090 (24GB VRAM) with FP16, attention slicing, and efficient batching.
 """
 
-from typing import List, Optional, Dict, Any
+import random
+from typing import List, Optional, Dict, Any, Tuple
 import torch
 from PIL import Image
 from .base import Text2ImageBackend
@@ -55,6 +56,10 @@ class StableDiffusionBackend(Text2ImageBackend):
         self.enable_attention_slicing = config.get('enable_attention_slicing', True)
         self.use_fp16 = config.get('use_fp16', True)
         self.cpu_offload = config.get('cpu_offload', False)
+        self.guidance_scale_jitter = config.get('guidance_scale_jitter', False)
+        self.guidance_scale_range = config.get(
+            'guidance_scale_range', [6.0, 9.0]
+        )
 
         # Load model
         self._load_model()
@@ -118,7 +123,9 @@ class StableDiffusionBackend(Text2ImageBackend):
         Args:
             prompts: List of text prompts
             num_images_per_prompt: Number of images to generate per prompt
-            seed: Random seed for reproducibility
+            seed: Random seed for reproducibility. Each prompt gets a unique
+                generator seeded with ``seed + i`` where ``i`` is its
+                positional index in the batch.
             **kwargs: Additional parameters:
                 - guidance_scale: Override default CFG scale
                 - num_inference_steps: Override default denoising steps
@@ -129,17 +136,24 @@ class StableDiffusionBackend(Text2ImageBackend):
         Returns:
             List of PIL images
         """
-        # Set seed for reproducibility
-        if seed is not None:
-            self.set_seed(seed)
-        else:
-            self.set_seed(self.seed)
+        effective_seed = seed if seed is not None else self.seed
+        self.set_seed(effective_seed)
 
-        # Create generator for reproducibility
-        generator = torch.Generator(device=self.device).manual_seed(self.seed)
+        # Per-prompt generators: seed + i gives each image a unique but
+        # deterministic seed (e.g. seed=42, batch of 4 → [42, 43, 44, 45])
+        generator = [
+            torch.Generator(device=self.device).manual_seed(
+                effective_seed + i
+            )
+            for i in range(len(prompts))
+        ]
 
-        # Get parameters
+        # Get parameters (with optional guidance scale jitter)
         guidance_scale = kwargs.get('guidance_scale', self.guidance_scale)
+        if self.guidance_scale_jitter and 'guidance_scale' not in kwargs:
+            lo, hi = self.guidance_scale_range
+            rng = random.Random(effective_seed)
+            guidance_scale = rng.uniform(lo, hi)
         num_inference_steps = kwargs.get('num_inference_steps', self.num_inference_steps)
         height = kwargs.get('height', self.height)
         width = kwargs.get('width', self.width)
@@ -185,6 +199,8 @@ class StableDiffusionBackend(Text2ImageBackend):
         Supports resuming partial generations: if output_dir is provided and
         some images already exist, only the missing images are generated.
         Set force_regenerate=True to overwrite all existing images.
+
+        Each image gets a unique deterministic seed: ``self.seed + original_index``.
 
         Args:
             prompts: List of text prompts
@@ -245,18 +261,18 @@ class StableDiffusionBackend(Text2ImageBackend):
 
         generated = {}  # maps original index -> Image
         for batch_start in range(0, len(pending_prompts), batch_size):
-            batch_prompts = pending_prompts[batch_start:batch_start+batch_size]
-            batch_original_indices = pending_indices[batch_start:batch_start+batch_size]
+            batch_end = batch_start + batch_size
+            batch_prompts = pending_prompts[batch_start:batch_end]
+            batch_original_indices = pending_indices[batch_start:batch_end]
             batch_num = batch_start // batch_size + 1
 
             print(f"Batch {batch_num}/{num_batches}: Generating {len(batch_prompts)} images...")
 
             try:
-                batch_seed = self.seed + batch_original_indices[0]
                 batch_images = self.generate(
                     batch_prompts,
                     num_images_per_prompt=num_images_per_prompt,
-                    seed=batch_seed,
+                    seed=self.seed + batch_original_indices[0],
                     **kwargs
                 )
 
@@ -277,11 +293,10 @@ class StableDiffusionBackend(Text2ImageBackend):
                     for j in range(0, len(batch_prompts), smaller_batch_size):
                         sub_batch = batch_prompts[j:j+smaller_batch_size]
                         sub_indices = batch_original_indices[j:j+smaller_batch_size]
-                        sub_seed = self.seed + sub_indices[0]
                         sub_images = self.generate(
                             sub_batch,
                             num_images_per_prompt=num_images_per_prompt,
-                            seed=sub_seed,
+                            seed=self.seed + sub_indices[0],
                             **kwargs
                         )
 

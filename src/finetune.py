@@ -43,11 +43,15 @@ def finetune(rank, args):
         print("Using linearized fine-tuning.")
 
     # Check if checkpoints already exist
-    ft_path = (
-        os.path.join(args.save, train_dataset, "linear_finetuned.pt")
-        if linearized_finetuning
-        else os.path.join(args.save, train_dataset, "finetuned.pt")
-    )
+    is_synthetic = getattr(args, 'task_vector_source', 'real') == 'synthetic'
+    if is_synthetic:
+        ft_name = f"synthetic_{args.t2i_backend}_finetuned.pt"
+    elif linearized_finetuning:
+        ft_name = "linear_finetuned.pt"
+    else:
+        ft_name = "finetuned.pt"
+
+    ft_path = os.path.join(args.save, train_dataset, ft_name)
     zs_path = (
         os.path.join(args.save, train_dataset, "linear_zeroshot.pt")
         if linearized_finetuning
@@ -88,13 +92,24 @@ def finetune(rank, args):
     preprocess_fn = model.train_preprocess
     print_every = 50
 
-    dataset = get_dataset(
-        train_dataset,
-        preprocess_fn,
-        location=args.data_location,
-        batch_size=args.batch_size,
-        num_workers=args.num_workers,
-    )
+    if is_synthetic:
+        from src.datasets.synthetic import SyntheticDatasetWrapper
+        dataset = SyntheticDatasetWrapper(
+            preprocess=preprocess_fn,
+            location=args.synthetic_data_location,
+            dataset_name=train_dataset.replace("Val", ""),
+            t2i_backend=args.t2i_backend,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+        )
+    else:
+        dataset = get_dataset(
+            train_dataset,
+            preprocess_fn,
+            location=args.data_location,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+        )
     data_loader = get_dataloader(dataset, is_train=True, args=args, image_encoder=None)
     num_batches = len(dataset.train_loader)
 
@@ -209,11 +224,7 @@ def finetune(rank, args):
             if linearized_finetuning
             else os.path.join(ckpdir, "zeroshot.pt")
         )
-        ft_path = (
-            os.path.join(ckpdir, "linear_finetuned.pt")
-            if linearized_finetuning
-            else os.path.join(ckpdir, "finetuned.pt")
-        )
+        ft_path = os.path.join(ckpdir, ft_name)
         image_encoder.save(ft_path)
         return zs_path, ft_path
 
@@ -255,6 +266,10 @@ if __name__ == "__main__":
         args.epochs = epochs[dataset]
         args.train_dataset = dataset + "Val"
 
+        # Scale epochs for synthetic data (smaller datasets)
+        if getattr(args, 'task_vector_source', 'real') == 'synthetic':
+            args.epochs = max(1, int(args.epochs * args.synthetic_epochs_scale))
+
         # We use gradient accumulation to simulate larger batch sizes if the model does not fit in memory.
         args.batch_size = 64 if args.model == "ViT-L-14" else 128
         args.num_workers = 4
@@ -264,7 +279,8 @@ if __name__ == "__main__":
             args.save = f"checkpoints_{args.seed}/{args.model}"
         else:
             args.save = f"checkpoints/{args.model}"
+        source_label = f" (synthetic: {args.t2i_backend})" if getattr(args, 'task_vector_source', 'real') == 'synthetic' else ""
         print("=" * 100)
-        print(f"Finetuning {args.model} on {dataset}")
+        print(f"Finetuning {args.model} on {dataset}{source_label}")
         print("=" * 100)
         torch.multiprocessing.spawn(finetune, args=(args,), nprocs=args.world_size)

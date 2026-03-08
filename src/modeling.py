@@ -54,7 +54,7 @@ class ImageEncoder(torch.nn.Module):
     @classmethod
     def load(cls, model_name, filename):
         print(f"Loading image encoder from {filename}")
-        state_dict = torch.load(filename, map_location="cpu")
+        state_dict = torch.load(filename, map_location="cpu", weights_only=False)
         return cls.load(model_name, state_dict)
 
 class ClassificationHead(torch.nn.Linear):

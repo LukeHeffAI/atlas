@@ -21,5 +21,10 @@ batch_size: 4  # Safe for RTX 4090
 # Random seed for reproducibility
 seed: 42
 
+# Guidance scale jittering for diversity
+# When enabled, samples a random guidance_scale per batch from the given range
+guidance_scale_jitter: false
+guidance_scale_range: [6.0, 9.0]
+
 # Negative prompt to improve quality (optional)
 negative_prompt: "blurry, low quality, distorted, deformed, ugly"
