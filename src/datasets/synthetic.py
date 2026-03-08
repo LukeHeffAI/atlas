@@ -223,7 +223,7 @@ class MixedDatasetWrapper:
     Test data always comes from the real dataset.
     """
 
-    def __init__(self, real_dataset, synthetic_dataset, batch_size=128, num_workers=8):
+    def __init__(self, real_dataset, synthetic_dataset, batch_size=128, num_workers=8, seed=None):
         real_train = real_dataset.train_dataset
         synth_train = synthetic_dataset.train_dataset
 
@@ -232,10 +232,12 @@ class MixedDatasetWrapper:
         target_per_source = min(n_real, n_synth)
 
         if n_real > target_per_source:
-            indices = torch.randperm(n_real)[:target_per_source]
+            real_gen = torch.Generator().manual_seed(seed) if seed is not None else None
+            indices = torch.randperm(n_real, generator=real_gen)[:target_per_source]
             real_train = torch.utils.data.Subset(real_train, indices)
         if n_synth > target_per_source:
-            indices = torch.randperm(n_synth)[:target_per_source]
+            synth_gen = torch.Generator().manual_seed(seed + 1) if seed is not None else None
+            indices = torch.randperm(n_synth, generator=synth_gen)[:target_per_source]
             synth_train = torch.utils.data.Subset(synth_train, indices)
 
         self.train_dataset = torch.utils.data.ConcatDataset([real_train, synth_train])

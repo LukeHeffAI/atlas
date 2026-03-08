@@ -95,7 +95,7 @@ def _load_dataset_for_training(args, preprocess_fn, target_dataset, orig_dataset
             batch_size=args.batch_size,
             num_workers=8,
         )
-        dataset = MixedDatasetWrapper(real_dataset, synthetic_dataset, batch_size=args.batch_size)
+        dataset = MixedDatasetWrapper(real_dataset, synthetic_dataset, batch_size=args.batch_size, seed=args.seed)
     else:
         dataset = get_dataset(
             target_dataset,
