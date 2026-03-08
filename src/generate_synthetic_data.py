@@ -16,6 +16,7 @@ Usage:
 import os
 import argparse
 import random
+import zlib
 from pathlib import Path
 from typing import Dict, List, Optional
 import yaml
@@ -368,8 +369,11 @@ def generate_for_dataset(args, dataset_name: str, backend):
         next_index = len(existing) if not args.force_regenerate else 0
 
         # Generate prompts for only the missing images
-        # Use a per-class seed derived from the base seed and class name
-        class_seed = args.seed + hash(class_name) % (2**31)
+        # Use a per-class seed derived from the base seed and class name.
+        # zlib.crc32 is used instead of hash() because Python randomizes
+        # hash values between processes, making hash() non-reproducible
+        # across runs even when --seed is constant.
+        class_seed = args.seed + zlib.crc32(class_name.encode()) % (2**31)
         prompts = generate_prompts_for_class(
             class_name,
             class_descriptions,
