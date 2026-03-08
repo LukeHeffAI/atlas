@@ -4,7 +4,7 @@ set -e
 echo "Generating few-shot adaptation experiments"
 
 python src/generate_synthetic_data.py \
-    --dataset CUB \
+    --datasets CUB200 \
     --text-source manual \
     --t2i-backend stable_diffusion \
     --t2i-model stabilityai/stable-diffusion-xl-base-1.0 \
