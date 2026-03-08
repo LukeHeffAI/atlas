@@ -358,11 +358,20 @@ def train(task_vectors, args, comp_acc={}, cached_resources=None):
  
         dataset = _load_dataset_for_training(args, preprocess_fn, target_dataset, orig_dataset)
 
-    if os.path.isfile(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt") and args.seed == 1:
-        to_keep = torch.load(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt", weights_only=False)
+    # Validate subsample: this script currently only supports an integer number of shots.
+    if not isinstance(args.subsample, int):
+        raise TypeError(
+            f"--subsample must be an integer number of shots for learn_few_shots; "
+            f"got value {args.subsample!r} of type {type(args.subsample).__name__}. "
+            "Percentage subsampling with float values is not supported in this script."
+        )
+    n_shots = args.subsample
+
+    if os.path.isfile(f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt") and args.seed == 1:
+        to_keep = torch.load(f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt", weights_only=False)
     else:
-        to_keep = get_n_shots(dataset.train_dataset, args.subsample, classification_head.out_features, args)
-        torch.save(to_keep, f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt")
+        to_keep = get_n_shots(dataset.train_dataset, n_shots, classification_head.out_features, args)
+        torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
 
     r = len(to_keep) / args.batch_size
     if r < 10:
