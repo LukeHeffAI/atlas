@@ -169,3 +169,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 .claude/skills/*/SKILL.md
+results/analysis/*/report.md
+results/analysis/*/plots/delta_chart.pdf
+results/analysis/*/plots/grouped_bar.pdf
+results/analysis/*/plots/shot_scaling.pdf
