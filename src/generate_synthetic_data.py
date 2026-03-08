@@ -339,6 +339,8 @@ def generate_for_dataset(args, dataset_name: str, backend):
         cost_estimate_hd = actual_total * config['pricing']['hd']
         print(f"Estimated cost:\n\t- ${cost_estimate_standard:.2f} (standard quality)\n\t- ${cost_estimate_hd:.2f} (hd quality)")
 
+    prompt_log = {}
+
     for class_name, class_descriptions in tqdm(descriptions.items(), desc="Classes"):
         class_dir = output_base / sanitize_class_name(class_name)
         class_dir.mkdir(parents=True, exist_ok=True)
@@ -357,10 +359,12 @@ def generate_for_dataset(args, dataset_name: str, backend):
             # Selection of first-N vs random subset is handled at load time via SyntheticDataset.
             print(f"\n  {class_name}: {len(existing)} images exist, using {args.num_images_per_class} "
                   f"({'random sample' if args.shuffle_existing else 'first N'} at load time)")
+            prompt_log[class_name] = "skipped"
             continue
 
         if n_needed == 0:
             print(f"\n  {class_name}: already has {len(existing)} images, skipping")
+            prompt_log[class_name] = "skipped"
             continue
 
         print(f"\nGenerating {n_needed} images for class: {class_name} "
@@ -383,6 +387,9 @@ def generate_for_dataset(args, dataset_name: str, backend):
             seed=class_seed
         )
 
+        print(f"  First prompt: {prompts[0]}")
+        prompt_log[class_name] = prompts
+
         # Generate images in batches.
         original_seed = backend.seed
         backend.seed = args.seed + next_index
@@ -398,6 +405,12 @@ def generate_for_dataset(args, dataset_name: str, backend):
             image.save(image_path)
 
         print(f"  Saved {len(images)} images to {class_dir}")
+
+    # Save prompt log for all classes (generated and skipped)
+    prompt_log_path = output_base / "prompts.json"
+    with open(prompt_log_path, "w") as f:
+        _json.dump(prompt_log, f, indent=2)
+    print(f"\nSaved prompt log ({len(prompt_log)} classes) to {prompt_log_path}")
 
     print("\n" + "=" * 80)
     print(f"Synthetic image generation complete for {dataset_name}!")
