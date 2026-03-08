@@ -152,7 +152,8 @@ class StableDiffusionBackend(Text2ImageBackend):
         guidance_scale = kwargs.get('guidance_scale', self.guidance_scale)
         if self.guidance_scale_jitter and 'guidance_scale' not in kwargs:
             lo, hi = self.guidance_scale_range
-            guidance_scale = random.uniform(lo, hi)
+            rng = random.Random(effective_seed)
+            guidance_scale = rng.uniform(lo, hi)
         num_inference_steps = kwargs.get('num_inference_steps', self.num_inference_steps)
         height = kwargs.get('height', self.height)
         width = kwargs.get('width', self.width)
