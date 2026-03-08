@@ -310,13 +310,32 @@ class RESISC45Dataset(VisionClassificationDataset):
         assert split in self.splits
         self.root = root
 
-        # Auto-generate split txt files if any are missing
+        # Auto-generate split txt files if needed, but avoid overwriting
+        # partially-existing (potentially custom) splits.
         split_dir = os.path.join(root, "resisc45")
-        if not all(
-            os.path.exists(os.path.join(split_dir, f"resisc45-{s}.txt"))
+        split_paths = [
+            (s, os.path.join(split_dir, f"resisc45-{s}.txt"))
             for s in self.splits
-        ):
+        ]
+        split_exists = [os.path.exists(path) for _, path in split_paths]
+
+        if all(split_exists):
+            # All split files exist: respect them as-is.
+            pass
+        elif not any(split_exists):
+            # No split files exist: safe to auto-generate all.
             self.create_splits(root)
+        else:
+            # Mixed state: some split files exist and some are missing.
+            # Avoid silently overwriting existing (possibly custom) splits.
+            existing = [name for (name, _), exists in zip(split_paths, split_exists) if exists]
+            missing = [name for (name, _), exists in zip(split_paths, split_exists) if not exists]
+            raise RuntimeError(
+                "Inconsistent RESISC45 split files detected in "
+                f"{split_dir!r}. Existing splits: {existing}. Missing splits: {missing}. "
+                "To auto-generate default splits, either remove all existing "
+                "resisc45-*.txt files or create the missing ones manually."
+            )
 
         valid_fns = set()
         with open(os.path.join(self.root, "resisc45", f"resisc45-{split}.txt")) as f:
