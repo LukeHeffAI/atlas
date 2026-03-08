@@ -223,7 +223,7 @@ def generate_prompts_for_class(
             for dim_name, dim_values in modifiers.items():
                 parts.append(rng.choice(dim_values))
             prompt = ", ".join(parts) + ", high quality, 4k resolution"
-            prompt = "a hyper-realistic photo of a " + prompt
+            prompt = f"a hyper-realistic photo of a {class_name}: {prompt}"
         else:
             prompt = f"{desc}, hyper-realistic, 4k resolution"
 
