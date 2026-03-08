@@ -16,6 +16,7 @@ The following components are **implemented**:
 - ✅ `eval_text_adaptation.py` - Evaluation script
 - ✅ Text description loaders and LLM generators
 - ✅ Text-to-image backend registry (Stable Diffusion, DALL-E)
+- ✅ Synthetic few-shot adaptation in `learn_few_shots.py` (via `--task-vector-source synthetic`)
 
 The following are **planned** (documented in this roadmap):
 - ⬜ Full LoRA weight prediction

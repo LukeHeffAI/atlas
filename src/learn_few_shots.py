@@ -27,6 +27,43 @@ from src.heads import get_classification_head
 from src.datasets.common import get_dataloader, maybe_dictionarize
 from src.distributed import cleanup_ddp, distribute_loader, is_main_process, setup_ddp
 
+DATASET_POOL = [
+    "Cars", "DTD", "EuroSAT", "GTSRB", "MNIST", "RESISC45", "SUN397", "SVHN",
+    "CIFAR10", "CIFAR100", "ImageNet", "STL10", "Food101", "Caltech101", "Caltech256",
+    "FGVCAircraft", "Flowers102", "OxfordIIITPet", "CUB200", "PascalVOC", "Country211", "UCF101",
+]
+
+# DATASET_POOL = [
+#     "Cars", "DTD"
+# ]
+
+
+def load_task_vectors(args, source="real", backend="stable_diffusion"):
+    """Load task vectors from checkpoints.
+
+    Args:
+        args: Parsed arguments (must have args.save set to checkpoint root).
+        source: "real" for standard fine-tuned checkpoints, "synthetic" for
+                checkpoints fine-tuned on T2I-generated images.
+        backend: T2I backend name (only used when source="synthetic").
+
+    Returns:
+        Dictionary mapping dataset name to NonLinearTaskVector.
+    """
+    task_vectors = {}
+    for dataset in DATASET_POOL:
+        pretrained_checkpoint = f"{args.save}/{dataset}Val/zeroshot.pt"
+        if source == "real" or source == "mixed":
+            finetuned_checkpoint = f"{args.save}/{dataset}Val/finetuned.pt"
+        else:
+            finetuned_checkpoint = f"{args.save}/{dataset}Val/synthetic_{backend}_finetuned.pt"
+        if os.path.exists(pretrained_checkpoint) and os.path.exists(finetuned_checkpoint):
+            task_vectors[dataset] = NonLinearTaskVector(pretrained_checkpoint, finetuned_checkpoint)
+        else:
+            print(f"Warning: Missing checkpoint for {dataset} (source={source}), skipping")
+    return task_vectors
+
+
 @torch.jit.script
 def softmax_entropy(x: torch.Tensor) -> torch.Tensor:
     """Entropy of softmax distribution from logits."""
@@ -34,24 +71,20 @@ def softmax_entropy(x: torch.Tensor) -> torch.Tensor:
 
 def main(rank, args):
     # Load the individual task vectors.
-    pool = [
-        "Cars", "DTD", "EuroSAT", "GTSRB", "MNIST", "RESISC45", "SUN397", "SVHN",
-        "CIFAR10", "CIFAR100", "ImageNet", "STL10", "Food101", "Caltech101", "Caltech256",
-        "FGVCAircraft", "Flowers102", "OxfordIIITPet", "CUB200", "PascalVOC", "Country211", "UCF101",
-    ]
-    task_vectors = {}
-    for dataset in pool:
-        pretrained_checkpoint = f"{args.save}/{dataset}Val/zeroshot.pt"
-        finetuned_checkpoint = f"{args.save}/{dataset}Val/finetuned.pt"
-        task_vectors[dataset] = NonLinearTaskVector(pretrained_checkpoint, finetuned_checkpoint)
+    task_vectors = load_task_vectors(args, source="real")
 
     args.rank = rank
     if os.path.exists(args.log_path):
         with open(args.log_path, 'r') as f:
-            comp_acc = json.load(f)
+            all_results = json.load(f)
     else:
-        comp_acc = {}
-        
+        all_results = {}
+
+    shot_key = f"{args.subsample}_shot"
+    data_amount = f"{args.subsample} shots"
+
+    comp_acc = all_results.get(shot_key, {})
+
     for dataset, epochs in args.target_datasets.items():
         args.target_dataset = dataset + "Val"
         args.epochs = epochs
@@ -63,16 +96,12 @@ def main(rank, args):
             if not hasattr(args, 'zs_acc'):
                 args.zs_acc = {}
 
-        if type(args.subsample) == float:
-            data_amount = f"{args.subsample*100}%"
-        else:
-            data_amount = f"{args.subsample} shots"
-            
         print("=" * 100)
         print(f"Learning task vector coefficients on {dataset} with {args.model} - {data_amount}")
         print("=" * 100)
 
         comp_acc = train(task_vectors, args, comp_acc)
+        all_results[shot_key] = comp_acc
 
 def train(task_vectors, args, comp_acc={}):
 
@@ -107,34 +136,56 @@ def train(task_vectors, args, comp_acc={}):
         ), torchvision.transforms.RandomHorizontalFlip(p=0.5),
     ] + model.train_preprocess.transforms[-3:])
     
-    dataset = get_dataset(
-        target_dataset,
-        preprocess_fn,
-        location=args.data_location,
-        batch_size=args.batch_size,
-        num_workers=8,
-    )
-
-    if type(args.subsample) == int:
-        if os.path.isfile(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt") and args.seed == 1:
-            to_keep = torch.load(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt")
-        else:
-            to_keep = get_n_shots(dataset.train_dataset, args.subsample, classification_head.out_features, args)
-            torch.save(to_keep, f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt")
-            
-        r = len(to_keep) / args.batch_size
-        if r < 10:
-            over_sampling = 10/r
-            over_sampling = int(over_sampling) + 1
-            print(f"Oversampling {over_sampling} times")
-            to_keep = torch.cat([to_keep] * over_sampling)
-            
+    source = getattr(args, 'task_vector_source', 'real')
+    if source == 'synthetic':
+        from src.datasets.synthetic import SyntheticDatasetWrapper
+        dataset = SyntheticDatasetWrapper(
+            preprocess=preprocess_fn,
+            location=args.synthetic_data_location,
+            dataset_name=orig_dataset,
+            t2i_backend=args.t2i_backend,
+            batch_size=args.batch_size,
+            num_workers=8,
+        )
+    elif source == 'mixed':
+        from src.datasets.synthetic import SyntheticDatasetWrapper, MixedDatasetWrapper
+        real_dataset = get_dataset(
+            target_dataset,
+            preprocess_fn,
+            location=args.data_location,
+            batch_size=args.batch_size,
+            num_workers=8,
+        )
+        synthetic_dataset = SyntheticDatasetWrapper(
+            preprocess=preprocess_fn,
+            location=args.synthetic_data_location,
+            dataset_name=orig_dataset,
+            t2i_backend=args.t2i_backend,
+            batch_size=args.batch_size,
+            num_workers=8,
+        )
+        dataset = MixedDatasetWrapper(real_dataset, synthetic_dataset, batch_size=args.batch_size)
     else:
-        if os.path.isfile(f"{args.save}/{target_dataset}/{args.subsample}_{args.seed}.pt") and args.seed == 1:
-            to_keep = torch.load(f"{args.save}/{target_dataset}/{args.subsample}_{args.seed}.pt")
-        else:
-            to_keep = torch.randperm(len(dataset_index))[:int(len(dataset_index)*args.subsample)]
-            torch.save(to_keep, f"{args.save}/{target_dataset}/{args.subsample}_{args.seed}.pt")
+        dataset = get_dataset(
+            target_dataset,
+            preprocess_fn,
+            location=args.data_location,
+            batch_size=args.batch_size,
+            num_workers=8,
+        )
+
+    if os.path.isfile(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt") and args.seed == 1:
+        to_keep = torch.load(f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt", weights_only=False)
+    else:
+        to_keep = get_n_shots(dataset.train_dataset, args.subsample, classification_head.out_features, args)
+        torch.save(to_keep, f"{args.save}/{target_dataset}/{args.subsample}_shots_{args.seed}.pt")
+
+    r = len(to_keep) / args.batch_size
+    if r < 10:
+        over_sampling = 10/r
+        over_sampling = int(over_sampling) + 1
+        print(f"Oversampling {over_sampling} times")
+        to_keep = torch.cat([to_keep] * over_sampling)
         
     index_dataset = IndexWrapper(dataset.train_dataset)
     sampler = torch.utils.data.SubsetRandomSampler(to_keep)        
@@ -181,6 +232,9 @@ def train(task_vectors, args, comp_acc={}):
         
     best_coef = ddp_model.module.image_encoder.coef.data.clone()
     best_acc = args.zs_acc[target_dataset]
+    best_trained_acc = 0.0
+    best_trained_coef = ddp_model.module.image_encoder.coef.data.clone()
+    epoch_accs = []
     for epoch in range(args.epochs):
         for i, batch in enumerate(ddp_loader):
             start_time = time.time()
@@ -229,23 +283,41 @@ def train(task_vectors, args, comp_acc={}):
             image_encoder = ddp_model.module.image_encoder
             coef = ddp_model.module.image_encoder.coef
             acc = eval_single_dataset(image_encoder, target_dataset, args)["top1"]
+            epoch_accs.append(acc)
+            if acc > best_trained_acc:
+                best_trained_acc = acc
+                best_trained_coef = coef.data.clone()
             if acc > best_acc:
                 best_acc = acc
                 best_coef = coef.data.clone()
 
     if is_main_process():
         comp_acc[target_dataset] = best_acc
+        comp_acc[f"{target_dataset}_trained"] = best_trained_acc
+        comp_acc[f"{target_dataset}_epoch_accs"] = epoch_accs
         target_dataset = target_dataset.replace("Val", "")
         image_encoder = ddp_model.module.image_encoder
+        # Evaluate best trained coefficients on full test set
+        image_encoder.coef = torch.nn.Parameter(best_trained_coef)
+        comp_acc[f"{target_dataset}_trained"] = eval_single_dataset(image_encoder, target_dataset, args)["top1"]
+        # Evaluate overall best (may be zero-shot) on full test set
         image_encoder.coef = torch.nn.Parameter(best_coef)
         comp_acc[target_dataset] = eval_single_dataset(image_encoder, target_dataset, args)["top1"]
+        # Save nested results keyed by shot number
+        if os.path.exists(args.log_path):
+            with open(args.log_path, 'r') as f:
+                all_results = json.load(f)
+        else:
+            all_results = {}
+        shot_key = f"{args.subsample}_shot"
+        all_results[shot_key] = comp_acc
         with open(args.log_path, 'w') as f:
-            json.dump(comp_acc, f, indent=4)
+            json.dump(all_results, f, indent=4)
         if os.path.isfile(args.head_path):
-            heads = torch.load(args.head_path)
+            heads = torch.load(args.head_path, weights_only=False)
         else:
             heads = {}
-            
+
         heads[target_dataset] = best_coef
         torch.save(heads, args.head_path)
 
@@ -280,11 +352,7 @@ def train_adapter(ddp_model, ddp_loader, args, comp_acc, which='lpp'):
     
     model = ddp_model.module
     if which == 'lpp':
-        if type(args.subsample) == float:
-            shots = 100
-        else:
-            shots = args.subsample            
-        model = LPPWrapper(model, features_cache, labels, shots)
+        model = LPPWrapper(model, features_cache, labels, args.subsample)
         epochs = 300
         lr = model.lr_temp
     elif which == 'tip':
@@ -363,11 +431,19 @@ def train_adapter(ddp_model, ddp_loader, args, comp_acc, which='lpp'):
         target_dataset = target_dataset.replace("Val", "")
         image_encoder = ddp_model.module.model.image_encoder        
         comp_acc[target_dataset+f"_{which}"] = eval_single_dataset(image_encoder, target_dataset, args, model=ddp_model)["top1"]
+        # Save nested results keyed by shot number
+        if os.path.exists(args.log_path):
+            with open(args.log_path, 'r') as f:
+                all_results = json.load(f)
+        else:
+            all_results = {}
+        shot_key = f"{args.subsample}_shot"
+        all_results[shot_key] = comp_acc
         with open(args.log_path, 'w') as f:
-            json.dump(comp_acc, f, indent=4)
+            json.dump(all_results, f, indent=4)
             
         if os.path.isfile(args.head_path):
-            heads = torch.load(args.head_path)
+            heads = torch.load(args.head_path, weights_only=False)
         else:
             heads = {}
 
@@ -414,19 +490,16 @@ if __name__ == "__main__":
     args.print_every = 10
 
     args.logdir += f"{args.model}"
-    if type(args.subsample) == float:
-        args.logdir += f"/{args.subsample*100:.0f}perc"
-    else:
-        args.logdir += f"/{args.subsample}shots"
-        args.target_datasets = {k:10 for k,v in args.target_datasets.items()}#10 epochs for few-shots using ViTs. 
-        
+    args.target_datasets = {k:10 for k,v in args.target_datasets.items()} #10 epochs for few-shots using ViTs.
+
     args.save = os.path.join(args.save, f'{args.model}')
     if args.seed is not None:
         args.logdir += f"/{args.seed}"
-        
-    args.head_path = os.path.join(args.logdir, "learned_composition.pt")
+
+    shot_key = f"{args.subsample}_shot"
+    args.head_path = os.path.join(args.logdir, f"learned_composition_{shot_key}.pt")
     args.log_path = os.path.join(args.logdir, "learned_composition.json")
 
-    os.makedirs(args.logdir, exist_ok=True)      
-    
+    os.makedirs(args.logdir, exist_ok=True)
+
     torch.multiprocessing.spawn(main, args=(args,), nprocs=args.world_size)
