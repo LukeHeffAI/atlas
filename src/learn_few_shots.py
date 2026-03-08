@@ -674,7 +674,7 @@ if __name__ == "__main__":
     args.print_every = 10
 
     args.logdir += f"{args.model}"
-    args.target_datasets = {k:1 for k,v in args.target_datasets.items()} #10 epochs for few-shots using ViTs.
+    args.target_datasets = {k:10 for k,v in args.target_datasets.items()} #10 epochs for few-shots using ViTs.
 
     args.save = os.path.join(args.save, f'{args.model}')
     if args.seed is not None:
