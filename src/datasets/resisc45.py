@@ -18,12 +18,12 @@ class VisionDataset(Dataset[Dict[str, Any]], abc.ABC):
     """
 
     @abc.abstractmethod
-    def __getitem__(self, index: int) -> Dict[str, Any]:
+    def __getitem__(self, index: int) -> Tuple[Any, int]:
         """Return an index within the dataset.
         Args:
             index: index to return
         Returns:
-            data and labels at that index
+            image and label at that index
         Raises:
             IndexError: if index is out of range of the dataset
         """
@@ -82,12 +82,12 @@ class VisionClassificationDataset(VisionDataset, ImageFolder):
         # Must be set after calling super().__init__()
         self.transforms = transforms
 
-    def __getitem__(self, index: int) -> Dict[str, Tensor]:
+    def __getitem__(self, index: int) -> Tuple[Any, int]:
         """Return an index within the dataset.
         Args:
             index: index to return
         Returns:
-            data and label at that index
+            image and label at that index
         """
         image, label = self._load_image(index)
 
