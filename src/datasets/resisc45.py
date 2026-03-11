@@ -108,7 +108,7 @@ class VisionClassificationDataset(VisionDataset, ImageFolder):
         Args:
             index: index to return
         Returns:
-            the image (PIL Image when no transform is applied)
+            the image object returned by the configured loader (PIL Image by default)
             the image class label as an integer
         """
         img, label = ImageFolder.__getitem__(self, index)
