@@ -103,13 +103,13 @@ class VisionClassificationDataset(VisionDataset, ImageFolder):
         """
         return len(self.imgs)
 
-    def _load_image(self, index: int) -> Tuple[Tensor, Tensor]:
+    def _load_image(self, index: int) -> Tuple[Any, int]:
         """Load a single image and it's class label.
         Args:
             index: index to return
         Returns:
-            the image
-            the image class label
+            the image (PIL Image when no transform is applied)
+            the image class label as an integer
         """
         img, label = ImageFolder.__getitem__(self, index)
         return img, label
