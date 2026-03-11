@@ -112,7 +112,6 @@ class VisionClassificationDataset(VisionDataset, ImageFolder):
             the image class label
         """
         img, label = ImageFolder.__getitem__(self, index)
-        label = torch.tensor(label)
         return img, label
 
 
