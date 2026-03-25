@@ -155,10 +155,25 @@ def parse_arguments():
         help="Directory for caching features and encoder",
     )
     parser.add_argument(
+        "--clip-backend",
+        type=str,
+        default="clip",
+        choices=["clip", "openclip"],
+        help="CLIP implementation to use. 'clip' uses HuggingFace transformers "
+             "(original OpenAI CLIP weights, recommended). 'openclip' uses the "
+             "open-clip-torch package (for backward compatibility or ResNet models).",
+    )
+    parser.add_argument(
+        "--clip-cache-dir",
+        type=str,
+        default=os.path.expanduser("~/models"),
+        help="Directory for caching downloaded CLIP model files",
+    )
+    parser.add_argument(
         "--openclip-cachedir",
         type=str,
         default=os.path.expanduser("~/openclip-cachedir/open_clip"),
-        help="Directory for caching models from OpenCLIP",
+        help="Directory for caching models from OpenCLIP (deprecated, use --clip-cache-dir)",
     )
     parser.add_argument(
         "--world-size",
@@ -386,6 +401,81 @@ def parse_arguments():
         default="hypernetwork",
         choices=["synthetic", "hypernetwork", "both", "synthetic_pool"],
         help="Which text-based adaptation approach to use",
+    )
+
+    # Multi-modal hypernetwork arguments
+    parser.add_argument(
+        "--fusion-mode",
+        type=str,
+        default="concat",
+        choices=["concat", "add", "attention"],
+        help="How to fuse text and image branches in the multi-modal hypernetwork. "
+             "'concat' concatenates projections, 'add' sums them, 'attention' uses "
+             "cross-attention where text attends to images.",
+    )
+    parser.add_argument(
+        "--num-shots",
+        type=int,
+        default=4,
+        help="Number of support images per class for multi-modal episodes (K in K-shot).",
+    )
+    parser.add_argument(
+        "--image-pooling",
+        type=str,
+        default="mean",
+        choices=["mean", "attention"],
+        help="How to pool across K support images per class. "
+             "'mean' averages embeddings; 'attention' uses a learned attention query.",
+    )
+    parser.add_argument(
+        "--text-input-mode",
+        type=str,
+        default="dataset",
+        choices=["dataset", "per_class"],
+        help="How to handle text descriptions in the multi-modal hypernetwork. "
+             "'dataset' aggregates all descriptions into one embedding; "
+             "'per_class' encodes each class separately (aligned with per-class images).",
+    )
+    parser.add_argument(
+        "--variable-shots",
+        action="store_true",
+        default=False,
+        help="Randomly vary the number of shots per episode during meta-training "
+             "(between 1 and --num-shots) to improve robustness across shot counts.",
+    )
+    parser.add_argument(
+        "--proj-dim",
+        type=int,
+        default=256,
+        help="Projection dimension for text and image branches in the multi-modal hypernetwork.",
+    )
+    parser.add_argument(
+        "--eval-mode",
+        type=str,
+        default="multimodal",
+        choices=["multimodal", "text_only", "sweep"],
+        help="Evaluation mode for multi-modal hypernetwork. "
+             "'multimodal' uses text+images, 'text_only' uses text alone, "
+             "'sweep' evaluates across multiple shot counts (0,1,2,4,8,16).",
+    )
+    parser.add_argument(
+        "--freeze-image-encoder",
+        action="store_true",
+        default=True,
+        help="Freeze image encoder in the multi-modal hypernetwork during training.",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default=None,
+        help="Target dataset for evaluation (e.g. Flowers102, Cars).",
+    )
+    parser.add_argument(
+        "--num-eval-seeds",
+        type=int,
+        default=3,
+        help="Number of random seeds for multi-seed evaluation in sweep mode. "
+             "Results report mean ± 95%% confidence interval.",
     )
 
     parsed_args = parser.parse_args()
