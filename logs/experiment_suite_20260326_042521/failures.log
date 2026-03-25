@@ -5,3 +5,4 @@ clip_ViT-B-32_task_negation|[clip] ViT-B-32: Learn task negation|python src/lear
 clip_ViT-B-32_task_addition|[clip] ViT-B-32: Learn task addition|python src/learn_task_addition.py --model=ViT-B-32 --clip-backend=clip --checkpoint-root=checkpoints_clip --blockwise-coef
 clip_ViT-B-32_ufm|[clip] ViT-B-32: Test-time adaptation (UFM)|python src/learn_ufm.py --model=ViT-B-32 --clip-backend=clip --checkpoint-root=checkpoints_clip --logdir=results_clip/ --blockwise-coef
 clip_ViT-B-32_few_shot|[clip] ViT-B-32: Few-shot adaptation (2 shots)|python src/learn_few_shots.py --model=ViT-B-32 --clip-backend=clip --checkpoint-root=checkpoints_clip --logdir=results_clip/ --blockwise-coef --subsample 2
+clip_ViT-B-32_few_shot_tip|[clip] ViT-B-32: Few-shot + tip adapter (2 shots)|python src/learn_few_shots.py --model=ViT-B-32 --clip-backend=clip --checkpoint-root=checkpoints_clip --logdir=results_clip/ --blockwise-coef --subsample 2 --adapter tip

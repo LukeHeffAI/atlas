@@ -28,3 +28,5 @@
 [2026-03-26 04:25:45] START: [clip] ViT-B-32: Few-shot adaptation (2 shots) (step clip_ViT-B-32_few_shot)
 [2026-03-26 04:28:04] FAIL:  [clip] ViT-B-32: Few-shot adaptation (2 shots) (139s, exit 1)
 [2026-03-26 04:28:04] START: [clip] ViT-B-32: Few-shot + tip adapter (2 shots) (step clip_ViT-B-32_few_shot_tip)
+[2026-03-26 04:30:22] FAIL:  [clip] ViT-B-32: Few-shot + tip adapter (2 shots) (138s, exit 1)
+[2026-03-26 04:30:22] START: [clip] ViT-B-32: Few-shot + lpp adapter (2 shots) (step clip_ViT-B-32_few_shot_lpp)
