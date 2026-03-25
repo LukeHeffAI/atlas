@@ -5,7 +5,7 @@ This document contains detailed implementation plans for extending the text-base
 **Note**: The core text-to-coefficient hypernetwork is now implemented in `src/hypernetworks/text_to_coef.py`. This roadmap covers future extensions.
 
 Created: 2026-01-13
-Last Updated: 2026-03-25
+Last Updated: 2026-02-03
 
 ## Current Implementation Status
 
@@ -20,7 +20,7 @@ The following components are **implemented**:
 
 The following are **planned** (documented in this roadmap):
 - ⬜ Full LoRA weight prediction
-- ✅ Multi-modal hypernetwork (text + images) — implemented 2026-03-25
+- ⬜ Multi-modal hypernetwork (text + images)
 - ⬜ Cross-model generalization
 - ⬜ Domain-specific adaptation
 - ⬜ Task composition

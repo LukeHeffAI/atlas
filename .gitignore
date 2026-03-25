@@ -170,5 +170,3 @@ cython_debug/
 #.idea/
 .claude/skills/*/SKILL.md
 results/analysis/**
-
-!/failed_evaluations.json

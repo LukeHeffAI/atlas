@@ -8,10 +8,10 @@ at https://github.com/mlfoundations/task_vectors and
 https://github.com/gortizji/tangent_task_arithmetic
 """
 
+import open_clip # Check whether this should be regular CLIP
 import torch
 
 import utils
-from clip_backends import load_clip_model
 
 
 class ImageEncoder(torch.nn.Module):
@@ -27,33 +27,18 @@ class ImageEncoder(torch.nn.Module):
         else:
             name = args.model
             pretrained = "openai"
-
-        backend = getattr(args, "clip_backend", "clip")
-        cache_dir = getattr(args, "clip_cache_dir", None)
-        # Fall back to legacy openclip-cachedir when using the openclip backend
-        if backend == "openclip" and cache_dir is None:
-            cache_dir = getattr(args, "openclip_cachedir", None)
-
         (
             self.model,
             self.train_preprocess,
             self.val_preprocess,
-        ) = load_clip_model(
-            name, pretrained=pretrained, backend=backend, cache_dir=cache_dir
+        ) = open_clip.create_model_and_transforms(
+            name, pretrained=pretrained, cache_dir=args.openclip_cachedir
         )
 
         self.cache_dir = args.cache_dir
 
-        if not keep_lang:
-            # Remove text components to save memory
-            if hasattr(self.model, "transformer"):
-                delattr(self.model, "transformer")
-            # For HF CLIP wrapper, also remove underlying text model
-            if hasattr(self.model, "clip_model"):
-                clip = self.model.clip_model
-                for attr in ("text_model", "text_projection"):
-                    if hasattr(clip, attr):
-                        delattr(clip, attr)
+        if not keep_lang and hasattr(self.model, "transformer"):
+            delattr(self.model, "transformer")
 
     def forward(self, images):
         assert self.model is not None

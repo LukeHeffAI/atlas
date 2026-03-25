@@ -85,10 +85,6 @@ def setup_ddp(rank, world_size, port=12357):
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = str(port)
 
-    # Tear down any leftover process group (e.g. from a failed previous run).
-    if torch.distributed.is_initialized():
-        torch.distributed.destroy_process_group()
-
     # initialize the process group
     torch.distributed.init_process_group(
         "nccl",

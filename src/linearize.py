@@ -120,7 +120,6 @@ class LinearizedImageEncoder(abc.ABC, nn.Module):
         self.cache_dir = image_encoder.cache_dir
 
         self._model_name = self._get_name(args.model)
-        self._clip_backend = getattr(args, "clip_backend", "clip")
         self.model = LinearizedModel(init_model=init_encoder, model=image_encoder)
 
     def _get_name(self, model_name):
@@ -150,7 +149,6 @@ class LinearizedImageEncoder(abc.ABC, nn.Module):
 
         state_dict = self.state_dict()
         state_dict["model_name"] = self._model_name
-        state_dict["clip_backend"] = getattr(self, "_clip_backend", "openclip")
 
         torch.save(state_dict, filename)
 
@@ -171,11 +169,7 @@ class LinearizedImageEncoder(abc.ABC, nn.Module):
         state_dict = torch.load(filename, map_location="cpu", weights_only=False)
 
         # ImageEncoder expects a DotDict
-        clip_backend = state_dict.pop("clip_backend", "openclip")
-        args = DotDict({
-            "model": state_dict["model_name"],
-            "clip_backend": clip_backend,
-        })
+        args = DotDict({"model": state_dict["model_name"]})
         taylorized_encoder = cls(args)
 
         # Remove the model name from the state dict so that we can load the
