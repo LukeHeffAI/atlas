@@ -1,0 +1,176 @@
+====================================================================================================
+Finetuning ViT-B-32 on Cars
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:13.901980871 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/CarsVal/finetuned.pt exists.
+[rank0]:[W326 01:17:14.064839056 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on DTD
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:16.340304828 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/DTDVal/finetuned.pt exists.
+[rank0]:[W326 01:17:16.500486516 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on EuroSAT
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:18.779303324 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/EuroSATVal/finetuned.pt exists.
+[rank0]:[W326 01:17:18.942329446 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on GTSRB
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:21.198271583 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/GTSRBVal/finetuned.pt exists.
+[rank0]:[W326 01:17:21.359130841 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on MNIST
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:23.644683625 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/MNISTVal/finetuned.pt exists.
+[rank0]:[W326 01:17:23.811896695 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on RESISC45
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:26.078065051 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/RESISC45Val/finetuned.pt exists.
+[rank0]:[W326 01:17:26.243093555 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on SUN397
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:28.557361145 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/SUN397Val/finetuned.pt exists.
+[rank0]:[W326 01:17:28.723014293 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on SVHN
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:31.976142301 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/SVHNVal/finetuned.pt exists.
+[rank0]:[W326 01:17:31.148071321 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on CIFAR10
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:33.430837552 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/CIFAR10Val/finetuned.pt exists.
+[rank0]:[W326 01:17:33.605725740 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on CIFAR100
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:35.882840727 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/CIFAR100Val/finetuned.pt exists.
+[rank0]:[W326 01:17:36.044910123 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on ImageNet
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:38.331198643 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/ImageNetVal/finetuned.pt exists.
+[rank0]:[W326 01:17:38.493139884 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on STL10
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:40.768523193 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/STL10Val/finetuned.pt exists.
+[rank0]:[W326 01:17:40.937488142 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on Food101
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:43.212970232 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/Food101Val/finetuned.pt exists.
+[rank0]:[W326 01:17:43.380420615 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on Caltech101
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:45.699198716 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/Caltech101Val/finetuned.pt exists.
+[rank0]:[W326 01:17:45.860076182 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on Caltech256
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:48.138937962 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/Caltech256Val/finetuned.pt exists.
+[rank0]:[W326 01:17:48.311321063 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on FGVCAircraft
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:50.628878256 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/FGVCAircraftVal/finetuned.pt exists.
+[rank0]:[W326 01:17:50.797789978 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on Flowers102
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:53.055694808 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/Flowers102Val/finetuned.pt exists.
+[rank0]:[W326 01:17:53.220545371 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on OxfordIIITPet
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:55.509391026 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/OxfordIIITPetVal/finetuned.pt exists.
+[rank0]:[W326 01:17:55.705096666 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on CUB200
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:17:57.942836835 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/CUB200Val/finetuned.pt exists.
+[rank0]:[W326 01:17:58.108174020 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on PascalVOC
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:18:00.386642939 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/PascalVOCVal/finetuned.pt exists.
+[rank0]:[W326 01:18:00.551253433 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on Country211
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:18:02.809262928 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/Country211Val/finetuned.pt exists.
+[rank0]:[W326 01:18:03.973263200 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+====================================================================================================
+Finetuning ViT-B-32 on UCF101
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 01:18:05.229227166 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Skipping fine-tuning because checkpoints/ViT-B-32/UCF101Val/finetuned.pt exists.
+[rank0]:[W326 01:18:05.391446740 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

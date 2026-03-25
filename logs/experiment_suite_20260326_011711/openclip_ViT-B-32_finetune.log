@@ -1,0 +1,45 @@
+====================================================================================================
+Finetuning ViT-B-32 on Cars
+====================================================================================================
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 02:00:16.747668292 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/open_clip/factory.py:450: UserWarning: QuickGELU mismatch between final model config (quick_gelu=False) and pretrained tag 'openai' (quick_gelu=True).
+  warnings.warn(
+Building image encoder.
+Loading ViT-B-32 pre-trained weights.
+Did not find classification head for ViT-B-32 on CarsVal at checkpoints_openclip/ViT-B-32/head_CarsVal.pt, building one from scratch.
+Loading ViT-B-32 pre-trained weights.
+Building classification head.
+  0%|          | 0/196 [00:00<?, ?it/s]  5%|▍         | 9/196 [00:00<00:02, 88.25it/s] 23%|██▎       | 46/196 [00:00<00:00, 248.42it/s] 42%|████▏     | 82/196 [00:00<00:00, 297.81it/s] 60%|██████    | 118/196 [00:00<00:00, 320.73it/s] 78%|███████▊  | 153/196 [00:00<00:00, 331.15it/s] 96%|█████████▋| 189/196 [00:00<00:00, 338.77it/s]100%|██████████| 196/196 [00:00<00:00, 311.88it/s]
+Saving classification head to checkpoints_openclip/ViT-B-32/head_CarsVal.pt
+Subsampling dataloader from size 7330 to size 7330.
+Saving image encoder to checkpoints_openclip/ViT-B-32/CarsVal/zeroshot.pt
+[rank0]:[W326 02:00:42.698103937 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/finetune.py", line 283, in <module>
+    torch.multiprocessing.spawn(finetune, args=(args,), nprocs=args.world_size)
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 340, in spawn
+    return start_processes(fn, args, nprocs, join, daemon, start_method="spawn")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 296, in start_processes
+    while not context.join():
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 211, in join
+    raise ProcessRaisedException(msg, error_index, failed_process.pid)
+torch.multiprocessing.spawn.ProcessRaisedException: 
+
+-- Process 0 terminated with the following error:
+Traceback (most recent call last):
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 87, in _wrap
+    fn(i, *args)
+  File "/home/luke/Documents/GitHub/atlas/src/finetune.py", line 148, in finetune
+    ddp_model.module.image_encoder.save(model_path)
+  File "/home/luke/Documents/GitHub/atlas/src/modeling.py", line 67, in save
+    utils.torch_save(self, filename)
+  File "/home/luke/Documents/GitHub/atlas/src/utils.py", line 52, in torch_save
+    torch.save(model, save_path)
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 977, in save
+    _save(
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 1227, in _save
+    pickler.dump(obj)
+AttributeError: Can't pickle local object '_load_openclip.<locals>.<lambda>'
+

@@ -1,0 +1,122 @@
+[2026-03-26 01:17:11] ========================================================
+[2026-03-26 01:17:11] aTLAS Full Experiment Suite
+[2026-03-26 01:17:11] Started: Thu 26 Mar 2026 01:17:11 AM ACDT
+[2026-03-26 01:17:11] Log directory: logs/experiment_suite_20260326_011711
+[2026-03-26 01:17:11] ========================================================
+[2026-03-26 01:17:11] 
+[2026-03-26 01:17:11] ############################################################
+[2026-03-26 01:17:11] # PHASE 1: HuggingFace CLIP Backend                       #
+[2026-03-26 01:17:11] ############################################################
+[2026-03-26 01:17:11] 
+[2026-03-26 01:17:11] ========================================================
+[2026-03-26 01:17:11] Starting experiments: model=ViT-B-32, backend=clip
+[2026-03-26 01:17:11]   Checkpoints: checkpoints/ViT-B-32/
+[2026-03-26 01:17:11]   Results:     results/ViT-B-32/
+[2026-03-26 01:17:11] ========================================================
+[2026-03-26 01:17:11] START: [clip] ViT-B-32: Fine-tune on all datasets (step clip_ViT-B-32_finetune)
+[2026-03-26 01:18:06] PASS:  [clip] ViT-B-32: Fine-tune on all datasets (55s)
+[2026-03-26 01:18:06] START: [clip] ViT-B-32: Evaluate single-task (none) (step clip_ViT-B-32_eval_none)
+[2026-03-26 01:18:10] FAIL:  [clip] ViT-B-32: Evaluate single-task (none) (4s, exit 1)
+[2026-03-26 01:18:10] START: [clip] ViT-B-32: Evaluate single-task (standard) (step clip_ViT-B-32_eval_standard)
+[2026-03-26 01:18:14] FAIL:  [clip] ViT-B-32: Evaluate single-task (standard) (4s, exit 1)
+[2026-03-26 01:18:14] START: [clip] ViT-B-32: Learn task negation (step clip_ViT-B-32_task_negation)
+[2026-03-26 01:19:03] FAIL:  [clip] ViT-B-32: Learn task negation (49s, exit 1)
+[2026-03-26 01:19:03] START: [clip] ViT-B-32: Learn task addition (step clip_ViT-B-32_task_addition)
+[2026-03-26 01:19:35] FAIL:  [clip] ViT-B-32: Learn task addition (32s, exit 1)
+[2026-03-26 01:19:35] START: [clip] ViT-B-32: Test-time adaptation (UFM) (step clip_ViT-B-32_ufm)
+[2026-03-26 01:20:00] FAIL:  [clip] ViT-B-32: Test-time adaptation (UFM) (25s, exit 1)
+[2026-03-26 01:20:00] START: [clip] ViT-B-32: Few-shot adaptation (2 shots) (step clip_ViT-B-32_few_shot)
+[2026-03-26 01:30:02] PASS:  [clip] ViT-B-32: Few-shot adaptation (2 shots) (602s)
+[2026-03-26 01:30:02] START: [clip] ViT-B-32: Few-shot + tip adapter (2 shots) (step clip_ViT-B-32_few_shot_tip)
+[2026-03-26 01:39:57] PASS:  [clip] ViT-B-32: Few-shot + tip adapter (2 shots) (595s)
+[2026-03-26 01:39:57] START: [clip] ViT-B-32: Few-shot + lpp adapter (2 shots) (step clip_ViT-B-32_few_shot_lpp)
+[2026-03-26 01:49:53] PASS:  [clip] ViT-B-32: Few-shot + lpp adapter (2 shots) (596s)
+[2026-03-26 01:49:53] START: [clip] ViT-B-32: aTLAS x K (partition=10, subsample=0.25) (step clip_ViT-B-32_atlas_x_k_0.25)
+[2026-03-26 02:00:11] PASS:  [clip] ViT-B-32: aTLAS x K (partition=10, subsample=0.25) (618s)
+[2026-03-26 02:00:11] START: [clip] ViT-B-32: Meta-train text-to-coefficient hypernetwork (step clip_ViT-B-32_text_hypernetwork)
+[2026-03-26 02:00:12] FAIL:  [clip] ViT-B-32: Meta-train text-to-coefficient hypernetwork (1s, exit 1)
+[2026-03-26 02:00:12] START: [clip] ViT-B-32: Meta-train multi-modal hypernetwork (step clip_ViT-B-32_multimodal_hypernetwork)
+[2026-03-26 02:00:14] FAIL:  [clip] ViT-B-32: Meta-train multi-modal hypernetwork (2s, exit 1)
+[2026-03-26 02:00:14] Finished experiments: model=ViT-B-32, backend=clip
+[2026-03-26 02:00:14] 
+[2026-03-26 02:00:14] ############################################################
+[2026-03-26 02:00:14] # PHASE 2: OpenCLIP Backend                                #
+[2026-03-26 02:00:14] ############################################################
+[2026-03-26 02:00:14] 
+[2026-03-26 02:00:14] ========================================================
+[2026-03-26 02:00:14] Starting experiments: model=ViT-B-32, backend=openclip
+[2026-03-26 02:00:14]   Checkpoints: checkpoints_openclip/ViT-B-32/
+[2026-03-26 02:00:14]   Results:     results_openclip/ViT-B-32/
+[2026-03-26 02:00:14] ========================================================
+[2026-03-26 02:00:14] START: [openclip] ViT-B-32: Fine-tune on all datasets (step openclip_ViT-B-32_finetune)
+[2026-03-26 02:00:43] FAIL:  [openclip] ViT-B-32: Fine-tune on all datasets (29s, exit 1)
+[2026-03-26 02:00:43] START: [openclip] ViT-B-32: Evaluate single-task (none) (step openclip_ViT-B-32_eval_none)
+[2026-03-26 02:00:45] FAIL:  [openclip] ViT-B-32: Evaluate single-task (none) (2s, exit 1)
+[2026-03-26 02:00:45] START: [openclip] ViT-B-32: Evaluate single-task (standard) (step openclip_ViT-B-32_eval_standard)
+[2026-03-26 02:00:46] FAIL:  [openclip] ViT-B-32: Evaluate single-task (standard) (1s, exit 1)
+[2026-03-26 02:00:46] START: [openclip] ViT-B-32: Learn task negation (step openclip_ViT-B-32_task_negation)
+[2026-03-26 02:00:48] FAIL:  [openclip] ViT-B-32: Learn task negation (2s, exit 1)
+[2026-03-26 02:00:48] START: [openclip] ViT-B-32: Learn task addition (step openclip_ViT-B-32_task_addition)
+[2026-03-26 02:00:49] FAIL:  [openclip] ViT-B-32: Learn task addition (1s, exit 1)
+[2026-03-26 02:00:49] START: [openclip] ViT-B-32: Test-time adaptation (UFM) (step openclip_ViT-B-32_ufm)
+[2026-03-26 02:00:52] FAIL:  [openclip] ViT-B-32: Test-time adaptation (UFM) (3s, exit 1)
+[2026-03-26 02:00:52] START: [openclip] ViT-B-32: Few-shot adaptation (2 shots) (step openclip_ViT-B-32_few_shot)
+[2026-03-26 02:10:18] PASS:  [openclip] ViT-B-32: Few-shot adaptation (2 shots) (566s)
+[2026-03-26 02:10:18] START: [openclip] ViT-B-32: Few-shot + tip adapter (2 shots) (step openclip_ViT-B-32_few_shot_tip)
+[2026-03-26 02:18:44] PASS:  [openclip] ViT-B-32: Few-shot + tip adapter (2 shots) (506s)
+[2026-03-26 02:18:44] START: [openclip] ViT-B-32: Few-shot + lpp adapter (2 shots) (step openclip_ViT-B-32_few_shot_lpp)
+[2026-03-26 02:27:09] PASS:  [openclip] ViT-B-32: Few-shot + lpp adapter (2 shots) (505s)
+[2026-03-26 02:27:09] START: [openclip] ViT-B-32: aTLAS x K (partition=10, subsample=0.25) (step openclip_ViT-B-32_atlas_x_k_0.25)
+[2026-03-26 02:36:13] PASS:  [openclip] ViT-B-32: aTLAS x K (partition=10, subsample=0.25) (544s)
+[2026-03-26 02:36:13] START: [openclip] ViT-B-32: Meta-train text-to-coefficient hypernetwork (step openclip_ViT-B-32_text_hypernetwork)
+[2026-03-26 02:36:14] FAIL:  [openclip] ViT-B-32: Meta-train text-to-coefficient hypernetwork (1s, exit 1)
+[2026-03-26 02:36:14] START: [openclip] ViT-B-32: Meta-train multi-modal hypernetwork (step openclip_ViT-B-32_multimodal_hypernetwork)
+[2026-03-26 02:36:16] FAIL:  [openclip] ViT-B-32: Meta-train multi-modal hypernetwork (2s, exit 1)
+[2026-03-26 02:36:16] Finished experiments: model=ViT-B-32, backend=openclip
+[2026-03-26 02:36:16] 
+[2026-03-26 02:36:16] ========================================================
+[2026-03-26 02:36:16] EXPERIMENT SUITE COMPLETE
+[2026-03-26 02:36:16] ========================================================
+[2026-03-26 02:36:16] Total time:   1h 19m
+[2026-03-26 02:36:16] Total steps:  24
+[2026-03-26 02:36:16] Passed:       9
+[2026-03-26 02:36:16] Failed:       15
+[2026-03-26 02:36:16] Skipped:      0
+[2026-03-26 02:36:16] Log directory: logs/experiment_suite_20260326_011711
+[2026-03-26 02:36:16] 
+[2026-03-26 02:36:16] FAILURES (15):
+[2026-03-26 02:36:16]   - [clip] ViT-B-32: Evaluate single-task (none)
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/clip_ViT-B-32_eval_none.log
+[2026-03-26 02:36:16]   - [clip] ViT-B-32: Evaluate single-task (standard)
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/clip_ViT-B-32_eval_standard.log
+[2026-03-26 02:36:16]   - [clip] ViT-B-32: Learn task negation
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/clip_ViT-B-32_task_negation.log
+[2026-03-26 02:36:16]   - [clip] ViT-B-32: Learn task addition
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/clip_ViT-B-32_task_addition.log
+[2026-03-26 02:36:16]   - [clip] ViT-B-32: Test-time adaptation (UFM)
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/clip_ViT-B-32_ufm.log
+[2026-03-26 02:36:16]   - [clip] ViT-B-32: Meta-train text-to-coefficient hypernetwork
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/clip_ViT-B-32_text_hypernetwork.log
+[2026-03-26 02:36:16]   - [clip] ViT-B-32: Meta-train multi-modal hypernetwork
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/clip_ViT-B-32_multimodal_hypernetwork.log
+[2026-03-26 02:36:16]   - [openclip] ViT-B-32: Fine-tune on all datasets
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/openclip_ViT-B-32_finetune.log
+[2026-03-26 02:36:16]   - [openclip] ViT-B-32: Evaluate single-task (none)
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/openclip_ViT-B-32_eval_none.log
+[2026-03-26 02:36:16]   - [openclip] ViT-B-32: Evaluate single-task (standard)
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/openclip_ViT-B-32_eval_standard.log
+[2026-03-26 02:36:16]   - [openclip] ViT-B-32: Learn task negation
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/openclip_ViT-B-32_task_negation.log
+[2026-03-26 02:36:16]   - [openclip] ViT-B-32: Learn task addition
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/openclip_ViT-B-32_task_addition.log
+[2026-03-26 02:36:16]   - [openclip] ViT-B-32: Test-time adaptation (UFM)
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/openclip_ViT-B-32_ufm.log
+[2026-03-26 02:36:16]   - [openclip] ViT-B-32: Meta-train text-to-coefficient hypernetwork
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/openclip_ViT-B-32_text_hypernetwork.log
+[2026-03-26 02:36:16]   - [openclip] ViT-B-32: Meta-train multi-modal hypernetwork
+[2026-03-26 02:36:16]     Log: logs/experiment_suite_20260326_011711/openclip_ViT-B-32_multimodal_hypernetwork.log
+[2026-03-26 02:36:16] 
+[2026-03-26 02:36:16] To rerun failed steps:
+[2026-03-26 02:36:16]   Option 1: ./scripts/run_full_experiment_suite.sh --rerun
+[2026-03-26 02:36:16]   Option 2: logs/experiment_suite_20260326_011711/rerun_failures.sh
+[2026-03-26 02:36:16] ========================================================

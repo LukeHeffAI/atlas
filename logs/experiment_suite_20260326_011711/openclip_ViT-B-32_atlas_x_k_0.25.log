@@ -1,0 +1,644 @@
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/open_clip/factory.py:450: UserWarning: QuickGELU mismatch between final model config (quick_gelu=False) and pretrained tag 'openai' (quick_gelu=True).
+  warnings.warn(
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 02:27:13.058495329 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+Warning: Missing checkpoint for Cars (source=real), skipping
+Warning: Missing checkpoint for DTD (source=real), skipping
+Warning: Missing checkpoint for EuroSAT (source=real), skipping
+Warning: Missing checkpoint for GTSRB (source=real), skipping
+Warning: Missing checkpoint for MNIST (source=real), skipping
+Warning: Missing checkpoint for RESISC45 (source=real), skipping
+Warning: Missing checkpoint for SVHN (source=real), skipping
+Warning: Missing checkpoint for CIFAR10 (source=real), skipping
+Warning: Missing checkpoint for CIFAR100 (source=real), skipping
+Warning: Missing checkpoint for STL10 (source=real), skipping
+Warning: Missing checkpoint for Food101 (source=real), skipping
+Warning: Missing checkpoint for Caltech101 (source=real), skipping
+Warning: Missing checkpoint for Caltech256 (source=real), skipping
+Warning: Missing checkpoint for FGVCAircraft (source=real), skipping
+Warning: Missing checkpoint for Flowers102 (source=real), skipping
+Warning: Missing checkpoint for OxfordIIITPet (source=real), skipping
+Warning: Missing checkpoint for CUB200 (source=real), skipping
+Warning: Missing checkpoint for PascalVOC (source=real), skipping
+Warning: Missing checkpoint for Country211 (source=real), skipping
+Warning: Missing checkpoint for UCF101 (source=real), skipping
+Warning: Missing checkpoint for SUN397 (source=real), skipping
+Warning: Missing checkpoint for ImageNet (source=real), skipping
+Loading ViT-B-32 pre-trained weights.
+Classification head for ViT-B-32 on CarsVal exists at checkpoints_openclip/ViT-B-32/head_CarsVal.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_CarsVal.pt
+====================================================================================================
+Learning task vector coefficients on Cars with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/58 [00:00<?, ?it/s]  2%|▏         | 1/58 [00:13<12:37, 13.29s/it] 16%|█▌        | 9/58 [00:13<00:54,  1.12s/it] 21%|██        | 12/58 [00:13<00:35,  1.31it/s] 29%|██▉       | 17/58 [00:14<00:19,  2.12it/s] 43%|████▎     | 25/58 [00:14<00:08,  3.69it/s] 57%|█████▋    | 33/58 [00:15<00:04,  5.51it/s] 71%|███████   | 41/58 [00:15<00:02,  7.23it/s] 76%|███████▌  | 44/58 [00:16<00:01,  8.26it/s] 84%|████████▍ | 49/58 [00:16<00:00,  9.09it/s] 98%|█████████▊| 57/58 [00:16<00:00, 11.52it/s]100%|██████████| 58/58 [00:17<00:00,  3.32it/s]
+/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py:421: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = GradScaler()
+=> Zero-shot accuracy on CarsVal:	51.49%.
+[rank0]:[W326 02:27:47.152784175 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED Cars / 0.25_shot: element 0 of tensors does not require grad and does not have a grad_fn
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 455, in train
+    scaler.scale(loss).backward()
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/_tensor.py", line 630, in backward
+    torch.autograd.backward(
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/autograd/__init__.py", line 364, in backward
+    _engine_run_backward(
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/autograd/graph.py", line 865, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+RuntimeError: element 0 of tensors does not require grad and does not have a grad_fn
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on DTDVal exists at checkpoints_openclip/ViT-B-32/head_DTDVal.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_DTDVal.pt
+====================================================================================================
+Learning task vector coefficients on DTD with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/27 [00:00<?, ?it/s]  4%|▎         | 1/27 [00:13<05:52, 13.55s/it] 33%|███▎      | 9/27 [00:13<00:20,  1.14s/it] 63%|██████▎   | 17/27 [00:14<00:05,  1.93it/s] 93%|█████████▎| 25/27 [00:14<00:00,  3.28it/s]100%|██████████| 27/27 [00:15<00:00,  1.76it/s]
+[rank0]:[W326 02:28:04.186901085 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED DTD / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/DTDVal does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/DTDVal does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on EuroSATVal exists at checkpoints_openclip/ViT-B-32/head_EuroSATVal.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_EuroSATVal.pt
+====================================================================================================
+Learning task vector coefficients on EuroSAT with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/169 [00:00<?, ?it/s]  1%|          | 1/169 [00:13<37:35, 13.42s/it]  5%|▌         | 9/169 [00:13<02:55,  1.10s/it] 10%|█         | 17/169 [00:13<01:13,  2.06it/s] 15%|█▍        | 25/169 [00:13<00:39,  3.62it/s] 20%|█▉        | 33/169 [00:14<00:23,  5.69it/s] 24%|██▍       | 41/169 [00:14<00:15,  8.30it/s] 29%|██▉       | 49/169 [00:14<00:10, 11.70it/s] 34%|███▎      | 57/169 [00:14<00:07, 15.73it/s] 38%|███▊      | 65/169 [00:14<00:05, 20.34it/s] 43%|████▎     | 73/169 [00:14<00:03, 25.24it/s] 48%|████▊     | 81/169 [00:14<00:02, 29.72it/s] 53%|█████▎    | 89/169 [00:15<00:02, 34.61it/s] 57%|█████▋    | 97/169 [00:15<00:01, 38.92it/s] 62%|██████▏   | 105/169 [00:15<00:01, 42.69it/s] 67%|██████▋   | 113/169 [00:15<00:01, 45.75it/s] 72%|███████▏  | 121/169 [00:15<00:01, 47.91it/s] 76%|███████▋  | 129/169 [00:15<00:00, 49.79it/s] 81%|████████  | 137/169 [00:15<00:00, 51.00it/s] 86%|████████▌ | 145/169 [00:16<00:00, 51.93it/s] 91%|█████████ | 153/169 [00:16<00:00, 50.24it/s] 95%|█████████▌| 161/169 [00:16<00:00, 51.71it/s]100%|██████████| 169/169 [00:16<00:00, 57.26it/s]100%|██████████| 169/169 [00:17<00:00,  9.84it/s]
+[rank0]:[W326 02:28:23.248546250 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED EuroSAT / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/EuroSATVal does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/EuroSATVal does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on GTSRBVal exists at checkpoints_openclip/ViT-B-32/head_GTSRBVal.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_GTSRBVal.pt
+====================================================================================================
+Learning task vector coefficients on GTSRB with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/188 [00:00<?, ?it/s]  1%|          | 1/188 [00:13<40:40, 13.05s/it]  5%|▍         | 9/188 [00:13<03:10,  1.07s/it]  9%|▉         | 17/188 [00:13<01:20,  2.13it/s] 13%|█▎        | 25/188 [00:13<00:43,  3.76it/s] 18%|█▊        | 33/188 [00:13<00:26,  5.94it/s] 22%|██▏       | 41/188 [00:13<00:16,  8.80it/s] 26%|██▌       | 49/188 [00:13<00:11, 12.45it/s] 30%|███       | 57/188 [00:13<00:07, 16.89it/s] 35%|███▍      | 65/188 [00:14<00:05, 22.05it/s] 38%|███▊      | 72/188 [00:14<00:04, 26.88it/s] 42%|████▏     | 79/188 [00:14<00:03, 31.90it/s] 46%|████▋     | 87/188 [00:14<00:02, 38.13it/s] 51%|█████     | 95/188 [00:14<00:02, 44.08it/s] 55%|█████▍    | 103/188 [00:14<00:01, 49.24it/s] 59%|█████▉    | 111/188 [00:14<00:01, 53.12it/s] 63%|██████▎   | 119/188 [00:14<00:01, 56.29it/s] 68%|██████▊   | 127/188 [00:15<00:01, 58.45it/s] 72%|███████▏  | 135/188 [00:15<00:00, 59.35it/s] 76%|███████▌  | 143/188 [00:15<00:00, 61.22it/s] 80%|████████  | 151/188 [00:15<00:00, 62.47it/s] 85%|████████▍ | 159/188 [00:15<00:00, 63.33it/s] 89%|████████▉ | 167/188 [00:15<00:00, 63.71it/s] 93%|█████████▎| 175/188 [00:15<00:00, 64.25it/s] 97%|█████████▋| 183/188 [00:15<00:00, 65.30it/s]100%|██████████| 188/188 [00:16<00:00, 11.34it/s]
+[rank0]:[W326 02:28:41.803226750 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED GTSRB / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/GTSRBVal does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/GTSRBVal does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on MNISTVal exists at checkpoints_openclip/ViT-B-32/head_MNISTVal.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_MNISTVal.pt
+====================================================================================================
+Learning task vector coefficients on MNIST with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/430 [00:00<?, ?it/s]  0%|          | 1/430 [00:12<1:31:40, 12.82s/it]  2%|▏         | 9/430 [00:12<07:21,  1.05s/it]    4%|▍         | 17/430 [00:13<03:10,  2.17it/s]  6%|▌         | 25/430 [00:13<01:45,  3.84it/s]  8%|▊         | 33/430 [00:13<01:05,  6.09it/s] 10%|▉         | 41/430 [00:13<00:42,  9.05it/s] 11%|█▏        | 49/430 [00:13<00:29, 12.80it/s] 13%|█▎        | 57/430 [00:13<00:21, 17.56it/s] 15%|█▌        | 65/430 [00:13<00:15, 23.27it/s] 17%|█▋        | 73/430 [00:13<00:11, 29.77it/s] 19%|█▉        | 81/430 [00:14<00:10, 33.66it/s] 21%|██        | 89/430 [00:14<00:08, 40.55it/s] 23%|██▎       | 97/430 [00:14<00:07, 46.37it/s] 24%|██▍       | 105/430 [00:14<00:06, 50.85it/s] 26%|██▋       | 113/430 [00:14<00:05, 54.13it/s] 28%|██▊       | 121/430 [00:14<00:05, 58.87it/s] 30%|███       | 129/430 [00:14<00:04, 62.48it/s] 32%|███▏      | 137/430 [00:14<00:04, 65.91it/s] 34%|███▎      | 145/430 [00:14<00:04, 68.79it/s] 36%|███▌      | 153/430 [00:15<00:03, 70.06it/s] 37%|███▋      | 161/430 [00:15<00:03, 70.68it/s] 39%|███▉      | 169/430 [00:15<00:03, 70.35it/s] 41%|████      | 177/430 [00:15<00:03, 71.17it/s] 43%|████▎     | 185/430 [00:15<00:03, 71.95it/s] 45%|████▍     | 193/430 [00:15<00:03, 72.94it/s] 47%|████▋     | 201/430 [00:15<00:03, 74.17it/s] 49%|████▊     | 209/430 [00:15<00:03, 72.78it/s] 50%|█████     | 217/430 [00:15<00:02, 74.06it/s] 52%|█████▏    | 225/430 [00:15<00:02, 74.52it/s] 54%|█████▍    | 233/430 [00:16<00:02, 74.45it/s] 56%|█████▌    | 241/430 [00:16<00:02, 74.94it/s] 58%|█████▊    | 249/430 [00:16<00:02, 74.66it/s] 60%|█████▉    | 257/430 [00:16<00:02, 75.37it/s] 62%|██████▏   | 265/430 [00:16<00:02, 74.20it/s] 63%|██████▎   | 273/430 [00:16<00:02, 75.31it/s] 65%|██████▌   | 281/430 [00:16<00:02, 73.19it/s] 67%|██████▋   | 289/430 [00:16<00:01, 74.19it/s] 69%|██████▉   | 297/430 [00:16<00:01, 71.36it/s] 71%|███████   | 305/430 [00:17<00:01, 72.26it/s] 73%|███████▎  | 313/430 [00:17<00:01, 71.68it/s] 75%|███████▍  | 321/430 [00:17<00:01, 72.07it/s] 77%|███████▋  | 329/430 [00:17<00:01, 72.79it/s] 78%|███████▊  | 337/430 [00:17<00:01, 73.17it/s] 80%|████████  | 345/430 [00:17<00:01, 70.17it/s] 82%|████████▏ | 353/430 [00:17<00:01, 71.41it/s] 84%|████████▍ | 361/430 [00:17<00:00, 71.63it/s] 86%|████████▌ | 369/430 [00:17<00:00, 71.10it/s] 88%|████████▊ | 377/430 [00:18<00:00, 71.49it/s] 90%|████████▉ | 385/430 [00:18<00:00, 70.62it/s] 91%|█████████▏| 393/430 [00:18<00:00, 72.28it/s] 93%|█████████▎| 401/430 [00:18<00:00, 71.82it/s] 95%|█████████▌| 409/430 [00:18<00:00, 70.85it/s] 97%|█████████▋| 417/430 [00:18<00:00, 71.75it/s] 99%|█████████▉| 425/430 [00:18<00:00, 73.11it/s]100%|██████████| 430/430 [00:19<00:00, 22.13it/s]
+[rank0]:[W326 02:29:03.362812188 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED MNIST / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/MNISTVal does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/MNISTVal does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on RESISC45Val exists at checkpoints_openclip/ViT-B-32/head_RESISC45Val.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_RESISC45Val.pt
+====================================================================================================
+Learning task vector coefficients on RESISC45 with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/156 [00:00<?, ?it/s]  1%|          | 1/156 [00:13<34:00, 13.16s/it]  6%|▌         | 9/156 [00:13<02:38,  1.08s/it] 11%|█         | 17/156 [00:13<01:06,  2.09it/s] 16%|█▌        | 25/156 [00:13<00:35,  3.65it/s] 21%|██        | 33/156 [00:13<00:21,  5.71it/s] 26%|██▋       | 41/156 [00:14<00:13,  8.34it/s] 30%|███       | 47/156 [00:14<00:09, 10.94it/s] 34%|███▍      | 53/156 [00:14<00:07, 14.09it/s] 38%|███▊      | 59/156 [00:14<00:05, 17.04it/s] 42%|████▏     | 65/156 [00:14<00:04, 19.13it/s] 47%|████▋     | 73/156 [00:14<00:03, 23.63it/s] 52%|█████▏    | 81/156 [00:14<00:02, 28.14it/s] 57%|█████▋    | 89/156 [00:15<00:02, 32.58it/s] 62%|██████▏   | 97/156 [00:15<00:01, 36.28it/s] 67%|██████▋   | 105/156 [00:15<00:01, 39.26it/s] 72%|███████▏  | 113/156 [00:15<00:01, 41.48it/s] 78%|███████▊  | 121/156 [00:15<00:00, 43.25it/s] 83%|████████▎ | 129/156 [00:16<00:00, 44.31it/s] 88%|████████▊ | 137/156 [00:16<00:00, 43.78it/s] 93%|█████████▎| 145/156 [00:16<00:00, 44.86it/s] 98%|█████████▊| 153/156 [00:16<00:00, 45.69it/s]100%|██████████| 156/156 [00:17<00:00,  9.08it/s]
+[rank0]:[W326 02:29:23.926760422 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED RESISC45 / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/RESISC45Val does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/RESISC45Val does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on SVHNVal exists at checkpoints_openclip/ViT-B-32/head_SVHNVal.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_SVHNVal.pt
+====================================================================================================
+Learning task vector coefficients on SVHN with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/534 [00:00<?, ?it/s]  0%|          | 1/534 [00:20<2:59:08, 20.17s/it]  2%|▏         | 9/534 [00:20<14:18,  1.64s/it]    3%|▎         | 17/534 [00:20<06:09,  1.40it/s]  5%|▍         | 25/534 [00:20<03:24,  2.49it/s]  6%|▌         | 33/534 [00:20<02:07,  3.94it/s]  8%|▊         | 41/534 [00:20<01:23,  5.94it/s]  9%|▉         | 49/534 [00:20<00:56,  8.59it/s] 11%|█         | 57/534 [00:21<00:39, 12.06it/s] 12%|█▏        | 65/534 [00:21<00:28, 16.41it/s] 14%|█▎        | 73/534 [00:21<00:21, 21.63it/s] 15%|█▌        | 81/534 [00:21<00:16, 27.02it/s] 17%|█▋        | 89/534 [00:21<00:13, 33.41it/s] 18%|█▊        | 97/534 [00:21<00:10, 40.00it/s] 20%|█▉        | 105/534 [00:21<00:09, 46.32it/s] 21%|██        | 113/534 [00:21<00:08, 52.11it/s] 23%|██▎       | 121/534 [00:21<00:07, 53.10it/s] 24%|██▍       | 129/534 [00:22<00:07, 57.84it/s] 25%|██▌       | 136/534 [00:22<00:06, 60.59it/s] 27%|██▋       | 144/534 [00:22<00:06, 60.18it/s] 28%|██▊       | 152/534 [00:22<00:06, 62.68it/s] 30%|██▉       | 160/534 [00:22<00:05, 63.40it/s] 31%|███▏      | 168/534 [00:22<00:05, 63.72it/s] 33%|███▎      | 176/534 [00:22<00:05, 64.10it/s] 34%|███▍      | 184/534 [00:22<00:05, 63.05it/s] 36%|███▌      | 192/534 [00:23<00:05, 64.68it/s] 37%|███▋      | 200/534 [00:23<00:05, 65.79it/s] 39%|███▉      | 208/534 [00:23<00:05, 64.81it/s] 40%|████      | 216/534 [00:23<00:04, 65.16it/s] 42%|████▏     | 224/534 [00:23<00:04, 66.16it/s] 43%|████▎     | 232/534 [00:23<00:04, 66.65it/s] 45%|████▍     | 240/534 [00:23<00:04, 66.94it/s] 46%|████▋     | 247/534 [00:23<00:04, 66.39it/s] 48%|████▊     | 255/534 [00:24<00:04, 67.03it/s] 49%|████▉     | 263/534 [00:24<00:04, 67.06it/s] 51%|█████     | 270/534 [00:24<00:04, 61.73it/s] 52%|█████▏    | 277/534 [00:24<00:05, 51.27it/s] 53%|█████▎    | 285/534 [00:24<00:04, 56.74it/s] 55%|█████▍    | 293/534 [00:24<00:04, 56.93it/s] 56%|█████▋    | 301/534 [00:24<00:03, 61.34it/s] 58%|█████▊    | 309/534 [00:24<00:03, 62.58it/s] 59%|█████▉    | 317/534 [00:25<00:03, 65.16it/s] 61%|██████    | 325/534 [00:25<00:03, 64.61it/s] 62%|██████▏   | 333/534 [00:25<00:03, 66.85it/s] 64%|██████▍   | 341/534 [00:25<00:02, 68.41it/s] 65%|██████▌   | 349/534 [00:25<00:02, 69.28it/s] 67%|██████▋   | 356/534 [00:25<00:02, 63.50it/s] 68%|██████▊   | 363/534 [00:25<00:02, 61.63it/s] 69%|██████▉   | 370/534 [00:25<00:02, 57.22it/s] 70%|███████   | 376/534 [00:26<00:02, 56.04it/s] 72%|███████▏  | 384/534 [00:26<00:02, 59.04it/s] 73%|███████▎  | 392/534 [00:26<00:02, 60.09it/s] 75%|███████▍  | 400/534 [00:26<00:02, 61.82it/s] 76%|███████▋  | 408/534 [00:26<00:02, 62.90it/s] 78%|███████▊  | 416/534 [00:26<00:01, 63.99it/s] 79%|███████▉  | 424/534 [00:26<00:01, 63.39it/s] 81%|████████  | 432/534 [00:26<00:01, 64.49it/s] 82%|████████▏ | 440/534 [00:27<00:01, 64.17it/s] 84%|████████▍ | 448/534 [00:27<00:01, 65.32it/s] 85%|████████▌ | 456/534 [00:27<00:01, 55.09it/s] 87%|████████▋ | 464/534 [00:27<00:01, 58.40it/s] 88%|████████▊ | 472/534 [00:27<00:01, 59.47it/s] 90%|████████▉ | 480/534 [00:27<00:00, 60.75it/s] 91%|█████████▏| 488/534 [00:27<00:00, 58.55it/s] 93%|█████████▎| 496/534 [00:27<00:00, 61.10it/s] 94%|█████████▍| 504/534 [00:28<00:00, 61.41it/s] 96%|█████████▌| 512/534 [00:28<00:00, 61.32it/s] 97%|█████████▋| 520/534 [00:28<00:00, 63.53it/s] 99%|█████████▉| 528/534 [00:28<00:00, 66.20it/s]100%|██████████| 534/534 [00:29<00:00, 18.36it/s]
+[rank0]:[W326 02:29:56.998119748 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED SVHN / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/SVHNVal does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/SVHNVal does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on CIFAR10Val exists at checkpoints_openclip/ViT-B-32/head_CIFAR10Val.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_CIFAR10Val.pt
+====================================================================================================
+Learning task vector coefficients on CIFAR10 with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/352 [00:00<?, ?it/s]  0%|          | 1/352 [00:17<1:43:28, 17.69s/it]  3%|▎         | 9/352 [00:17<08:12,  1.44s/it]    5%|▍         | 17/352 [00:17<03:30,  1.59it/s]  7%|▋         | 25/352 [00:18<01:55,  2.83it/s]  9%|▉         | 33/352 [00:18<01:10,  4.53it/s] 12%|█▏        | 41/352 [00:18<00:45,  6.82it/s] 14%|█▍        | 49/352 [00:18<00:30,  9.82it/s] 16%|█▌        | 57/352 [00:18<00:21, 13.54it/s] 18%|█▊        | 64/352 [00:18<00:16, 17.33it/s] 20%|██        | 71/352 [00:18<00:12, 21.97it/s] 22%|██▏       | 79/352 [00:18<00:09, 28.05it/s] 25%|██▍       | 87/352 [00:18<00:07, 33.81it/s] 27%|██▋       | 95/352 [00:19<00:06, 39.29it/s] 29%|██▉       | 103/352 [00:19<00:05, 44.54it/s] 32%|███▏      | 111/352 [00:19<00:05, 47.24it/s] 34%|███▍      | 119/352 [00:19<00:04, 52.12it/s] 36%|███▌      | 127/352 [00:19<00:03, 56.43it/s] 38%|███▊      | 135/352 [00:19<00:03, 57.81it/s] 41%|████      | 143/352 [00:19<00:03, 60.82it/s] 43%|████▎     | 151/352 [00:19<00:03, 60.47it/s] 45%|████▌     | 159/352 [00:20<00:03, 62.39it/s] 47%|████▋     | 167/352 [00:20<00:02, 64.43it/s] 50%|████▉     | 175/352 [00:20<00:02, 65.72it/s] 52%|█████▏    | 183/352 [00:20<00:02, 66.98it/s] 54%|█████▍    | 191/352 [00:20<00:02, 67.70it/s] 57%|█████▋    | 199/352 [00:20<00:02, 67.87it/s] 59%|█████▉    | 207/352 [00:20<00:02, 66.47it/s] 61%|██████    | 215/352 [00:20<00:02, 62.74it/s] 63%|██████▎   | 223/352 [00:21<00:02, 62.54it/s] 66%|██████▌   | 231/352 [00:21<00:01, 62.12it/s] 68%|██████▊   | 239/352 [00:21<00:01, 61.61it/s] 70%|███████   | 247/352 [00:21<00:01, 61.59it/s] 72%|███████▏  | 254/352 [00:21<00:01, 63.41it/s] 74%|███████▍  | 261/352 [00:21<00:01, 58.93it/s] 76%|███████▌  | 267/352 [00:21<00:01, 57.73it/s] 78%|███████▊  | 273/352 [00:21<00:01, 56.17it/s] 79%|███████▉  | 279/352 [00:22<00:01, 55.13it/s] 82%|████████▏ | 287/352 [00:22<00:01, 58.55it/s] 84%|████████▍ | 295/352 [00:22<00:00, 59.08it/s] 86%|████████▌ | 303/352 [00:22<00:00, 61.23it/s] 88%|████████▊ | 311/352 [00:22<00:00, 63.92it/s] 91%|█████████ | 319/352 [00:22<00:00, 64.59it/s] 93%|█████████▎| 327/352 [00:22<00:00, 64.32it/s] 95%|█████████▌| 335/352 [00:22<00:00, 63.17it/s] 97%|█████████▋| 343/352 [00:23<00:00, 66.42it/s]100%|█████████▉| 351/352 [00:23<00:00, 68.61it/s]100%|██████████| 352/352 [00:23<00:00, 14.81it/s]
+[rank0]:[W326 02:30:22.560459761 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED CIFAR10 / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/CIFAR10Val does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/CIFAR10Val does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on CIFAR100Val exists at checkpoints_openclip/ViT-B-32/head_CIFAR100Val.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_CIFAR100Val.pt
+====================================================================================================
+Learning task vector coefficients on CIFAR100 with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/352 [00:00<?, ?it/s]  0%|          | 1/352 [00:17<1:43:00, 17.61s/it]  3%|▎         | 9/352 [00:17<08:10,  1.43s/it]    5%|▍         | 17/352 [00:17<03:29,  1.60it/s]  7%|▋         | 25/352 [00:17<01:55,  2.84it/s]  9%|▉         | 33/352 [00:18<01:10,  4.54it/s] 12%|█▏        | 41/352 [00:18<00:45,  6.78it/s] 14%|█▍        | 49/352 [00:18<00:31,  9.76it/s] 16%|█▌        | 57/352 [00:18<00:21, 13.58it/s] 18%|█▊        | 65/352 [00:18<00:15, 18.23it/s] 21%|██        | 73/352 [00:18<00:11, 23.69it/s] 23%|██▎       | 81/352 [00:18<00:09, 29.75it/s] 25%|██▌       | 89/352 [00:18<00:07, 36.17it/s] 28%|██▊       | 97/352 [00:19<00:06, 42.27it/s] 30%|██▉       | 105/352 [00:19<00:05, 47.85it/s] 32%|███▏      | 113/352 [00:19<00:04, 52.77it/s] 34%|███▍      | 121/352 [00:19<00:04, 56.71it/s] 37%|███▋      | 129/352 [00:19<00:03, 59.83it/s] 39%|███▉      | 137/352 [00:19<00:03, 62.17it/s] 41%|████      | 145/352 [00:19<00:03, 64.21it/s] 43%|████▎     | 153/352 [00:19<00:03, 65.26it/s] 46%|████▌     | 161/352 [00:19<00:02, 66.07it/s] 48%|████▊     | 168/352 [00:20<00:02, 67.09it/s] 50%|████▉     | 175/352 [00:20<00:02, 64.65it/s] 52%|█████▏    | 182/352 [00:20<00:02, 63.36it/s] 54%|█████▎    | 189/352 [00:20<00:02, 62.44it/s] 56%|█████▌    | 196/352 [00:20<00:02, 63.69it/s] 58%|█████▊    | 203/352 [00:20<00:02, 62.53it/s] 60%|█████▉    | 210/352 [00:20<00:02, 62.46it/s] 62%|██████▏   | 218/352 [00:20<00:02, 58.92it/s] 64%|██████▍   | 226/352 [00:20<00:02, 62.75it/s] 66%|██████▋   | 234/352 [00:21<00:01, 66.07it/s] 69%|██████▉   | 242/352 [00:21<00:01, 68.42it/s] 71%|███████   | 250/352 [00:21<00:01, 70.69it/s] 73%|███████▎  | 258/352 [00:21<00:01, 68.90it/s] 76%|███████▌  | 266/352 [00:21<00:01, 68.09it/s] 78%|███████▊  | 274/352 [00:21<00:01, 69.99it/s] 80%|████████  | 282/352 [00:21<00:00, 70.13it/s] 82%|████████▏ | 290/352 [00:21<00:00, 71.45it/s] 85%|████████▍ | 298/352 [00:21<00:00, 72.24it/s] 87%|████████▋ | 306/352 [00:22<00:00, 69.09it/s] 89%|████████▉ | 313/352 [00:22<00:00, 65.01it/s] 91%|█████████ | 320/352 [00:22<00:00, 64.24it/s] 93%|█████████▎| 327/352 [00:22<00:00, 63.52it/s] 95%|█████████▍| 334/352 [00:22<00:00, 63.56it/s] 97%|█████████▋| 341/352 [00:22<00:00, 61.45it/s] 99%|█████████▉| 348/352 [00:22<00:00, 63.15it/s]100%|██████████| 352/352 [00:23<00:00, 15.03it/s]
+[rank0]:[W326 02:30:53.637868403 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED CIFAR100 / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/CIFAR100Val does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/CIFAR100Val does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on STL10Val exists at checkpoints_openclip/ViT-B-32/head_STL10Val.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_STL10Val.pt
+====================================================================================================
+Learning task vector coefficients on STL10 with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/36 [00:00<?, ?it/s]  3%|▎         | 1/36 [00:16<09:50, 16.88s/it] 25%|██▌       | 9/36 [00:17<00:37,  1.37s/it] 47%|████▋     | 17/36 [00:17<00:11,  1.66it/s] 69%|██████▉   | 25/36 [00:17<00:03,  2.94it/s] 92%|█████████▏| 33/36 [00:17<00:00,  4.69it/s]100%|██████████| 36/36 [00:18<00:00,  2.00it/s]
+[rank0]:[W326 02:31:13.695190942 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED STL10 / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/STL10Val does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/STL10Val does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on Food101Val exists at checkpoints_openclip/ViT-B-32/head_Food101Val.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_Food101Val.pt
+====================================================================================================
+Learning task vector coefficients on Food101 with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/553 [00:00<?, ?it/s]  0%|          | 1/553 [00:16<2:28:31, 16.14s/it]  2%|▏         | 9/553 [00:16<12:05,  1.33s/it]    3%|▎         | 17/553 [00:16<05:21,  1.67it/s]  5%|▍         | 25/553 [00:17<03:04,  2.87it/s]  6%|▌         | 33/553 [00:17<01:58,  4.41it/s]  7%|▋         | 41/553 [00:17<01:21,  6.27it/s]  9%|▉         | 49/553 [00:18<00:59,  8.42it/s] 10%|█         | 57/553 [00:18<00:45, 10.82it/s] 12%|█▏        | 65/553 [00:18<00:36, 13.29it/s] 13%|█▎        | 73/553 [00:18<00:31, 15.38it/s] 15%|█▍        | 81/553 [00:19<00:26, 17.78it/s] 16%|█▌        | 89/553 [00:19<00:23, 19.59it/s] 18%|█▊        | 97/553 [00:19<00:21, 21.32it/s] 19%|█▉        | 105/553 [00:20<00:19, 22.90it/s] 20%|██        | 113/553 [00:20<00:18, 24.28it/s] 22%|██▏       | 121/553 [00:20<00:17, 25.21it/s] 23%|██▎       | 129/553 [00:21<00:16, 25.76it/s] 25%|██▍       | 137/553 [00:21<00:16, 25.03it/s] 26%|██▌       | 145/553 [00:21<00:15, 25.82it/s] 28%|██▊       | 153/553 [00:22<00:17, 23.41it/s] 29%|██▉       | 161/553 [00:22<00:15, 24.63it/s] 31%|███       | 169/553 [00:22<00:15, 25.49it/s] 32%|███▏      | 177/553 [00:22<00:15, 25.05it/s] 33%|███▎      | 185/553 [00:23<00:14, 25.85it/s] 35%|███▍      | 193/553 [00:23<00:13, 26.08it/s] 36%|███▋      | 201/553 [00:23<00:13, 25.55it/s] 38%|███▊      | 209/553 [00:24<00:13, 25.97it/s] 39%|███▉      | 217/553 [00:24<00:12, 26.52it/s] 41%|████      | 225/553 [00:24<00:12, 26.62it/s] 42%|████▏     | 233/553 [00:25<00:11, 27.25it/s] 44%|████▎     | 241/553 [00:25<00:11, 27.48it/s] 44%|████▍     | 246/553 [00:25<00:10, 30.33it/s] 45%|████▌     | 250/553 [00:25<00:10, 27.79it/s] 46%|████▌     | 254/553 [00:25<00:10, 29.20it/s] 47%|████▋     | 258/553 [00:25<00:10, 27.27it/s] 47%|████▋     | 261/553 [00:26<00:10, 26.71it/s] 48%|████▊     | 265/553 [00:26<00:11, 26.06it/s] 48%|████▊     | 268/553 [00:26<00:11, 24.68it/s] 49%|████▉     | 273/553 [00:26<00:10, 27.65it/s] 50%|████▉     | 276/553 [00:26<00:11, 24.80it/s] 51%|█████     | 281/553 [00:26<00:09, 28.88it/s] 52%|█████▏    | 285/553 [00:26<00:10, 26.21it/s] 52%|█████▏    | 289/553 [00:27<00:09, 29.06it/s] 53%|█████▎    | 293/553 [00:27<00:10, 25.62it/s] 54%|█████▍    | 299/553 [00:27<00:10, 23.19it/s] 56%|█████▌    | 307/553 [00:27<00:10, 24.28it/s] 57%|█████▋    | 315/553 [00:28<00:09, 24.80it/s] 58%|█████▊    | 323/553 [00:28<00:09, 24.99it/s] 60%|█████▉    | 331/553 [00:28<00:08, 25.09it/s] 61%|██████▏   | 339/553 [00:29<00:08, 25.75it/s] 63%|██████▎   | 347/553 [00:29<00:07, 26.41it/s] 64%|██████▍   | 355/553 [00:29<00:07, 26.29it/s] 66%|██████▌   | 363/553 [00:30<00:07, 25.74it/s] 67%|██████▋   | 371/553 [00:30<00:07, 24.86it/s] 69%|██████▊   | 379/553 [00:30<00:07, 24.25it/s] 70%|██████▉   | 387/553 [00:31<00:07, 22.75it/s] 71%|███████▏  | 395/553 [00:31<00:06, 23.83it/s] 73%|███████▎  | 403/553 [00:31<00:06, 24.41it/s] 74%|███████▍  | 411/553 [00:32<00:05, 24.90it/s] 76%|███████▌  | 419/553 [00:32<00:05, 25.20it/s] 77%|███████▋  | 427/553 [00:32<00:04, 25.52it/s] 79%|███████▊  | 435/553 [00:32<00:04, 25.30it/s] 80%|████████  | 443/553 [00:33<00:04, 25.25it/s] 82%|████████▏ | 451/553 [00:33<00:04, 25.37it/s] 83%|████████▎ | 459/553 [00:33<00:03, 25.59it/s] 84%|████████▍ | 467/553 [00:34<00:03, 25.22it/s] 86%|████████▌ | 475/553 [00:34<00:03, 25.54it/s] 87%|████████▋ | 483/553 [00:34<00:02, 25.57it/s] 89%|████████▉ | 491/553 [00:35<00:02, 25.55it/s] 90%|█████████ | 499/553 [00:35<00:02, 25.53it/s] 92%|█████████▏| 507/553 [00:35<00:01, 25.58it/s] 93%|█████████▎| 515/553 [00:36<00:01, 25.84it/s] 95%|█████████▍| 523/553 [00:36<00:01, 25.65it/s] 96%|█████████▌| 531/553 [00:36<00:00, 25.62it/s] 97%|█████████▋| 539/553 [00:37<00:00, 25.22it/s] 99%|█████████▉| 547/553 [00:37<00:00, 25.74it/s]100%|██████████| 553/553 [00:38<00:00, 14.50it/s]
+[rank0]:[W326 02:31:53.767162019 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED Food101 / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Food101Val does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/Food101Val does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on Caltech256Val exists at checkpoints_openclip/ViT-B-32/head_Caltech256Val.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_Caltech256Val.pt
+Files already downloaded and verified
+====================================================================================================
+Learning task vector coefficients on Caltech256 with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/173 [00:00<?, ?it/s]  1%|          | 1/173 [00:13<37:36, 13.12s/it]  5%|▌         | 9/173 [00:13<02:57,  1.09s/it] 10%|▉         | 17/173 [00:13<01:15,  2.06it/s] 14%|█▍        | 25/173 [00:13<00:42,  3.49it/s] 19%|█▉        | 33/173 [00:14<00:25,  5.39it/s] 24%|██▎       | 41/173 [00:14<00:17,  7.72it/s] 28%|██▊       | 49/173 [00:14<00:11, 10.47it/s] 33%|███▎      | 57/173 [00:14<00:08, 13.61it/s] 38%|███▊      | 65/173 [00:15<00:06, 17.32it/s] 42%|████▏     | 73/173 [00:15<00:04, 20.67it/s] 47%|████▋     | 81/173 [00:15<00:03, 23.34it/s] 51%|█████▏    | 89/173 [00:15<00:03, 25.60it/s] 56%|█████▌    | 97/173 [00:15<00:02, 28.22it/s] 61%|██████    | 105/173 [00:16<00:02, 30.58it/s] 65%|██████▌   | 113/173 [00:16<00:01, 31.86it/s] 70%|██████▉   | 121/173 [00:16<00:01, 33.74it/s] 75%|███████▍  | 129/173 [00:16<00:01, 34.77it/s] 79%|███████▉  | 137/173 [00:17<00:01, 34.18it/s] 84%|████████▍ | 145/173 [00:17<00:00, 35.96it/s] 88%|████████▊ | 153/173 [00:17<00:00, 34.16it/s] 93%|█████████▎| 161/173 [00:17<00:00, 35.96it/s] 98%|█████████▊| 169/173 [00:17<00:00, 35.00it/s]100%|██████████| 173/173 [00:18<00:00,  9.30it/s]
+[rank0]:[W326 02:32:14.331233432 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED Caltech256 / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Caltech256Val does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/Caltech256Val does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on FGVCAircraftVal exists at checkpoints_openclip/ViT-B-32/head_FGVCAircraftVal.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_FGVCAircraftVal.pt
+====================================================================================================
+Learning task vector coefficients on FGVCAircraft with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/27 [00:00<?, ?it/s]  4%|▎         | 1/27 [00:13<05:55, 13.67s/it] 33%|███▎      | 9/27 [00:14<00:21,  1.20s/it] 63%|██████▎   | 17/27 [00:15<00:05,  1.73it/s] 93%|█████████▎| 25/27 [00:16<00:00,  2.80it/s]100%|██████████| 27/27 [00:16<00:00,  1.60it/s]
+[rank0]:[W326 02:32:33.382657343 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED FGVCAircraft / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/FGVCAircraftVal does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/FGVCAircraftVal does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on Flowers102Val exists at checkpoints_openclip/ViT-B-32/head_Flowers102Val.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_Flowers102Val.pt
+====================================================================================================
+Learning task vector coefficients on Flowers102 with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/8 [00:00<?, ?it/s] 12%|█▎        | 1/8 [00:02<00:14,  2.12s/it]100%|██████████| 8/8 [00:02<00:00,  2.88it/s]
+[rank0]:[W326 02:32:38.435402774 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED Flowers102 / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Flowers102Val does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/Flowers102Val does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on OxfordIIITPetVal exists at checkpoints_openclip/ViT-B-32/head_OxfordIIITPetVal.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_OxfordIIITPetVal.pt
+====================================================================================================
+Learning task vector coefficients on OxfordIIITPet with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/26 [00:00<?, ?it/s]  4%|▍         | 1/26 [00:13<05:42, 13.72s/it] 35%|███▍      | 9/26 [00:14<00:19,  1.14s/it] 65%|██████▌   | 17/26 [00:14<00:04,  1.95it/s] 96%|█████████▌| 25/26 [00:14<00:00,  3.36it/s]100%|██████████| 26/26 [00:15<00:00,  1.71it/s]
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W326 02:32:56.979181016 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED OxfordIIITPet / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/OxfordIIITPetVal does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/OxfordIIITPetVal does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on CUB200Val exists at checkpoints_openclip/ViT-B-32/head_CUB200Val.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_CUB200Val.pt
+Files already downloaded and verified
+Files already downloaded and verified
+====================================================================================================
+Learning task vector coefficients on CUB200 with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/43 [00:00<?, ?it/s]  2%|▏         | 1/43 [00:13<09:09, 13.08s/it] 21%|██        | 9/43 [00:13<00:36,  1.09s/it] 40%|███▉      | 17/43 [00:13<00:12,  2.04it/s] 58%|█████▊    | 25/43 [00:13<00:05,  3.48it/s] 77%|███████▋  | 33/43 [00:14<00:01,  5.29it/s] 95%|█████████▌| 41/43 [00:14<00:00,  7.47it/s]100%|██████████| 43/43 [00:15<00:00,  2.83it/s]
+[rank0]:[W326 02:33:13.519897909 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED CUB200 / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/CUB200Val does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/CUB200Val does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on PascalVOCVal exists at checkpoints_openclip/ViT-B-32/head_PascalVOCVal.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_PascalVOCVal.pt
+[dataset] VOC 2007 classification set=train number of classes=20  number of bndboxes=7844
+[dataset] VOC 2007 classification set=val number of classes=20  number of bndboxes=7818
+====================================================================================================
+Learning task vector coefficients on PascalVOC with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/62 [00:00<?, ?it/s]  2%|▏         | 1/62 [00:13<13:15, 13.03s/it] 15%|█▍        | 9/62 [00:13<00:56,  1.07s/it] 27%|██▋       | 17/62 [00:13<00:21,  2.08it/s] 40%|████      | 25/62 [00:13<00:10,  3.61it/s] 53%|█████▎    | 33/62 [00:13<00:05,  5.57it/s] 66%|██████▌   | 41/62 [00:14<00:02,  7.98it/s] 79%|███████▉  | 49/62 [00:14<00:01, 10.88it/s] 85%|████████▌ | 53/62 [00:14<00:00, 12.62it/s] 92%|█████████▏| 57/62 [00:14<00:00, 14.78it/s] 98%|█████████▊| 61/62 [00:14<00:00, 17.26it/s]100%|██████████| 62/62 [00:15<00:00,  4.06it/s]
+[rank0]:[W326 02:33:30.566013793 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED PascalVOC / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/PascalVOCVal does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/PascalVOCVal does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on Country211Val exists at checkpoints_openclip/ViT-B-32/head_Country211Val.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_Country211Val.pt
+====================================================================================================
+Learning task vector coefficients on Country211 with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/248 [00:00<?, ?it/s]  0%|          | 1/248 [00:13<54:09, 13.16s/it]  4%|▎         | 9/248 [00:13<04:23,  1.10s/it]  7%|▋         | 17/248 [00:13<01:55,  2.00it/s] 10%|█         | 25/248 [00:14<01:06,  3.36it/s] 13%|█▎        | 33/248 [00:14<00:42,  5.02it/s] 17%|█▋        | 41/248 [00:14<00:29,  6.96it/s] 20%|█▉        | 49/248 [00:15<00:21,  9.11it/s] 23%|██▎       | 57/248 [00:15<00:16, 11.25it/s] 26%|██▌       | 65/248 [00:16<00:13, 13.33it/s] 29%|██▉       | 73/248 [00:16<00:11, 15.29it/s] 33%|███▎      | 81/248 [00:16<00:09, 17.02it/s] 36%|███▌      | 89/248 [00:17<00:08, 18.34it/s] 39%|███▉      | 97/248 [00:17<00:07, 19.45it/s] 42%|████▏     | 105/248 [00:17<00:07, 20.35it/s] 44%|████▍     | 109/248 [00:17<00:06, 21.98it/s] 46%|████▌     | 113/248 [00:18<00:06, 20.46it/s] 47%|████▋     | 117/248 [00:18<00:06, 21.69it/s] 49%|████▉     | 121/248 [00:18<00:06, 20.81it/s] 50%|█████     | 125/248 [00:18<00:05, 22.61it/s] 52%|█████▏    | 129/248 [00:18<00:05, 21.41it/s] 54%|█████▎    | 133/248 [00:19<00:04, 23.29it/s] 55%|█████▌    | 137/248 [00:19<00:05, 21.21it/s] 57%|█████▋    | 141/248 [00:19<00:04, 23.60it/s] 58%|█████▊    | 145/248 [00:19<00:04, 21.55it/s] 60%|██████    | 149/248 [00:19<00:04, 23.70it/s] 62%|██████▏   | 153/248 [00:19<00:04, 21.49it/s] 63%|██████▎   | 157/248 [00:20<00:03, 23.52it/s] 65%|██████▍   | 161/248 [00:20<00:04, 21.72it/s] 67%|██████▋   | 165/248 [00:20<00:03, 23.93it/s] 68%|██████▊   | 169/248 [00:20<00:03, 21.61it/s] 70%|██████▉   | 173/248 [00:20<00:03, 23.70it/s] 71%|███████▏  | 177/248 [00:21<00:03, 21.67it/s] 73%|███████▎  | 181/248 [00:21<00:02, 24.24it/s] 75%|███████▍  | 185/248 [00:21<00:02, 21.60it/s] 76%|███████▌  | 189/248 [00:21<00:02, 23.79it/s] 78%|███████▊  | 193/248 [00:21<00:02, 21.50it/s] 79%|███████▉  | 197/248 [00:21<00:02, 23.94it/s] 81%|████████  | 201/248 [00:22<00:02, 21.34it/s] 83%|████████▎ | 205/248 [00:22<00:01, 24.23it/s] 84%|████████▍ | 209/248 [00:22<00:01, 20.28it/s] 87%|████████▋ | 216/248 [00:22<00:01, 28.97it/s] 89%|████████▊ | 220/248 [00:22<00:01, 23.35it/s] 91%|█████████ | 225/248 [00:23<00:01, 19.44it/s] 93%|█████████▎| 231/248 [00:23<00:00, 25.33it/s] 95%|█████████▍| 235/248 [00:23<00:00, 21.59it/s] 97%|█████████▋| 240/248 [00:23<00:00, 26.12it/s] 98%|█████████▊| 244/248 [00:23<00:00, 22.57it/s]100%|██████████| 248/248 [00:24<00:00, 10.07it/s]
+[rank0]:[W326 02:33:57.122092562 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED Country211 / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Country211Val does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/Country211Val does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on UCF101Val exists at checkpoints_openclip/ViT-B-32/head_UCF101Val.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_UCF101Val.pt
+====================================================================================================
+Learning task vector coefficients on UCF101 with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/60 [00:00<?, ?it/s]  2%|▏         | 1/60 [00:13<12:55, 13.14s/it] 15%|█▌        | 9/60 [00:13<00:54,  1.08s/it] 28%|██▊       | 17/60 [00:13<00:20,  2.09it/s] 42%|████▏     | 25/60 [00:13<00:09,  3.65it/s] 55%|█████▌    | 33/60 [00:13<00:04,  5.69it/s] 68%|██████▊   | 41/60 [00:14<00:02,  8.30it/s] 82%|████████▏ | 49/60 [00:14<00:00, 11.46it/s] 95%|█████████▌| 57/60 [00:14<00:00, 15.18it/s]100%|██████████| 60/60 [00:15<00:00,  3.98it/s]
+[rank0]:[W326 02:34:14.172479111 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED UCF101 / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/UCF101Val does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/UCF101Val does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on Caltech101Val exists at checkpoints_openclip/ViT-B-32/head_Caltech101Val.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_Caltech101Val.pt
+Files already downloaded and verified
+====================================================================================================
+Learning task vector coefficients on Caltech101 with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/49 [00:00<?, ?it/s]  2%|▏         | 1/49 [00:08<07:11,  8.98s/it] 16%|█▋        | 8/49 [00:09<00:36,  1.12it/s] 33%|███▎      | 16/49 [00:09<00:12,  2.69it/s] 49%|████▉     | 24/49 [00:09<00:05,  4.74it/s] 65%|██████▌   | 32/49 [00:10<00:02,  7.35it/s] 82%|████████▏ | 40/49 [00:10<00:00, 10.57it/s] 98%|█████████▊| 48/49 [00:10<00:00, 14.41it/s]100%|██████████| 49/49 [00:11<00:00,  4.43it/s]
+[rank0]:[W326 02:34:27.209359220 ProcessGroupNCCL.cpp:5138] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED Caltech101 / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Caltech101Val does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/Caltech101Val does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Classification head for ViT-B-32 on SUN397Val exists at checkpoints_openclip/ViT-B-32/head_SUN397Val.pt
+Loading classification head from checkpoints_openclip/ViT-B-32/head_SUN397Val.pt
+====================================================================================================
+Learning task vector coefficients on SUN397 with ViT-B-32 - 0.25 shots
+====================================================================================================
+  0%|          | 0/656 [00:00<?, ?it/s]  0%|          | 1/656 [00:13<2:30:49, 13.82s/it]  0%|          | 3/656 [00:14<39:59,  3.68s/it]    1%|          | 8/656 [00:14<11:04,  1.03s/it]  2%|▏         | 11/656 [00:15<07:59,  1.35it/s]  2%|▏         | 13/656 [00:15<06:07,  1.75it/s]  3%|▎         | 17/656 [00:15<04:12,  2.53it/s]  3%|▎         | 19/656 [00:16<03:29,  3.04it/s]  3%|▎         | 21/656 [00:16<02:45,  3.84it/s]  4%|▍         | 25/656 [00:16<02:17,  4.57it/s]  4%|▍         | 27/656 [00:17<02:23,  4.38it/s]  5%|▌         | 33/656 [00:18<01:42,  6.10it/s]  5%|▌         | 34/656 [00:18<01:40,  6.20it/s]  5%|▌         | 35/656 [00:18<01:40,  6.18it/s]  6%|▋         | 41/656 [00:18<01:16,  8.04it/s]  6%|▋         | 42/656 [00:19<01:50,  5.54it/s]  7%|▋         | 49/656 [00:19<01:08,  8.84it/s]  8%|▊         | 51/656 [00:20<01:28,  6.84it/s]  9%|▊         | 57/656 [00:20<00:59, 10.13it/s]  9%|▉         | 59/656 [00:21<01:30,  6.56it/s]  9%|▉         | 61/656 [00:21<01:21,  7.32it/s] 10%|█         | 66/656 [00:22<01:39,  5.93it/s] 11%|█▏        | 74/656 [00:23<01:26,  6.71it/s] 12%|█▎        | 82/656 [00:24<01:22,  6.93it/s] 14%|█▎        | 90/656 [00:26<01:22,  6.83it/s] 15%|█▍        | 98/656 [00:27<01:19,  6.99it/s] 16%|█▌        | 106/656 [00:28<01:22,  6.69it/s] 17%|█▋        | 114/656 [00:29<01:21,  6.61it/s] 19%|█▊        | 122/656 [00:30<01:17,  6.90it/s] 20%|█▉        | 130/656 [00:31<01:09,  7.60it/s] 21%|██        | 138/656 [00:32<01:07,  7.71it/s] 22%|██▏       | 146/656 [00:33<01:03,  8.05it/s] 23%|██▎       | 154/656 [00:34<01:02,  8.08it/s] 25%|██▍       | 162/656 [00:35<01:06,  7.45it/s] 26%|██▌       | 170/656 [00:36<01:05,  7.45it/s] 27%|██▋       | 178/656 [00:37<01:04,  7.36it/s] 28%|██▊       | 186/656 [00:38<01:02,  7.46it/s] 30%|██▉       | 194/656 [00:39<01:00,  7.65it/s] 31%|███       | 202/656 [00:40<00:56,  8.01it/s] 32%|███▏      | 209/656 [00:40<00:43, 10.16it/s] 32%|███▏      | 211/656 [00:41<00:59,  7.47it/s] 33%|███▎      | 217/656 [00:42<00:43, 10.09it/s] 34%|███▎      | 220/656 [00:43<01:01,  7.04it/s] 34%|███▍      | 226/656 [00:43<01:03,  6.82it/s] 35%|███▌      | 232/656 [00:44<00:50,  8.48it/s] 36%|███▌      | 234/656 [00:45<01:03,  6.60it/s] 37%|███▋      | 240/656 [00:45<00:50,  8.18it/s] 37%|███▋      | 242/656 [00:46<01:05,  6.28it/s] 38%|███▊      | 248/656 [00:46<00:53,  7.66it/s] 38%|███▊      | 250/656 [00:47<01:04,  6.33it/s] 39%|███▉      | 256/656 [00:47<00:50,  7.96it/s] 39%|███▉      | 258/656 [00:48<01:01,  6.46it/s] 40%|████      | 264/656 [00:48<00:48,  8.10it/s] 41%|████      | 266/656 [00:49<01:01,  6.36it/s] 41%|████▏     | 272/656 [00:49<00:45,  8.42it/s] 42%|████▏     | 274/656 [00:50<00:58,  6.50it/s] 43%|████▎     | 280/656 [00:50<00:40,  9.24it/s] 43%|████▎     | 282/656 [00:51<00:53,  7.00it/s] 44%|████▍     | 288/656 [00:51<00:40,  9.02it/s] 44%|████▍     | 290/656 [00:52<00:52,  6.99it/s] 45%|████▌     | 296/656 [00:52<00:41,  8.66it/s] 45%|████▌     | 298/656 [00:53<00:59,  5.98it/s] 46%|████▋     | 304/656 [00:54<00:41,  8.49it/s] 47%|████▋     | 306/656 [00:54<00:57,  6.08it/s] 48%|████▊     | 314/656 [00:56<00:51,  6.61it/s] 49%|████▉     | 322/656 [00:57<00:52,  6.40it/s] 50%|█████     | 329/656 [00:57<00:35,  9.19it/s] 51%|█████     | 332/656 [00:58<00:51,  6.23it/s] 52%|█████▏    | 338/656 [00:59<00:49,  6.38it/s] 53%|█████▎    | 346/656 [01:00<00:47,  6.50it/s] 54%|█████▍    | 354/656 [01:02<00:49,  6.16it/s] 55%|█████▌    | 362/656 [01:03<00:46,  6.36it/s] 56%|█████▋    | 370/656 [01:04<00:42,  6.69it/s] 58%|█████▊    | 378/656 [01:05<00:40,  6.92it/s] 59%|█████▉    | 386/656 [01:06<00:36,  7.30it/s] 60%|██████    | 394/656 [01:07<00:34,  7.53it/s] 61%|██████▏   | 402/656 [01:08<00:34,  7.32it/s] 62%|██████▎   | 410/656 [01:09<00:32,  7.65it/s] 64%|██████▎   | 418/656 [01:10<00:28,  8.24it/s] 65%|██████▍   | 426/656 [01:11<00:27,  8.25it/s] 66%|██████▌   | 434/656 [01:12<00:26,  8.25it/s] 67%|██████▋   | 441/656 [01:12<00:19, 10.87it/s] 68%|██████▊   | 444/656 [01:13<00:29,  7.12it/s] 69%|██████▊   | 450/656 [01:14<00:30,  6.74it/s] 69%|██████▉   | 452/656 [01:14<00:27,  7.32it/s] 70%|██████▉   | 458/656 [01:15<00:26,  7.41it/s] 70%|███████   | 460/656 [01:15<00:25,  7.64it/s] 71%|███████   | 466/656 [01:16<00:23,  8.13it/s] 71%|███████▏  | 468/656 [01:16<00:21,  8.64it/s] 72%|███████▏  | 474/656 [01:17<00:22,  8.03it/s] 73%|███████▎  | 476/656 [01:17<00:22,  8.03it/s] 73%|███████▎  | 481/656 [01:17<00:15, 11.25it/s] 74%|███████▎  | 483/656 [01:18<00:26,  6.44it/s] 75%|███████▍  | 489/656 [01:18<00:16,  9.98it/s] 75%|███████▌  | 492/656 [01:19<00:21,  7.71it/s] 76%|███████▌  | 497/656 [01:19<00:16,  9.68it/s] 76%|███████▌  | 499/656 [01:20<00:24,  6.47it/s] 77%|███████▋  | 505/656 [01:20<00:14, 10.23it/s] 77%|███████▋  | 508/656 [01:21<00:21,  6.93it/s] 78%|███████▊  | 513/656 [01:21<00:14,  9.60it/s] 79%|███████▊  | 516/656 [01:22<00:18,  7.43it/s] 79%|███████▉  | 521/656 [01:22<00:13, 10.36it/s] 80%|███████▉  | 524/656 [01:23<00:20,  6.56it/s] 81%|████████  | 530/656 [01:24<00:21,  5.74it/s] 82%|████████▏ | 538/656 [01:25<00:17,  6.63it/s] 83%|████████▎ | 546/656 [01:26<00:15,  7.23it/s] 84%|████████▍ | 554/656 [01:27<00:13,  7.78it/s] 86%|████████▌ | 562/656 [01:28<00:12,  7.41it/s] 87%|████████▋ | 570/656 [01:30<00:12,  7.07it/s] 88%|████████▊ | 578/656 [01:31<00:10,  7.20it/s] 89%|████████▉ | 586/656 [01:32<00:10,  6.96it/s] 91%|█████████ | 594/656 [01:33<00:09,  6.87it/s] 92%|█████████▏| 602/656 [01:34<00:07,  7.42it/s] 93%|█████████▎| 610/656 [01:35<00:06,  7.63it/s] 94%|█████████▍| 617/656 [01:35<00:04,  9.40it/s] 94%|█████████▍| 619/656 [01:36<00:05,  7.02it/s] 95%|█████████▌| 626/656 [01:37<00:04,  6.88it/s] 97%|█████████▋| 634/656 [01:38<00:03,  7.12it/s] 98%|█████████▊| 642/656 [01:39<00:01,  7.34it/s] 99%|█████████▉| 650/656 [01:40<00:00,  7.90it/s]100%|██████████| 656/656 [01:41<00:00,  6.47it/s]
+/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/open_clip/factory.py:450: UserWarning: QuickGELU mismatch between final model config (quick_gelu=False) and pretrained tag 'openai' (quick_gelu=True).
+  warnings.warn(
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED SUN397 / 0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/SUN397Val does not exist.
+Traceback:
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 276, in main
+    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
+  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 379, in train
+    torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 976, in save
+    with _open_zipfile_writer(f) as opened_zipfile:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 838, in _open_zipfile_writer
+    return container(name_or_buffer)  # type: ignore[arg-type]
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 802, in __init__
+    torch._C.PyTorchFileWriter(
+RuntimeError: Parent directory checkpoints_openclip/ViT-B-32/SUN397Val does not exist.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Did not find classification head for ViT-B-32 on ImageNetVal at checkpoints_openclip/ViT-B-32/head_ImageNetVal.pt, building one from scratch.
+Loading ViT-B-32 pre-trained weights.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+FAILED setup for ImageNet: [Errno 2] No such file or directory: '/home/luke/data/imagenet/train'
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+====================================================================================================
+Run complete: 0 succeeded, 22 failed
+Failed evaluations logged to: results_openclip/ViT-B-32/failed_evaluations.json
+Re-run with --retry-failed to retry only the failed evaluations.
+  - Cars/2_shot: element 0 of tensors does not require grad and does not have a grad_fn
+  - DTD/2_shot: Parent directory checkpoints_openclip/ViT-B-32/DTDVal does not exist.
+  - EuroSAT/2_shot: Parent directory checkpoints_openclip/ViT-B-32/EuroSATVal does not exist.
+  - GTSRB/2_shot: Parent directory checkpoints_openclip/ViT-B-32/GTSRBVal does not exist.
+  - MNIST/2_shot: Parent directory checkpoints_openclip/ViT-B-32/MNISTVal does not exist.
+  - RESISC45/2_shot: Parent directory checkpoints_openclip/ViT-B-32/RESISC45Val does not exist.
+  - SVHN/2_shot: Parent directory checkpoints_openclip/ViT-B-32/SVHNVal does not exist.
+  - CIFAR10/2_shot: Parent directory checkpoints_openclip/ViT-B-32/CIFAR10Val does not exist.
+  - CIFAR100/2_shot: Parent directory checkpoints_openclip/ViT-B-32/CIFAR100Val does not exist.
+  - STL10/2_shot: Parent directory checkpoints_openclip/ViT-B-32/STL10Val does not exist.
+  - Food101/2_shot: Parent directory checkpoints_openclip/ViT-B-32/Food101Val does not exist.
+  - Caltech256/2_shot: Parent directory checkpoints_openclip/ViT-B-32/Caltech256Val does not exist.
+  - FGVCAircraft/2_shot: Parent directory checkpoints_openclip/ViT-B-32/FGVCAircraftVal does not exist.
+  - Flowers102/2_shot: Parent directory checkpoints_openclip/ViT-B-32/Flowers102Val does not exist.
+  - OxfordIIITPet/2_shot: Parent directory checkpoints_openclip/ViT-B-32/OxfordIIITPetVal does not exist.
+  - CUB200/2_shot: Parent directory checkpoints_openclip/ViT-B-32/CUB200Val does not exist.
+  - PascalVOC/2_shot: Parent directory checkpoints_openclip/ViT-B-32/PascalVOCVal does not exist.
+  - Country211/2_shot: Parent directory checkpoints_openclip/ViT-B-32/Country211Val does not exist.
+  - UCF101/2_shot: Parent directory checkpoints_openclip/ViT-B-32/UCF101Val does not exist.
+  - Caltech101/2_shot: Parent directory checkpoints_openclip/ViT-B-32/Caltech101Val does not exist.
+  - SUN397/2_shot: Parent directory checkpoints_openclip/ViT-B-32/SUN397Val does not exist.
+  - ImageNet/2_shot: Dataset setup failed: [Errno 2] No such file or directory: '/home/luke/data/imagenet/train'
+  - Cars/0.25_shot: element 0 of tensors does not require grad and does not have a grad_fn
+  - DTD/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/DTDVal does not exist.
+  - EuroSAT/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/EuroSATVal does not exist.
+  - GTSRB/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/GTSRBVal does not exist.
+  - MNIST/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/MNISTVal does not exist.
+  - RESISC45/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/RESISC45Val does not exist.
+  - SVHN/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/SVHNVal does not exist.
+  - CIFAR10/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/CIFAR10Val does not exist.
+  - CIFAR100/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/CIFAR100Val does not exist.
+  - STL10/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/STL10Val does not exist.
+  - Food101/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Food101Val does not exist.
+  - Caltech256/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Caltech256Val does not exist.
+  - FGVCAircraft/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/FGVCAircraftVal does not exist.
+  - Flowers102/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Flowers102Val does not exist.
+  - OxfordIIITPet/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/OxfordIIITPetVal does not exist.
+  - CUB200/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/CUB200Val does not exist.
+  - PascalVOC/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/PascalVOCVal does not exist.
+  - Country211/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Country211Val does not exist.
+  - UCF101/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/UCF101Val does not exist.
+  - Caltech101/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Caltech101Val does not exist.
+  - SUN397/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/SUN397Val does not exist.
+  - ImageNet/0.25_shot: Dataset setup failed: [Errno 2] No such file or directory: '/home/luke/data/imagenet/train'
+====================================================================================================
+[rank0]:[W326 02:36:11.321850141 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

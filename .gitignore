@@ -172,3 +172,4 @@ cython_debug/
 results/analysis/**
 
 !/failed_evaluations.json
+!./logs/experiment_suite_20260326_011711/*
