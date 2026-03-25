@@ -30,3 +30,22 @@
 [2026-03-26 04:28:04] START: [clip] ViT-B-32: Few-shot + tip adapter (2 shots) (step clip_ViT-B-32_few_shot_tip)
 [2026-03-26 04:30:22] FAIL:  [clip] ViT-B-32: Few-shot + tip adapter (2 shots) (138s, exit 1)
 [2026-03-26 04:30:22] START: [clip] ViT-B-32: Few-shot + lpp adapter (2 shots) (step clip_ViT-B-32_few_shot_lpp)
+[2026-03-26 04:32:40] FAIL:  [clip] ViT-B-32: Few-shot + lpp adapter (2 shots) (138s, exit 1)
+[2026-03-26 04:32:40] START: [clip] ViT-B-32: aTLAS x K (partition=10, subsample=0.25) (step clip_ViT-B-32_atlas_x_k_0.25)
+[2026-03-26 04:35:00] FAIL:  [clip] ViT-B-32: aTLAS x K (partition=10, subsample=0.25) (140s, exit 1)
+[2026-03-26 04:35:00] START: [clip] ViT-B-32: Meta-train text-to-coefficient hypernetwork (step clip_ViT-B-32_text_hypernetwork)
+[2026-03-26 04:35:01] FAIL:  [clip] ViT-B-32: Meta-train text-to-coefficient hypernetwork (1s, exit 1)
+[2026-03-26 04:35:01] START: [clip] ViT-B-32: Meta-train multi-modal hypernetwork (step clip_ViT-B-32_multimodal_hypernetwork)
+[2026-03-26 04:35:02] FAIL:  [clip] ViT-B-32: Meta-train multi-modal hypernetwork (1s, exit 1)
+[2026-03-26 04:35:02] Finished experiments: model=ViT-B-32, backend=clip
+[2026-03-26 04:35:02] 
+[2026-03-26 04:35:02] ############################################################
+[2026-03-26 04:35:02] # PHASE 2: OpenCLIP Backend                                #
+[2026-03-26 04:35:02] ############################################################
+[2026-03-26 04:35:02] 
+[2026-03-26 04:35:02] ========================================================
+[2026-03-26 04:35:02] Starting experiments: model=ViT-B-32, backend=openclip
+[2026-03-26 04:35:02]   Checkpoints: checkpoints_openclip/ViT-B-32/
+[2026-03-26 04:35:02]   Results:     results_openclip/ViT-B-32/
+[2026-03-26 04:35:02] ========================================================
+[2026-03-26 04:35:02] START: [openclip] ViT-B-32: Fine-tune on all datasets (step openclip_ViT-B-32_finetune)
