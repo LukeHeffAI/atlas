@@ -47,11 +47,11 @@ import torch.nn as nn
 from tqdm import tqdm
 
 from args import parse_arguments, get_checkpoint_dir
+from datasets.registry import get_dataset
 from modeling import ImageEncoder
 from task_vectors import NonLinearTaskVector
 from hypernetworks.multimodal_to_coef import create_multimodal_hypernetwork_from_args
 from composition import TextConditionedWeightedImageEncoder
-from datasets.registry import get_dataset
 from heads import get_classification_head
 from utils import load_text_descriptions
 from learn_few_shots import load_task_vectors

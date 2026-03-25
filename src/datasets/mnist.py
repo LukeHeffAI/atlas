@@ -12,6 +12,7 @@ import os
 import json
 import torch
 import torchvision.datasets as datasets
+import torchvision.transforms as T
 
 class MNIST:
     def __init__(self,
@@ -20,12 +21,15 @@ class MNIST:
                  batch_size=128,
                  num_workers=16):
 
+        # MNIST is grayscale (1 channel); CLIP transforms expect RGB (3 channels).
+        # Prepend a Grayscale→RGB conversion so Normalize doesn't fail.
+        rgb_preprocess = T.Compose([T.Grayscale(num_output_channels=3), preprocess])
 
         self.train_dataset = datasets.MNIST(
             root=location,
             download=True,
             train=True,
-            transform=preprocess
+            transform=rgb_preprocess
         )
 
         self.train_loader = torch.utils.data.DataLoader(
@@ -39,7 +43,7 @@ class MNIST:
             root=location,
             download=True,
             train=False,
-            transform=preprocess
+            transform=rgb_preprocess
         )
 
         self.test_loader = torch.utils.data.DataLoader(

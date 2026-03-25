@@ -151,7 +151,7 @@ def _load_openclip(name, pretrained, cache_dir):
         name, pretrained=pretrained, cache_dir=cache_dir
     )
     # Attach a tokenize convenience method so the API is uniform
-    model.tokenize = lambda texts: open_clip.tokenize(texts)
+    model.tokenize = open_clip.tokenize
     return model, train_preprocess, val_preprocess
 
 

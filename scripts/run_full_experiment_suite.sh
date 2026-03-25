@@ -314,7 +314,7 @@ if [ -z "$BACKEND_FILTER" ] || [ "$BACKEND_FILTER" = "clip" ]; then
     log_info ""
 
     for MODEL in $CLIP_MODELS; do
-        run_all_for_model "$MODEL" "clip" "checkpoints" "results/"
+        run_all_for_model "$MODEL" "clip" "checkpoints_clip" "results_clip/"
     done
 fi
 

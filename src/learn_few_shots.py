@@ -9,6 +9,7 @@ Australian Institute for Machine Learning
 """
 
 import os
+import sys
 import copy
 import time
 import json
@@ -298,7 +299,11 @@ def main(rank, args):
         for key, info in failures.items():
             print(f"  - {key}: {info['error'].splitlines()[0]}")
     print("=" * 100)
- 
+
+    # Exit with non-zero code when all tasks failed so the runner detects failure
+    if n_succeeded == 0 and n_failed > 0:
+        sys.exit(1)
+
 def train(task_vectors, args, comp_acc={}, cached_resources=None):
     """Train task vector coefficients for a single dataset and shot setting.
  
@@ -372,11 +377,13 @@ def train(task_vectors, args, comp_acc={}, cached_resources=None):
             f"(percentage); got {args.subsample!r}"
         )
 
-    if os.path.isfile(f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt") and args.seed == 1:
-        to_keep = torch.load(f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt", weights_only=False)
+    save_dir = f"{args.save}/{target_dataset}"
+    os.makedirs(save_dir, exist_ok=True)
+    if os.path.isfile(f"{save_dir}/{n_shots}_shots_{args.seed}.pt") and args.seed == 1:
+        to_keep = torch.load(f"{save_dir}/{n_shots}_shots_{args.seed}.pt", weights_only=False)
     else:
         to_keep = get_n_shots(dataset.train_dataset, n_shots, classification_head.out_features, args)
-        torch.save(to_keep, f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt")
+        torch.save(to_keep, f"{save_dir}/{n_shots}_shots_{args.seed}.pt")
 
     r = len(to_keep) / args.batch_size
     if r < 10:
