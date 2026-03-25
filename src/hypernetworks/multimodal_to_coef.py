@@ -43,6 +43,26 @@ from typing import Dict, List, Optional, Tuple
 from .base import BaseHypernetwork
 
 
+class _HFVisionEncoder(nn.Module):
+    """Thin wrapper that combines HF CLIPVisionModel + visual_projection.
+
+    HuggingFace splits the vision encoder and projection layer into
+    separate modules.  This wrapper combines them so that calling
+    ``encoder(images)`` returns projected features of the same
+    dimensionality as OpenCLIP's ``clip_model.visual(images)``.
+    """
+
+    def __init__(self, vision_model, visual_projection):
+        super().__init__()
+        self.vision_model = vision_model
+        self.visual_projection = visual_projection
+
+    def forward(self, pixel_values):
+        outputs = self.vision_model(pixel_values=pixel_values)
+        pooled = outputs.pooler_output  # [B, hidden_size]
+        return self.visual_projection(pooled)  # [B, proj_dim]
+
+
 class AttentionShotPooling(nn.Module):
     """Attention-based pooling over K support images per class.
 
@@ -186,11 +206,13 @@ class MultiModalHypernetwork(BaseHypernetwork):
         freeze_image_encoder: bool = True,
         image_pooling: str = "mean",
         text_input_mode: str = "dataset",
+        clip_backend: str = "clip",
     ):
         super().__init__()
 
         # Store config
         self.text_encoder_name = text_encoder_name
+        self._clip_backend = clip_backend
         self.num_task_vectors = num_task_vectors
         self.num_blocks = num_blocks
         self.proj_dim = proj_dim
@@ -314,36 +336,39 @@ class MultiModalHypernetwork(BaseHypernetwork):
     def _load_image_encoder(self):
         """Load and optionally freeze the CLIP image encoder.
 
-        Uses OpenCLIP's visual tower for consistency with the rest of the
-        aTLAS codebase. The image encoder is a standalone module that
-        encodes support images into fixed-size embeddings.
+        Uses the configured CLIP backend (HuggingFace or OpenCLIP) for
+        consistency with the rest of the aTLAS codebase. The image encoder
+        is a standalone module that encodes support images into fixed-size
+        embeddings.
         """
-        try:
-            import open_clip
-        except ImportError:
-            raise ImportError(
-                "open_clip package required. Install with: pip install open-clip-torch"
-            )
+        from clip_backends import load_clip_model, HFCLIPWrapper
 
-        # Map HuggingFace-style names to OpenCLIP names
-        openclip_name_map = {
-            "openai/clip-vit-base-patch32": ("ViT-B-32", "openai"),
-            "openai/clip-vit-base-patch16": ("ViT-B-16", "openai"),
-            "openai/clip-vit-large-patch14": ("ViT-L-14", "openai"),
+        # Map HuggingFace-style names to internal model names
+        hf_to_internal = {
+            "openai/clip-vit-base-patch32": "ViT-B-32",
+            "openai/clip-vit-base-patch16": "ViT-B-16",
+            "openai/clip-vit-large-patch14": "ViT-L-14",
         }
 
-        if self.text_encoder_name in openclip_name_map:
-            model_name, pretrained = openclip_name_map[self.text_encoder_name]
-        else:
-            # Fallback: assume ViT-B-32
-            model_name, pretrained = "ViT-B-32", "openai"
+        model_name = hf_to_internal.get(self.text_encoder_name, "ViT-B-32")
+        backend = getattr(self, "_clip_backend", "clip")
 
-        print(f"[MultiModal] Loading image encoder: {model_name} ({pretrained})")
-        clip_model, _, self.image_preprocess = open_clip.create_model_and_transforms(
-            model_name, pretrained=pretrained
+        print(f"[MultiModal] Loading image encoder: {model_name} (backend={backend})")
+        clip_model, _, self.image_preprocess = load_clip_model(
+            model_name, pretrained="openai", backend=backend
         )
-        self.image_encoder = clip_model.visual
-        self.image_dim = self.image_encoder.output_dim
+
+        if isinstance(clip_model, HFCLIPWrapper):
+            self.image_encoder = clip_model.clip_model.vision_model
+            # HF vision_model output is hidden_size; use the visual_projection for final dim
+            self.image_dim = clip_model.clip_model.visual_projection.out_features
+            # Wrap to apply projection after the vision model
+            vision_model = clip_model.clip_model.vision_model
+            visual_projection = clip_model.clip_model.visual_projection
+            self.image_encoder = _HFVisionEncoder(vision_model, visual_projection)
+        else:
+            self.image_encoder = clip_model.visual
+            self.image_dim = self.image_encoder.output_dim
 
         if self.freeze_image_encoder:
             for param in self.image_encoder.parameters():
@@ -718,6 +743,7 @@ def create_multimodal_hypernetwork_from_args(args, num_blocks: int):
         freeze_image_encoder=getattr(args, "freeze_image_encoder", True),
         image_pooling=getattr(args, "image_pooling", "mean"),
         text_input_mode=getattr(args, "text_input_mode", "dataset"),
+        clip_backend=getattr(args, "clip_backend", "clip"),
     )
 
     return hypernetwork

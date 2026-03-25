@@ -155,10 +155,25 @@ def parse_arguments():
         help="Directory for caching features and encoder",
     )
     parser.add_argument(
+        "--clip-backend",
+        type=str,
+        default="clip",
+        choices=["clip", "openclip"],
+        help="CLIP implementation to use. 'clip' uses HuggingFace transformers "
+             "(original OpenAI CLIP weights, recommended). 'openclip' uses the "
+             "open-clip-torch package (for backward compatibility or ResNet models).",
+    )
+    parser.add_argument(
+        "--clip-cache-dir",
+        type=str,
+        default=os.path.expanduser("~/models"),
+        help="Directory for caching downloaded CLIP model files",
+    )
+    parser.add_argument(
         "--openclip-cachedir",
         type=str,
         default=os.path.expanduser("~/openclip-cachedir/open_clip"),
-        help="Directory for caching models from OpenCLIP",
+        help="Directory for caching models from OpenCLIP (deprecated, use --clip-cache-dir)",
     )
     parser.add_argument(
         "--world-size",

@@ -24,9 +24,10 @@ conda activate atlas
 The environment uses:
 - PyTorch 1.13.1 with CUDA 11.6
 - Python 3.10
-- open-clip-torch for CLIP models
+- transformers for CLIP models (default backend, uses original OpenAI CLIP weights via HuggingFace Hub)
+- open-clip-torch as alternative CLIP backend (for backward compatibility or ResNet architectures)
 - functorch for linearization
-- transformers (for text encoders in hypernetwork)
+- transformers (also used for text encoders in hypernetwork)
 
 ## Dataset and Checkpoint Preparation
 
@@ -95,7 +96,9 @@ done
 ### Key Script Arguments
 
 Common arguments across scripts (see `src/args.py` for full list):
-- `--model`: Model architecture (ViT-B-32, ViT-B-16, ViT-L-14, RN50, RN101)
+- `--clip-backend`: CLIP implementation to use: `clip` (HuggingFace transformers, default) or `openclip` (open-clip-torch, for backward compat or ResNet models)
+- `--clip-cache-dir`: Directory for caching downloaded CLIP models (default: ~/models)
+- `--model`: Model architecture (ViT-B-32, ViT-B-16, ViT-L-14; RN50/RN101 require `--clip-backend openclip`)
 - `--blockwise-coef`: Enable learned coefficients per parameter block (core aTLAS feature)
 - `--subsample`: Float for percentage or int for number of shots
 - `--partition`: Number of random partitions for aTLAS x K
@@ -137,20 +140,28 @@ Common arguments across scripts (see `src/args.py` for full list):
 - Uses `functorch.jvp` (Jacobian-vector product) for efficient linearized forward pass
 - Enables tangent task arithmetic for improved performance in some settings
 
-**4. Model Components (`src/modeling.py`)**
-- `ImageEncoder`: Wraps OpenCLIP models, loads pretrained CLIP encoders
+**4. CLIP Backend Abstraction (`src/clip_backends.py`)**
+- `load_clip_model()`: Unified loading function supporting both HuggingFace and OpenCLIP backends
+- `HFCLIPWrapper`: Wraps HuggingFace `CLIPModel` to expose the same API as OpenCLIP (`encode_image`, `encode_text`, `tokenize`, `logit_scale`)
+- Backend is selected via `--clip-backend` (default: `clip` for HuggingFace)
+- HuggingFace backend supports: ViT-B-32, ViT-B-16, ViT-L-14
+- OpenCLIP backend supports all OpenCLIP models including ResNet variants
+- **Important**: Checkpoints are not cross-compatible between backends (different state_dict keys)
+
+**5. Model Components (`src/modeling.py`)**
+- `ImageEncoder`: Loads pretrained CLIP encoders via the configured backend
 - `ClassificationHead`: Linear classification layer with optional normalization
 - `ImageClassifier`: Combines encoder and head for end-to-end classification
 - `MultiHeadImageClassifier`: Supports multiple classification heads for multi-task scenarios
 
-**5. Dataset Registry (`src/datasets/registry.py`)**
+**6. Dataset Registry (`src/datasets/registry.py`)**
 - Central registry of 22 datasets (CIFAR10/100, ImageNet, Cars, DTD, etc.)
 - `get_dataset()`: Factory function that handles dataset loading and preprocessing
 - Support for "Val" suffix to automatically split train into train/val
 - `extract_class_data()`: Isolate specific classes from datasets
 - Each dataset module in `src/datasets/` implements dataset-specific logic
 
-**6. Training Scripts**
+**7. Training Scripts**
 Main experiment scripts follow the pattern `learn_*.py`:
 - `learn_few_shots.py`: Few-shot learning with task vector composition (supports `--task-vector-source synthetic` to train on synthetic images while evaluating on real data)
 - `learn_task_negation.py`: Learn coefficients for task negation
@@ -162,7 +173,7 @@ Evaluation scripts follow `eval_*.py` pattern for assessing different task arith
 - `learn_multimodal_to_coef.py`: Meta-train multi-modal hypernetwork (text + images → coefficients)
 - `eval_multimodal_adaptation.py`: Evaluate multi-modal hypernetwork (supports sweep across shot counts)
 
-**7. Hypernetwork Architecture (`src/hypernetworks/`)**
+**8. Hypernetwork Architecture (`src/hypernetworks/`)**
 - `BaseHypernetwork`: Abstract base class defining the hypernetwork interface
 - `TextToCoefHypernetwork`: Maps text descriptions → aTLAS coefficients
   - Uses CLIP text encoder (frozen) to encode descriptions
@@ -179,14 +190,14 @@ Evaluation scripts follow `eval_*.py` pattern for assessing different task arith
 - `create_hypernetwork_from_args()`: Factory for text-only hypernetworks
 - `create_multimodal_hypernetwork_from_args()`: Factory for multi-modal hypernetworks
 
-**7a. Multi-Modal Meta-Learning (`src/meta_learning/`)**
+**8a. Multi-Modal Meta-Learning (`src/meta_learning/`)**
 - `MultiModalEpisodeSampler`: Episode sampler producing paired (text, images) episodes
   - Lazy dataset loading with caching for efficient repeated sampling
   - Class-balanced N-way K-shot support set construction
   - `variable_shots` mode: randomly varies K ∈ [1, num_shots] per episode for robustness
   - Handles datasets with varying numbers of available samples per class
 
-**8. Text Description Management (`src/text_descriptions/`)**
+**9. Text Description Management (`src/text_descriptions/`)**
 - `TextDescriptionLoader`: Load/save text descriptions from JSON files
   - Supports manual and LLM-generated descriptions
   - Format: `{"class_name": ["desc1", "desc2", ...], ...}`
@@ -194,14 +205,14 @@ Evaluation scripts follow `eval_*.py` pattern for assessing different task arith
 - `ClaudeDescriptionGenerator`: Generate descriptions using Claude
 - `templates.py`: CLIP-style template-based description generation
 
-**9. Text-to-Image Generation (`src/text2image/`)**
+**10. Text-to-Image Generation (`src/text2image/`)**
 - `Text2ImageBackend`: Abstract base for T2I backends
 - `StableDiffusionBackend`: Stable Diffusion / SDXL implementation
 - `DalleBackend`: DALL-E 3 implementation
 - `get_t2i_backend()`: Factory function with backend registry
 - `register_t2i_backend()`: Register custom T2I backends
 
-**10. Text-Conditioned Composition (`src/composition.py`)**
+**11. Text-Conditioned Composition (`src/composition.py`)**
 - `TextConditionedWeightedImageEncoder`: Extends `WeightedImageEncoder` with hypernetwork support
   - Can use either learnable coefficients or hypernetwork-predicted coefficients
   - `enable_coefficient_finetuning()`: Convert predicted coefficients to trainable parameters
