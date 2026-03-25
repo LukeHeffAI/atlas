@@ -6,8 +6,10 @@ from text descriptions, enabling zero-shot and few-shot adaptation without image
 
 from .base import BaseHypernetwork
 from .text_to_coef import TextToCoefHypernetwork
+from .multimodal_to_coef import MultiModalHypernetwork
 
 __all__ = [
     "BaseHypernetwork",
     "TextToCoefHypernetwork",
+    "MultiModalHypernetwork",
 ]
