@@ -612,30 +612,31 @@ class MultiModalHypernetwork(BaseHypernetwork):
                 image_pooled_raw = encode_result
             image_pooled = self.image_proj(image_pooled_raw)
 
-        # Process text in chunks, fusing with pre-computed image features
+        # Process text in chunks, fusing with pre-computed image features.
+        # NOTE: no torch.no_grad() here — gradient flow is needed during
+        # meta-training.  Callers handle no_grad for inference/validation.
         all_coefs = []
-        with torch.no_grad():
-            for start in range(0, len(all_descriptions), text_chunk_size):
-                chunk_descs = all_descriptions[start:start + text_chunk_size]
-                text_features = self._encode_text(chunk_descs)
-                text_proj = self.text_proj(text_features)
+        for start in range(0, len(all_descriptions), text_chunk_size):
+            chunk_descs = all_descriptions[start:start + text_chunk_size]
+            text_features = self._encode_text(chunk_descs)
+            text_proj = self.text_proj(text_features)
 
-                if image_pooled is not None:
-                    # Expand pre-computed image features to match chunk size
-                    img_exp = image_pooled.expand(len(chunk_descs), -1)
-                    ps_exp = (per_shot_proj.expand(len(chunk_descs), -1, -1)
-                              if per_shot_proj is not None else None)
-                    fused = self._fuse(text_proj, img_exp, ps_exp)
-                else:
-                    fused = self.text_only_proj(text_proj)
+            if image_pooled is not None:
+                # Expand pre-computed image features to match chunk size
+                img_exp = image_pooled.expand(len(chunk_descs), -1)
+                ps_exp = (per_shot_proj.expand(len(chunk_descs), -1, -1)
+                          if per_shot_proj is not None else None)
+                fused = self._fuse(text_proj, img_exp, ps_exp)
+            else:
+                fused = self.text_only_proj(text_proj)
 
-                hidden = self.post_fusion_mlp(fused)
-                coef_flat = self.output(hidden)
-                if self.use_blockwise:
-                    coef = coef_flat.view(-1, self.num_task_vectors, self.num_blocks)
-                else:
-                    coef = coef_flat.view(-1, self.num_task_vectors)
-                all_coefs.append(coef)
+            hidden = self.post_fusion_mlp(fused)
+            coef_flat = self.output(hidden)
+            if self.use_blockwise:
+                coef = coef_flat.view(-1, self.num_task_vectors, self.num_blocks)
+            else:
+                coef = coef_flat.view(-1, self.num_task_vectors)
+            all_coefs.append(coef)
 
         all_coefs = torch.cat(all_coefs, dim=0)
         return self._aggregate_coefs(all_coefs, aggregate)
@@ -661,11 +662,10 @@ class MultiModalHypernetwork(BaseHypernetwork):
                 class_images = support_images[class_idx].unsqueeze(0)  # [1, K, C, H, W]
                 class_images = class_images.expand(len(descriptions), -1, -1, -1, -1)
 
-            with torch.no_grad():
-                coefs = self.forward(descriptions, support_images=class_images)
-                # Average across descriptions within this class
-                class_coef = coefs.mean(dim=0, keepdim=True)
-                class_coefs.append(class_coef)
+            coefs = self.forward(descriptions, support_images=class_images)
+            # Average across descriptions within this class
+            class_coef = coefs.mean(dim=0, keepdim=True)
+            class_coefs.append(class_coef)
 
         if not class_coefs:
             raise ValueError("No descriptions provided for any class")

@@ -166,8 +166,14 @@ def get_n_shots(dataset, shots, n_class, args):
         cond = (targets == c)
         ids_c = torch.arange(len(targets))[cond]
         a = torch.randperm(len(ids_c))
-        to_keep = torch.cat((to_keep, ids_c[a[-shots:]]))
-        
+        # Float shots ≤ 1.0 are treated as a fraction of per-class samples
+        # (used by aTLAS x K with --partition --subsample <percentage>).
+        if isinstance(shots, float) and 0 < shots <= 1.0:
+            k = max(1, int(len(ids_c) * shots))
+        else:
+            k = int(shots)
+        to_keep = torch.cat((to_keep, ids_c[a[-k:]]))
+
     return to_keep
 
 def get_preds(dataset, model, args):

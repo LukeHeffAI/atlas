@@ -358,14 +358,19 @@ def train(task_vectors, args, comp_acc={}, cached_resources=None):
  
         dataset = _load_dataset_for_training(args, preprocess_fn, target_dataset, orig_dataset)
 
-    # Validate subsample: this script currently only supports an integer number of shots.
-    if not isinstance(args.subsample, int):
+    # Determine subsample mode: integer shot count or float percentage.
+    # Float percentages (0 < value <= 1.0) are used with --partition for aTLAS x K.
+    if isinstance(args.subsample, int):
+        n_shots = args.subsample
+    elif isinstance(args.subsample, float) and 0 < args.subsample <= 1.0:
+        n_shots = args.subsample  # percentage — handled by get_n_shots
+    elif isinstance(args.subsample, float) and args.subsample > 1.0:
+        n_shots = int(args.subsample)  # e.g. 16.0 → 16
+    else:
         raise TypeError(
-            f"--subsample must be an integer number of shots for learn_few_shots; "
-            f"got value {args.subsample!r} of type {type(args.subsample).__name__}. "
-            "Percentage subsampling with float values is not supported in this script."
+            f"--subsample must be a positive integer (shot count) or float in (0, 1] "
+            f"(percentage); got {args.subsample!r}"
         )
-    n_shots = args.subsample
 
     if os.path.isfile(f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt") and args.seed == 1:
         to_keep = torch.load(f"{args.save}/{target_dataset}/{n_shots}_shots_{args.seed}.pt", weights_only=False)

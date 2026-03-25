@@ -198,9 +198,10 @@ class TextToCoefHypernetwork(BaseHypernetwork):
         if not all_descriptions:
             raise ValueError("No descriptions provided")
 
-        # Get coefficients for all descriptions
-        with torch.no_grad():
-            all_coefs = self.forward(all_descriptions)
+        # Get coefficients for all descriptions.
+        # NOTE: no torch.no_grad() here — gradient flow is needed during
+        # meta-training.  Callers handle no_grad for inference/validation.
+        all_coefs = self.forward(all_descriptions)
 
         # Aggregate across descriptions
         if aggregate == "mean":
