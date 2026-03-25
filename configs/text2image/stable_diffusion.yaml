@@ -5,8 +5,8 @@ model_id: "stabilityai/stable-diffusion-xl-base-1.0"
 device: "cuda"
 
 # Generation parameters
-guidance_scale: 10
-num_inference_steps: 60
+guidance_scale: 7.5
+num_inference_steps: 50
 height: 1024
 width: 1024
 

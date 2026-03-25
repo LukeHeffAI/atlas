@@ -4,13 +4,12 @@ set -e
 echo "Generating few-shot adaptation experiments"
 
 python src/generate_synthetic_data.py \
-    --datasets Caltech101 Caltech256 Country211 Cars FGVCAircraft Flowers102 Food101 OxfordIIITPet \
+    --datasets CUB200 \
     --text-source manual \
     --t2i-backend stable_diffusion \
     --t2i-model stabilityai/stable-diffusion-xl-base-1.0 \
     --num-images-per-class 4 \
-    --output-dir data/synthetic_images \
-    --force-regenerate
+    --output-dir data/synthetic_images
 echo "Synthetic data generation for CUB images complete!"
 
 MODEL=${1:-ViT-B-32}

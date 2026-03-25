@@ -159,8 +159,6 @@ Main experiment scripts follow the pattern `learn_*.py`:
 - `finetune.py`: Standard or linearized fine-tuning
 
 Evaluation scripts follow `eval_*.py` pattern for assessing different task arithmetic operations.
-- `learn_multimodal_to_coef.py`: Meta-train multi-modal hypernetwork (text + images → coefficients)
-- `eval_multimodal_adaptation.py`: Evaluate multi-modal hypernetwork (supports sweep across shot counts)
 
 **7. Hypernetwork Architecture (`src/hypernetworks/`)**
 - `BaseHypernetwork`: Abstract base class defining the hypernetwork interface
@@ -169,22 +167,7 @@ Evaluation scripts follow `eval_*.py` pattern for assessing different task arith
   - MLP layers transform text embeddings to coefficient space
   - Supports blockwise or global coefficients
   - Architecture sizes: `small` [512,256], `medium` [512,512,256], `large` [768,512,512,256]
-- `MultiModalHypernetwork`: Maps text descriptions + support images → aTLAS coefficients
-  - Dual-branch architecture: CLIP text encoder + OpenCLIP visual encoder (both frozen)
-  - Three fusion modes: `concat` (concatenation), `add` (element-wise sum), `attention` (cross-attention)
-  - Two shot pooling strategies: `mean` (simple average) or `attention` (learned attention query)
-  - Two text input modes: `dataset` (aggregate all text) or `per_class` (class-aligned with images)
-  - Graceful degradation to text-only prediction when no support images are provided
-  - Uses `text_only_proj` layer to map text to the fusion output space in fallback mode
-- `create_hypernetwork_from_args()`: Factory for text-only hypernetworks
-- `create_multimodal_hypernetwork_from_args()`: Factory for multi-modal hypernetworks
-
-**7a. Multi-Modal Meta-Learning (`src/meta_learning/`)**
-- `MultiModalEpisodeSampler`: Episode sampler producing paired (text, images) episodes
-  - Lazy dataset loading with caching for efficient repeated sampling
-  - Class-balanced N-way K-shot support set construction
-  - `variable_shots` mode: randomly varies K ∈ [1, num_shots] per episode for robustness
-  - Handles datasets with varying numbers of available samples per class
+- `create_hypernetwork_from_args()`: Factory function for creating hypernetworks from CLI args
 
 **8. Text Description Management (`src/text_descriptions/`)**
 - `TextDescriptionLoader`: Load/save text descriptions from JSON files
@@ -329,134 +312,6 @@ Text descriptions are stored in `data/text_descriptions/` as JSON files:
 **Text adaptation mode:**
 - `--text-adaptation-mode`: Which approach to use (synthetic, hypernetwork, both)
 
-**Multi-modal hypernetwork arguments:**
-- `--fusion-mode`: Fusion strategy for text+image branches (concat, add, attention)
-- `--num-shots`: Number of support images per class for multi-modal episodes (default: 4)
-- `--image-pooling`: How to pool across K shots (mean, attention)
-- `--text-input-mode`: How text is handled (dataset: aggregate all; per_class: class-aligned)
-- `--variable-shots`: Randomly vary K per episode during meta-training for robustness
-- `--proj-dim`: Projection dimension for both modalities (default: 256)
-- `--eval-mode`: Evaluation mode (multimodal, text_only, sweep)
-- `--freeze-image-encoder`: Freeze image encoder in multi-modal hypernetwork (default: True)
-- `--dataset`: Target dataset for evaluation
-
-## Multi-Modal Hypernetwork (Text + Images)
-
-### Overview
-
-The multi-modal hypernetwork extends the text-only `TextToCoefHypernetwork` by
-incorporating a small set of support images alongside text descriptions. This
-enables the model to leverage complementary semantic (text) and visual (image)
-signals for more accurate aTLAS coefficient prediction. The key insight is that
-text descriptions provide high-level semantic understanding of a task, while
-even a handful of example images capture visual patterns (texture, color
-distribution, spatial layout) that text cannot easily convey.
-
-### Architecture
-
-The `MultiModalHypernetwork` (in `src/hypernetworks/multimodal_to_coef.py`)
-consists of:
-
-1. **Text branch**: CLIP text encoder (frozen) → linear projection → [proj_dim]
-2. **Image branch**: OpenCLIP visual encoder (frozen) → shot pooling → linear projection → [proj_dim]
-3. **Fusion module**: Combines text and image projections (concat/add/attention)
-4. **Post-fusion MLP**: Maps fused representation to coefficient space
-5. **Output layer**: Produces [num_task_vectors × num_blocks] coefficients
-
-**Shot pooling** aggregates the K support images per class:
-- `mean`: Simple average across shots (fast, no extra parameters)
-- `attention`: Learnable attention query that weights each shot's contribution
-
-**Fusion modes**:
-- `concat`: Concatenates text and image projections → [2 × proj_dim]
-- `add`: Element-wise sum → [proj_dim]
-- `attention`: Cross-attention where text attends to images → [proj_dim]
-
-**Graceful degradation**: When no images are provided (`support_images=None`),
-a learned `text_only_proj` layer maps the text projection to the fusion output
-space, allowing the same model to operate in both multi-modal and text-only mode.
-
-### Meta-Training
-
-```bash
-MODEL=ViT-B-32
-python src/learn_multimodal_to_coef.py \
-    --model $MODEL \
-    --meta-train-datasets CIFAR10,EuroSAT,DTD,GTSRB,SVHN,Food101 \
-    --meta-val-datasets Caltech101,Flowers102 \
-    --hypernetwork-arch medium \
-    --fusion-mode concat \
-    --num-shots 4 \
-    --image-pooling mean \
-    --text-input-mode dataset \
-    --variable-shots \
-    --meta-epochs 100 \
-    --episodes-per-epoch 20 \
-    --blockwise-coef
-```
-
-The meta-training loop:
-1. Samples a task (dataset) from the meta-train set.
-2. Uses `MultiModalEpisodeSampler` to draw text descriptions + K-shot support images.
-3. Predicts coefficients via the hypernetwork (gradient flows through predictions).
-4. Composes the pretrained model with task vectors weighted by predicted coefficients.
-5. Evaluates on a validation batch and backpropagates the cross-entropy loss.
-
-### Evaluation
-
-```bash
-# Single evaluation with 4-shot support
-python src/eval_multimodal_adaptation.py \
-    --model ViT-B-32 \
-    --dataset Flowers102 \
-    --hypernetwork-checkpoint checkpoints/ViT-B-32/hypernetworks/multimodal_to_coef/meta_trained.pt \
-    --num-shots 4 \
-    --eval-mode multimodal
-
-# Sweep across shot counts (0, 1, 2, 4, 8, 16)
-python src/eval_multimodal_adaptation.py \
-    --model ViT-B-32 \
-    --dataset Flowers102 \
-    --hypernetwork-checkpoint checkpoints/ViT-B-32/hypernetworks/multimodal_to_coef/meta_trained.pt \
-    --eval-mode sweep
-
-# Text-only baseline (zero-shot)
-python src/eval_multimodal_adaptation.py \
-    --model ViT-B-32 \
-    --dataset Flowers102 \
-    --hypernetwork-checkpoint checkpoints/ViT-B-32/hypernetworks/multimodal_to_coef/meta_trained.pt \
-    --eval-mode text_only
-```
-
-### Comparing Multi-Modal vs. Text-Only
-
-```bash
-python scripts/compare_multimodal_vs_text.py \
-    --multimodal-results checkpoints/ViT-B-32/multimodal_adapted/ \
-    --textonly-results checkpoints/ViT-B-32/text_adapted/ \
-    --datasets Flowers102,Cars,DTD \
-    --shot-count 4 \
-    --output figures/multimodal_vs_text.pdf
-```
-
-### Expected Results
-
-- Multi-modal should significantly outperform text-only (5-15% improvement)
-- Improvement most pronounced at low shot counts (1-4 shots)
-- Attention fusion likely better than concat/add for diverse tasks
-- Diminishing returns after 8-16 shots (direct fine-tuning becomes competitive)
-- `variable_shots` during training improves robustness across all shot counts
-
-### Checkpoint Organization
-
-Multi-modal hypernetwork checkpoints are stored under:
-- `checkpoints/<MODEL>/hypernetworks/multimodal_to_coef/meta_trained.pt` (best validation)
-- `checkpoints/<MODEL>/hypernetworks/multimodal_to_coef/meta_trained_final.pt` (last epoch)
-- `checkpoints/<MODEL>/hypernetworks/multimodal_to_coef/meta_results.json` (training history)
-
-Multi-modal evaluation results are stored under:
-- `checkpoints/<MODEL>/multimodal_adapted/<DATASET>/<mode>_results.json`
-
 ## Analysis Scripts
 
 Analysis and visualization scripts are located in `scripts/`:
@@ -483,7 +338,7 @@ python scripts/analyze_synthetic_quality.py \
 See `EXTENSION_ROADMAP.md` for detailed plans on:
 1. Ablation studies (text sources, T2I backends, hypernetwork sizes)
 2. Full LoRA prediction (predicting weight matrices instead of scalars)
-3. ~~Multi-modal hypernetwork~~ — **Implemented** (see above)
+3. Multi-modal hypernetwork (text + few example images)
 4. Cross-model generalization (transfer across architectures)
 5. Domain adaptation (medical, satellite, microscopy)
 6. Task composition (composing multiple text descriptions)
