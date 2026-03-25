@@ -172,6 +172,7 @@ cython_debug/
 results/analysis/**
 
 !/failed_evaluations.json
+!./logs/experiment_suite_**/**
 
 # Junk files from malformed pip install (empty version-constraint files)
 =*
