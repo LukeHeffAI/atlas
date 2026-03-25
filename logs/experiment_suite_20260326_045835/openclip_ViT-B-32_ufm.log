@@ -1,13 +1,13 @@
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_ufm.py", line 461, in <module>
-    torch.multiprocessing.spawn(main, args=(args,), nprocs=args.world_size)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 340, in spawn
-    return start_processes(fn, args, nprocs, join, daemon, start_method="spawn")
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 296, in start_processes
-    while not context.join():
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 211, in join
-    raise ProcessRaisedException(msg, error_index, failed_process.pid)
-torch.multiprocessing.spawn.ProcessRaisedException: 
+  Traceback (most recent call last):
+    File "/home/luke/Documents/GitHub/atlas/src/learn_ufm.py", line 461, in <module>
+      torch.multiprocessing.spawn(main, args=(args,), nprocs=args.world_size)
+    File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 340, in spawn
+      return start_processes(fn, args, nprocs, join, daemon, start_method="spawn")
+    File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 296, in start_processes
+      while not context.join():
+    File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 211, in join
+      raise ProcessRaisedException(msg, error_index, failed_process.pid)
+  torch.multiprocessing.spawn.ProcessRaisedException: 
 
 -- Process 0 terminated with the following error:
 Traceback (most recent call last):
