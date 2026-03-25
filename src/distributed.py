@@ -83,18 +83,30 @@ class DistributedSamplerWrapper(torch.utils.data.distributed.DistributedSampler)
 
 def setup_ddp(rank, world_size, port=12357):
     os.environ["MASTER_ADDR"] = "localhost"
-    os.environ["MASTER_PORT"] = str(port)
 
     # Tear down any leftover process group (e.g. from a failed previous run).
     if torch.distributed.is_initialized():
         torch.distributed.destroy_process_group()
 
-    # initialize the process group
-    torch.distributed.init_process_group(
-        "nccl",
-        rank=rank,
-        world_size=world_size,
-    )
+    # Try the requested port first, then scan up to 100 alternatives
+    for attempt_port in range(port, port + 100):
+        os.environ["MASTER_PORT"] = str(attempt_port)
+        try:
+            torch.distributed.init_process_group(
+                "nccl",
+                rank=rank,
+                world_size=world_size,
+            )
+            break
+        except Exception as e:
+            if "EADDRINUSE" in str(e) or "address already in use" in str(e).lower():
+                if rank == 0:
+                    print(f"Port {attempt_port} in use, trying {attempt_port + 1}...")
+                continue
+            raise
+    else:
+        raise RuntimeError(f"Could not find a free port in range [{port}, {port + 100})")
+
     torch.cuda.set_device(rank)
     torch.distributed.barrier()
 
