@@ -9,6 +9,7 @@ https://github.com/gortizji/tangent_task_arithmetic
 """
 
 import json
+import os
 
 from args import parse_arguments, get_checkpoint_dir
 from eval import eval_single_dataset
@@ -118,5 +119,6 @@ elif args.finetuning_mode == "linear":
 elif args.finetuning_mode == "posthoc":
     save_path = f"{args.save}/posthoc_ft_accuracies.json"
 
+os.makedirs(os.path.dirname(save_path), exist_ok=True)
 with open(save_path, "w") as f:
     json.dump(accuracies, f)

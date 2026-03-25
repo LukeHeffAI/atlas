@@ -70,9 +70,10 @@ class HFCLIPWrapper(nn.Module):
             token_ids: Long tensor of shape [N, 77] (from ``self.tokenize``).
         """
         attention_mask = (token_ids != self._tokenizer.pad_token_id).long()
-        return self.clip_model.get_text_features(
+        text_outputs = self.clip_model.text_model(
             input_ids=token_ids, attention_mask=attention_mask
         )
+        return self.clip_model.text_projection(text_outputs.pooler_output)
 
     def forward(self, *args, **kwargs):
         return self.clip_model(*args, **kwargs)
