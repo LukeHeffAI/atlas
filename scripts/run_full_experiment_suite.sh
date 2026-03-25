@@ -25,24 +25,22 @@ export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$(pwd)"
 # Configuration
 # ---------------------------------------------------------------------------
 
-# CLIP_MODELS="ViT-B-32 ViT-B-16 ViT-L-14"
-# OPENCLIP_MODELS="ViT-B-32 ViT-B-16 ViT-L-14"
-CLIP_MODELS="ViT-B-32"
-OPENCLIP_MODELS="ViT-B-32"
+CLIP_MODELS="ViT-B-32 ViT-B-16 ViT-L-14"
+OPENCLIP_MODELS="ViT-B-32 ViT-B-16 ViT-L-14"
 
 # Hypernetwork meta-learning configuration
 META_TRAIN_DATASETS="CIFAR10,EuroSAT,DTD,GTSRB,SVHN,Food101"
 META_VAL_DATASETS="Caltech101,Flowers102"
 HYPERNETWORK_ARCH="small"
-META_EPOCHS=3
-EPISODES_PER_EPOCH=3
+META_EPOCHS=50
+EPISODES_PER_EPOCH=10
 
 # Few-shot settings
-FEW_SHOT_SETTINGS="2"
+FEW_SHOT_SETTINGS="1,2,4,8,16"
 
 # Parameter-efficient settings
 PARTITION=10
-PERC_VALUES="0.25"
+PERC_VALUES="0.01 0.05 0.1 0.25 0.35 0.5 1.0"
 
 # ---------------------------------------------------------------------------
 # CLI argument parsing
