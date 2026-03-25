@@ -1,0 +1,16 @@
+****************************************************************************************************
+Evaluating pretrained models.
+****************************************************************************************************
+Evaluating on Cars
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/eval_single_task.py", line 81, in <module>
+    else NonLinearTaskVector(pretrained_checkpoint, finetuned_checkpoint)
+  File "/home/luke/Documents/GitHub/atlas/src/task_vectors.py", line 32, in __init__
+    pretrained_state_dict = self._load_checkpoint(
+  File "/home/luke/Documents/GitHub/atlas/src/task_vectors.py", line 143, in _load_checkpoint
+    return torch.load(checkpoint, map_location="cpu", weights_only=False)
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 1549, in load
+    return _load(
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/serialization.py", line 2135, in _load
+    data_file = io.BytesIO(zip_file.get_record(pickle_file))
+RuntimeError: PytorchStreamReader failed locating file data.pkl: file not found

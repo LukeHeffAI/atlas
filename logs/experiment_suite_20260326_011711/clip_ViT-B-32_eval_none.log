@@ -1,0 +1,41 @@
+****************************************************************************************************
+Evaluating pretrained models.
+****************************************************************************************************
+Evaluating on Cars
+====================================================================================================
+Evaluating on test split.
+Classification head for ViT-B-32 on CarsVal exists at checkpoints/ViT-B-32/head_CarsVal.pt
+Loading classification head from checkpoints/ViT-B-32/head_CarsVal.pt
+  0%|          | 0/63 [00:00<?, ?it/s]  0%|          | 0/63 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/luke/Documents/GitHub/atlas/src/eval_single_task.py", line 107, in <module>
+    accuracies[eval_dataset] = eval_single_dataset(
+  File "/home/luke/Documents/GitHub/atlas/src/eval.py", line 57, in eval_single_dataset
+    logits = utils.get_logits(x, model)
+  File "/home/luke/Documents/GitHub/atlas/src/utils.py", line 64, in get_logits
+    return classifier(inputs)
+  File "/home/luke/Documents/GitHub/atlas/src/modeling.py", line 125, in __call__
+    return self.forward(inputs, **kwargs)
+  File "/home/luke/Documents/GitHub/atlas/src/modeling.py", line 118, in forward
+    features = self.image_encoder(inputs)
+  File "/home/luke/Documents/GitHub/atlas/src/modeling.py", line 63, in __call__
+    return self.forward(inputs)
+  File "/home/luke/Documents/GitHub/atlas/src/modeling.py", line 60, in forward
+    return self.model.encode_image(images)
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/open_clip/model.py", line 327, in encode_image
+    features = self.visual(image)
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/open_clip/transformer.py", line 909, in forward
+    x = self.transformer(x)
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1776, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1787, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/open_clip/transformer.py", line 564, in forward
+    if not self.batch_first:
+  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1965, in __getattr__
+    raise AttributeError(
+AttributeError: 'Transformer' object has no attribute 'batch_first'
