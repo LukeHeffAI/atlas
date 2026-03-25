@@ -19,7 +19,7 @@ from src.task_vectors import LinearizedTaskVector, NonLinearTaskVector
 from src.composition import WeightedImageEncoder, WeightedLinearizedModel
 
 from src.utils import cosine_lr
-from src.args import parse_arguments
+from src.args import parse_arguments, get_checkpoint_dir
 from src.eval import eval_single_dataset
 from src.datasets.registry import get_dataset
 from src.heads import get_classification_head
@@ -272,10 +272,7 @@ if __name__ == "__main__":
     args.num_grad_accumulation = 2 if args.model == "ViT-L-14" else 1
     args.print_every = 10
 
-    if args.seed is not None:
-        args.save = f"checkpoints_{args.seed}/{args.model}"
-    else:
-        args.save = f"checkpoints/{args.model}"
+    args.save = get_checkpoint_dir(args)
     if args.subsample is not None:
         args.save += f"_{args.subsample*100:.0f}perc"
 

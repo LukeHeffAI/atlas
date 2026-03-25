@@ -46,7 +46,7 @@ import json
 import random
 
 import torch
-from args import parse_arguments
+from args import parse_arguments, get_checkpoint_dir
 from modeling import ImageEncoder, ImageClassifier
 from task_vectors import NonLinearTaskVector
 from hypernetworks.multimodal_to_coef import MultiModalHypernetwork
@@ -189,8 +189,7 @@ def main():
 
     if args.hypernetwork_checkpoint is None:
         raise ValueError("--hypernetwork-checkpoint required")
-    if args.save is None:
-        args.save = f"checkpoints/{args.model}"
+    args.save = get_checkpoint_dir(args)
 
     eval_mode = getattr(args, "eval_mode", "multimodal")
     num_shots = getattr(args, "num_shots", 4)

@@ -24,7 +24,7 @@ import json
 import time
 import torch
 
-from src.args import parse_arguments
+from src.args import parse_arguments, get_checkpoint_dir
 from src.modeling import ImageEncoder, ImageClassifier
 from src.task_vectors import NonLinearTaskVector
 from src.composition import WeightedImageEncoder, TextConditionedWeightedImageEncoder
@@ -280,8 +280,7 @@ def main():
         args.target_datasets = DATASET_POOL
 
     # Set up save directory
-    if args.save is None:
-        args.save = f"checkpoints/{args.model}"
+    args.save = get_checkpoint_dir(args)
 
     # Epoch map for few-shot training per dataset
     args.target_epochs = {

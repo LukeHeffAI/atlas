@@ -22,7 +22,7 @@ from src.task_vectors import NonLinearTaskVector
 from src.composition import WeightedImageEncoder
 
 from src.utils import cosine_lr, get_n_shots, TIPWrapper, LPPWrapper, IndexWrapper, _RepeatSampler
-from src.args import parse_arguments
+from src.args import parse_arguments, get_checkpoint_dir
 from src.eval import eval_single_dataset
 from src.datasets.registry import get_dataset
 from src.heads import get_classification_head
@@ -685,7 +685,7 @@ if __name__ == "__main__":
     args.logdir += f"{args.model}"
     args.target_datasets = {k:10 for k,v in args.target_datasets.items()} #10 epochs for few-shots using ViTs.
 
-    args.save = os.path.join(args.save, f'{args.model}')
+    args.save = get_checkpoint_dir(args)
     if args.seed is not None:
         args.logdir += f"/{args.seed}"
 

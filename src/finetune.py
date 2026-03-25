@@ -19,7 +19,7 @@ from src.utils import LabelSmoothing, cosine_lr
 from src.linearize import LinearizedImageEncoder
 from src.modeling import ImageClassifier, ImageEncoder
 
-from src.args import parse_arguments
+from src.args import parse_arguments, get_checkpoint_dir
 from src.eval import eval_single_dataset
 from src.heads import get_classification_head
 from src.datasets.registry import get_dataset
@@ -275,10 +275,7 @@ if __name__ == "__main__":
         args.num_workers = 4
         args.num_grad_accumulation = 2 if args.model == "ViT-L-14" else 1
 
-        if args.seed is not None:
-            args.save = f"checkpoints_{args.seed}/{args.model}"
-        else:
-            args.save = f"checkpoints/{args.model}"
+        args.save = get_checkpoint_dir(args)
         source_label = f" (synthetic: {args.t2i_backend})" if getattr(args, 'task_vector_source', 'real') == 'synthetic' else ""
         print("=" * 100)
         print(f"Finetuning {args.model} on {dataset}{source_label}")

@@ -29,6 +29,19 @@ def int_or_float_list(value):
         return [int_or_float(v.strip()) for v in value.split(',')]
     return int_or_float(value)
 
+def get_checkpoint_dir(args):
+    """Construct checkpoint directory from --checkpoint-root, --model, and --seed.
+
+    Priority: explicit --save > constructed from --checkpoint-root + --model.
+    """
+    if args.save is not None:
+        return args.save
+    root = getattr(args, 'checkpoint_root', 'checkpoints')
+    if args.seed is not None:
+        return f"{root}_{args.seed}/{args.model}"
+    return f"{root}/{args.model}"
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -141,6 +154,14 @@ def parse_arguments():
         type=str,
         default=None,
         help="Where to load zero-shot weights and task vectors",
+    )
+    parser.add_argument(
+        "--checkpoint-root",
+        type=str,
+        default="checkpoints",
+        help="Root directory for checkpoints. Used when --save is not set. "
+             "Checkpoints are stored under {checkpoint-root}/{model}/. "
+             "Use different roots for different CLIP backends to avoid overwriting.",
     )
     parser.add_argument(
         "--logdir",

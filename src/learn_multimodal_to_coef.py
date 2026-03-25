@@ -46,7 +46,7 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 
-from args import parse_arguments
+from args import parse_arguments, get_checkpoint_dir
 from modeling import ImageEncoder
 from task_vectors import NonLinearTaskVector
 from hypernetworks.multimodal_to_coef import create_multimodal_hypernetwork_from_args
@@ -425,8 +425,7 @@ def main():
     if args.meta_val_datasets is None:
         raise ValueError("--meta-val-datasets required for meta-training")
 
-    if args.save is None:
-        args.save = f"checkpoints/{args.model}"
+    args.save = get_checkpoint_dir(args)
 
     meta_train(args)
 

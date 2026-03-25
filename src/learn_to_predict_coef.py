@@ -37,7 +37,7 @@ def make_functional_with_buffers(model, disable_autograd_tracking=False):
 
     return func, params, buffers
 
-from src.args import parse_arguments
+from src.args import parse_arguments, get_checkpoint_dir
 from src.datasets.common import get_dataloader, maybe_dictionarize
 from src.datasets.registry import get_dataset
 from src.distributed import cleanup_ddp, distribute_loader, is_main_process, setup_ddp
@@ -326,8 +326,5 @@ if __name__ == "__main__":
     args.num_grad_accumulation = 2 if args.model == "ViT-L-14" else 1
     args.print_every = 10
 
-    if args.seed is not None:
-        args.save = f"checkpoints_{args.seed}/{args.model}"
-    else:
-        args.save = f"checkpoints/{args.model}"
+    args.save = get_checkpoint_dir(args)
     torch.multiprocessing.spawn(main, args=(args,), nprocs=args.world_size)

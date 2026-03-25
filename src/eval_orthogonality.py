@@ -9,7 +9,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-from args import parse_arguments
+from args import parse_arguments, get_checkpoint_dir
 from task_vectors import LinearizedTaskVector, NonLinearTaskVector
 
 def main(args, eval_datasets):
@@ -73,10 +73,7 @@ def main(args, eval_datasets):
 if __name__ == '__main__':
 
     args = parse_arguments()
-    if args.seed is not None:
-        args.save = f"checkpoints_{args.seed}/{args.model}"
-    else:
-        args.save = f"checkpoints/{args.model}"
+    args.save = get_checkpoint_dir(args)
 
     eval_datasets = [
         "0_MNIST",

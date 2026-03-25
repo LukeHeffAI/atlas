@@ -22,7 +22,7 @@ Usage:
 import os
 import json
 import torch
-from args import parse_arguments
+from args import parse_arguments, get_checkpoint_dir
 from modeling import ImageEncoder, ImageClassifier
 from task_vectors import NonLinearTaskVector
 from hypernetworks.text_to_coef import TextToCoefHypernetwork
@@ -313,8 +313,7 @@ def main():
     args = parse_arguments()
 
     # Set save directory
-    if args.save is None:
-        args.save = f"checkpoints/{args.model}"
+    args.save = get_checkpoint_dir(args)
 
     # Evaluate based on approach
     if args.text_adaptation_mode == "hypernetwork":

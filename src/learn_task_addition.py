@@ -16,7 +16,7 @@ from src.modeling import ImageEncoder, MultiHeadImageClassifier
 from src.task_vectors import LinearizedTaskVector, NonLinearTaskVector
 from src.composition import WeightedImageEncoder, WeightedLinearizedModel
 
-from src.args import parse_arguments
+from src.args import parse_arguments, get_checkpoint_dir
 from src.eval import eval_single_dataset
 from src.datasets.registry import get_dataset
 from src.heads import get_classification_head
@@ -281,10 +281,7 @@ if __name__ == "__main__":
     args.print_every = 10
     args.datasets = datasets
     args.epoch = 20
-    if args.seed is not None:
-        args.save = f"checkpoints_{args.seed}/{args.model}"
-    else:
-        args.save = f"checkpoints/{args.model}"
+    args.save = get_checkpoint_dir(args)
     with open(os.path.join(args.save, "zeroshot_accuracies.json"), 'r') as f:
         args.zs_acc = json.load(f)
 

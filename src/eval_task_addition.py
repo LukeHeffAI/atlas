@@ -3,16 +3,13 @@ import os
 
 from utils import find_optimal_coef
 
-from args import parse_arguments
+from args import parse_arguments, get_checkpoint_dir
 from eval import evaluate_task_vector, evaluate_task_vector_at_coef
 from task_vectors import LinearizedTaskVector, NonLinearTaskVector
 
 args = parse_arguments()
 
-if args.seed is not None:
-    args.save = f"checkpoints_{args.seed}/{args.model}"
-else:
-    args.save = f"checkpoints/{args.model}"
+args.save = get_checkpoint_dir(args)
 
 
 print("*" * 100)

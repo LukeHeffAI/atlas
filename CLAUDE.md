@@ -93,6 +93,28 @@ for PERC in 0.01 0.05 0.1 0.25 0.35 0.5 1.0; do
 done
 ```
 
+**Running the Full Experiment Suite:**
+```bash
+# Run all experiments for both backends (HuggingFace CLIP + OpenCLIP)
+./scripts/run_full_experiment_suite.sh
+
+# Dry run to preview all commands without executing
+./scripts/run_full_experiment_suite.sh --dry-run
+
+# Run only one backend
+./scripts/run_full_experiment_suite.sh --backend clip
+./scripts/run_full_experiment_suite.sh --backend openclip
+
+# Rerun only previously failed steps
+./scripts/run_full_experiment_suite.sh --rerun
+```
+
+The suite runs 108 experiment steps (18 per model x 3 ViT models x 2 backends):
+fine-tuning, evaluation, task negation/addition, test-time adaptation, few-shot (1-16),
+few-shot with adapters (tip, lpp), parameter-efficient (aTLAS x K), text hypernetwork,
+and multi-modal hypernetwork. HuggingFace checkpoints go to `checkpoints/`, OpenCLIP to
+`checkpoints_openclip/`. Failures are logged and can be rerun.
+
 ### Key Script Arguments
 
 Common arguments across scripts (see `src/args.py` for full list):
@@ -111,6 +133,7 @@ Common arguments across scripts (see `src/args.py` for full list):
 - `--task-vector-source`: Source of training data: `real` (default), `synthetic`, or `mixed`
 - `--synthetic-data-location`: Root directory for synthetic images (default: `data/synthetic_images`)
 - `--t2i-backend`: T2I backend used for generation (default: `stable_diffusion`)
+- `--checkpoint-root`: Root directory for checkpoints (default: `checkpoints`). Use different roots per backend to avoid overwriting (e.g., `--checkpoint-root checkpoints_openclip`)
 
 ## Architecture Overview
 
