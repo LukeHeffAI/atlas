@@ -46,7 +46,7 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 
-from args import parse_arguments, get_checkpoint_dir
+from src.args import parse_arguments, get_checkpoint_dir
 from src.datasets.registry import get_dataset
 from src.modeling import ImageEncoder
 from src.task_vectors import NonLinearTaskVector
