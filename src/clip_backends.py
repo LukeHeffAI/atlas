@@ -61,7 +61,8 @@ class HFCLIPWrapper(nn.Module):
     # ------------------------------------------------------------------
     def encode_image(self, images):
         """Encode preprocessed images → feature vectors."""
-        return self.clip_model.get_image_features(pixel_values=images)
+        vision_outputs = self.clip_model.vision_model(pixel_values=images)
+        return self.clip_model.visual_projection(vision_outputs.pooler_output)
 
     def encode_text(self, token_ids):
         """Encode tokenized text → feature vectors.
