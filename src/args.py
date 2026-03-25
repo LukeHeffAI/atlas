@@ -455,6 +455,13 @@ def parse_arguments():
         default=None,
         help="Target dataset for evaluation (e.g. Flowers102, Cars).",
     )
+    parser.add_argument(
+        "--num-eval-seeds",
+        type=int,
+        default=3,
+        help="Number of random seeds for multi-seed evaluation in sweep mode. "
+             "Results report mean ± 95%% confidence interval.",
+    )
 
     parsed_args = parser.parse_args()
     parsed_args.device = "cuda" if torch.cuda.is_available() else "cpu"

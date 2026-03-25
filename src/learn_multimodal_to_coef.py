@@ -58,6 +58,64 @@ from learn_few_shots import load_task_vectors
 from meta_learning.multimodal_sampler import MultiModalEpisodeSampler
 
 
+class EpisodeCache:
+    """Cache for expensive objects that are reused across episodes.
+
+    Avoids re-creating WeightedImageEncoder, classification heads, and
+    dataloaders on every episode — the dominant cost in naive meta-training.
+    """
+
+    def __init__(self):
+        self._weighted_encoders = {}  # keyed by frozenset of excluded datasets
+        self._classification_heads = {}
+        self._dataloaders = {}
+
+    def get_weighted_encoder(self, pretrained_model, task_vectors, exclude_name, blockwise):
+        """Get or create a cached WeightedImageEncoder."""
+        key = exclude_name
+        if key not in self._weighted_encoders:
+            relevant_tvs = [tv for name, tv in task_vectors.items()
+                            if name != exclude_name]
+            encoder = TextConditionedWeightedImageEncoder(
+                model=pretrained_model,
+                task_vectors=relevant_tvs,
+                hypernetwork=None,
+                blockwise=blockwise,
+            )
+            encoder = encoder.cuda()
+            self._weighted_encoders[key] = encoder
+        return self._weighted_encoders[key]
+
+    def get_classification_head(self, args, dataset_name):
+        """Get or create a cached classification head."""
+        key = dataset_name
+        if key not in self._classification_heads:
+            head = get_classification_head(args, dataset_name)
+            head = head.cuda()
+            self._classification_heads[key] = head
+        return self._classification_heads[key]
+
+    def get_dataloader(self, dataset_name, preprocess, args):
+        """Get or create a cached dataloader."""
+        key = dataset_name
+        if key not in self._dataloaders:
+            dataset = get_dataset(
+                dataset_name,
+                preprocess,
+                location=args.data_location,
+                batch_size=args.meta_batch_size,
+            )
+            raw = dataset.test_dataset if hasattr(dataset, "test_dataset") else dataset
+            loader = torch.utils.data.DataLoader(
+                raw,
+                batch_size=args.meta_batch_size,
+                shuffle=True,
+                num_workers=2,
+            )
+            self._dataloaders[key] = loader
+        return self._dataloaders[key]
+
+
 def meta_train_episode(
     hypernetwork,
     task_vectors,
@@ -65,6 +123,7 @@ def meta_train_episode(
     pretrained_model,
     sampler,
     args,
+    cache=None,
 ):
     """Execute a single meta-training episode.
 
@@ -79,11 +138,15 @@ def meta_train_episode(
         pretrained_model: Pretrained CLIP image encoder.
         sampler: MultiModalEpisodeSampler for sampling episodes.
         args: Parsed CLI arguments.
+        cache: Optional EpisodeCache for reusing expensive objects.
 
     Returns:
         loss: Differentiable loss tensor (for backpropagation).
         accuracy: Validation accuracy on this episode (float, detached).
     """
+    if cache is None:
+        cache = EpisodeCache()
+
     # --- Sample episode data ---
     _, text_descriptions, support_images, support_labels = sampler.sample_episode(
         dataset_name=dataset_name
@@ -93,59 +156,34 @@ def meta_train_episode(
     support_images = support_images.cuda()  # [num_classes, K, C, H, W]
 
     # --- Predict coefficients via hypernetwork ---
-    # Flatten all text descriptions into a single list for dataset-level mode,
-    # or pass per-class for per_class mode.
     if hypernetwork.text_input_mode == "dataset":
         all_descriptions = []
         for descs in text_descriptions.values():
             all_descriptions.extend(descs)
-        # Forward with mean support images across classes: [1, K, C, H, W]
-        mean_support = support_images.mean(dim=0, keepdim=True)  # Average across classes
-        # Repeat for each description
-        batch_images = mean_support.expand(len(all_descriptions), -1, -1, -1, -1)
-        predicted_coef = hypernetwork(all_descriptions, support_images=batch_images)
-        # Aggregate across descriptions
-        predicted_coef = predicted_coef.mean(dim=0, keepdim=True)
+        # Use all support images as a single set (keep class structure)
+        # rather than averaging pixel values across classes
+        predicted_coef = hypernetwork.predict_for_dataset(
+            text_descriptions,
+            aggregate=getattr(args, "text_aggregate", "mean"),
+            support_images=support_images,  # [num_classes, K, C, H, W]
+        )
     else:
-        # Per-class mode: encode each class's descriptions with its support images
-        class_coefs = []
-        for class_idx, (class_name, descs) in enumerate(text_descriptions.items()):
-            if not descs:
-                continue
-            class_images = support_images[class_idx].unsqueeze(0)  # [1, K, C, H, W]
-            class_images = class_images.expand(len(descs), -1, -1, -1, -1)
-            coef = hypernetwork(descs, support_images=class_images)
-            class_coefs.append(coef.mean(dim=0, keepdim=True))
-        predicted_coef = torch.stack(class_coefs).mean(dim=0)
+        # Per-class mode
+        predicted_coef = hypernetwork.predict_for_dataset(
+            text_descriptions,
+            aggregate=getattr(args, "text_aggregate", "mean"),
+            support_images=support_images,
+        )
 
-    # --- Compose model with predicted coefficients ---
-    relevant_tvs = [tv for name, tv in task_vectors.items()
-                    if name != dataset_name]
-
-    weighted_encoder = TextConditionedWeightedImageEncoder(
-        model=pretrained_model,
-        task_vectors=relevant_tvs,
-        hypernetwork=None,
-        blockwise=args.blockwise_coef,
-    )
-    weighted_encoder = weighted_encoder.cuda()
-
-    # --- Evaluate on a validation batch ---
-    classification_head = get_classification_head(args, dataset_name + "Val")
-    classification_head = classification_head.cuda()
-
-    dataset = get_dataset(
-        dataset_name + "Val",
-        weighted_encoder.val_preprocess,
-        location=args.data_location,
-        batch_size=args.meta_batch_size,
+    # --- Compose model with predicted coefficients (cached) ---
+    weighted_encoder = cache.get_weighted_encoder(
+        pretrained_model, task_vectors, dataset_name, args.blockwise_coef
     )
 
-    dataloader = torch.utils.data.DataLoader(
-        dataset.test_dataset if hasattr(dataset, "test_dataset") else dataset,
-        batch_size=args.meta_batch_size,
-        shuffle=True,
-        num_workers=2,
+    # --- Evaluate on a validation batch (cached head + dataloader) ---
+    classification_head = cache.get_classification_head(args, dataset_name + "Val")
+    dataloader = cache.get_dataloader(
+        dataset_name + "Val", weighted_encoder.val_preprocess, args
     )
 
     batch = next(iter(dataloader))
@@ -262,6 +300,10 @@ def meta_train(args):
     print("Starting Meta-Training")
     print("=" * 80)
 
+    # --- Episode caches (avoid re-creating expensive objects per episode) ---
+    train_cache = EpisodeCache()
+    val_cache = EpisodeCache()
+
     best_val_acc = 0.0
     results_history = {
         "config": {
@@ -295,6 +337,7 @@ def meta_train(args):
                 loss, acc = meta_train_episode(
                     hypernetwork, task_vectors, dataset_name,
                     pretrained_model, sampler, args,
+                    cache=train_cache,
                 )
 
                 optimizer.zero_grad()
@@ -332,6 +375,7 @@ def meta_train(args):
                         _, acc = meta_train_episode(
                             hypernetwork, task_vectors, val_dataset,
                             pretrained_model, val_sampler, args,
+                            cache=val_cache,
                         )
                     val_accs.append(acc)
                     print(f"    {val_dataset}: {acc:.2f}%")

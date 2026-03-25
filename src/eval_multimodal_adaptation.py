@@ -157,8 +157,15 @@ def evaluate_multimodal(
     )
     weighted_encoder = weighted_encoder.cuda()
 
-    # Set coefficients from prediction
-    coef_data = predicted_coef.squeeze(0)
+    # Set coefficients from prediction.
+    # TextConditionedWeightedImageEncoder creates self.coef as a Parameter
+    # when hypernetwork=None. We replace it with a non-trainable buffer
+    # holding the hypernetwork's predictions.
+    coef_data = predicted_coef.squeeze(0).detach()
+    if hasattr(weighted_encoder, "coef") and isinstance(
+        weighted_encoder.coef, torch.nn.Parameter
+    ):
+        delattr(weighted_encoder, "coef")
     weighted_encoder.register_buffer("coef", coef_data)
 
     # Build classifier
@@ -248,36 +255,60 @@ def main():
 
     elif eval_mode == "sweep":
         shot_counts = [0, 1, 2, 4, 8, 16]
+        num_seeds = getattr(args, "num_eval_seeds", 3)
+        seeds = list(range(42, 42 + num_seeds))
         print("\n" + "=" * 80)
-        print(f"Evaluating: SWEEP ({shot_counts} shots) on {args.dataset}")
+        print(f"Evaluating: SWEEP ({shot_counts} shots, {num_seeds} seeds) on {args.dataset}")
         print("=" * 80)
 
-        all_results = {"sweep": {}}
+        all_results = {"sweep": {}, "num_seeds": num_seeds, "seeds": seeds}
 
         for k in shot_counts:
             print(f"\n--- {k}-shot ---")
-            if k == 0:
-                support_images = None
-            else:
-                support_images = sample_support_images(
-                    args.dataset, k, pretrained_model.val_preprocess, args
-                ).cuda()
+            seed_accs = []
 
-            results = evaluate_multimodal(
-                hypernetwork, pretrained_model, task_vectors_list,
-                text_descriptions, support_images=support_images, args=args,
-            )
-            print(f"  Top-1 Accuracy: {results['top1']:.2f}%")
-            all_results["sweep"][f"{k}-shot"] = results
+            for seed in seeds:
+                if k == 0:
+                    support_images = None
+                else:
+                    support_images = sample_support_images(
+                        args.dataset, k, pretrained_model.val_preprocess, args,
+                        seed=seed,
+                    ).cuda()
+
+                results = evaluate_multimodal(
+                    hypernetwork, pretrained_model, task_vectors_list,
+                    text_descriptions, support_images=support_images, args=args,
+                )
+                seed_accs.append(results["top1"])
+
+                # For 0-shot, all seeds give same result — run once
+                if k == 0:
+                    seed_accs = seed_accs * num_seeds
+                    break
+
+            import numpy as np
+            mean_acc = float(np.mean(seed_accs))
+            std_acc = float(np.std(seed_accs))
+            ci95 = 1.96 * std_acc / (len(seed_accs) ** 0.5) if len(seed_accs) > 1 else 0.0
+
+            print(f"  Top-1: {mean_acc:.2f}% ± {ci95:.2f}% (95% CI, {num_seeds} seeds)")
+
+            all_results["sweep"][f"{k}-shot"] = {
+                "top1_mean": mean_acc,
+                "top1_std": std_acc,
+                "top1_ci95": ci95,
+                "per_seed": seed_accs,
+            }
 
         # Print summary table
         print("\n" + "=" * 80)
         print("Summary:")
-        print(f"  {'Shots':<8} {'Top-1':>8}")
-        print(f"  {'-'*8} {'-'*8}")
+        print(f"  {'Shots':<8} {'Mean':>8} {'±95%CI':>8}")
+        print(f"  {'-'*8} {'-'*8} {'-'*8}")
         for k in shot_counts:
-            acc = all_results["sweep"][f"{k}-shot"]["top1"]
-            print(f"  {k:<8} {acc:>7.2f}%")
+            entry = all_results["sweep"][f"{k}-shot"]
+            print(f"  {k:<8} {entry['top1_mean']:>7.2f}% {entry['top1_ci95']:>7.2f}%")
         print("=" * 80)
 
     else:

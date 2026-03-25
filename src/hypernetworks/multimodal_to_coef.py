@@ -82,10 +82,16 @@ class AttentionShotPooling(nn.Module):
 
 
 class CrossAttentionFusion(nn.Module):
-    """Cross-attention fusion where text attends to image features.
+    """Cross-attention fusion where text attends to per-shot image features.
 
-    Implements a single multi-head cross-attention layer where text
-    embeddings serve as queries and image embeddings serve as keys/values.
+    Implements multi-head cross-attention where the text embedding serves as
+    the query and individual shot-level image embeddings serve as keys/values.
+    This is more expressive than attending to a single pooled image vector,
+    because the attention mechanism can learn to weight different support
+    images differently depending on the text context.
+
+    When ``per_shot_features`` are not available (i.e. images have already
+    been pooled), the module falls back to single-token cross-attention.
 
     Args:
         embed_dim: Dimension of projected embeddings.
@@ -103,20 +109,28 @@ class CrossAttentionFusion(nn.Module):
     def forward(
         self,
         text_proj: torch.Tensor,
-        image_proj: torch.Tensor
+        image_proj: torch.Tensor,
+        per_shot_image_proj: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """Fuse text and image via cross-attention.
 
         Args:
             text_proj: Text projection of shape [batch, proj_dim].
-            image_proj: Image projection of shape [batch, proj_dim].
+            image_proj: Pooled image projection of shape [batch, proj_dim]
+                (used as fallback if per_shot_image_proj is None).
+            per_shot_image_proj: Optional per-shot image projections of shape
+                [batch, num_shots, proj_dim]. When available, these serve as
+                keys/values for richer cross-attention.
 
         Returns:
             Fused representation of shape [batch, proj_dim].
         """
-        # Add sequence dimension: [B, D] → [B, 1, D]
-        text_q = text_proj.unsqueeze(1)
-        image_kv = image_proj.unsqueeze(1)
+        text_q = text_proj.unsqueeze(1)  # [B, 1, D]
+
+        if per_shot_image_proj is not None:
+            image_kv = per_shot_image_proj  # [B, K, D]
+        else:
+            image_kv = image_proj.unsqueeze(1)  # [B, 1, D]
 
         attended, _ = self.cross_attn(text_q, image_kv, image_kv)
         # Residual connection + layer norm
@@ -358,44 +372,74 @@ class MultiModalHypernetwork(BaseHypernetwork):
 
         return text_features
 
-    def _encode_images(self, support_images: torch.Tensor) -> torch.Tensor:
+    def _encode_images(
+        self,
+        support_images: torch.Tensor,
+        return_per_shot: bool = False,
+        chunk_size: int = 64,
+    ) -> torch.Tensor:
         """Encode support images and pool across shots.
+
+        Uses chunked encoding to avoid OOM on large support sets (e.g.
+        ImageNet with 1000 classes × 16 shots = 16,000 images).
 
         Args:
             support_images: Tensor of shape [batch, num_shots, C, H, W].
+            return_per_shot: If True, also return unpooled per-shot features
+                (useful for cross-attention fusion).
+            chunk_size: Maximum number of images to encode in one forward
+                pass through the image encoder.
 
         Returns:
-            Pooled image embeddings of shape [batch, image_dim].
+            If return_per_shot is False:
+                Pooled image embeddings of shape [batch, image_dim].
+            If return_per_shot is True:
+                Tuple of (pooled [batch, image_dim],
+                          per_shot [batch, num_shots, image_dim]).
         """
         batch_size, num_shots = support_images.shape[:2]
 
         # Flatten: [B * K, C, H, W]
         flat_images = support_images.view(-1, *support_images.shape[2:])
+        total = flat_images.shape[0]
 
+        # Chunked encoding to prevent OOM
         with torch.set_grad_enabled(not self.freeze_image_encoder):
-            image_features = self.image_encoder(flat_images)  # [B*K, image_dim]
+            if total <= chunk_size:
+                image_features = self.image_encoder(flat_images)
+            else:
+                chunks = []
+                for start in range(0, total, chunk_size):
+                    end = min(start + chunk_size, total)
+                    chunks.append(self.image_encoder(flat_images[start:end]))
+                image_features = torch.cat(chunks, dim=0)
 
         # Reshape: [B, K, image_dim]
         image_features = image_features.view(batch_size, num_shots, -1)
 
         # Pool across shots
         if self.shot_pooling is not None:
-            pooled = self.shot_pooling(image_features)  # [B, image_dim]
+            pooled = self.shot_pooling(image_features)
         else:
-            pooled = image_features.mean(dim=1)  # [B, image_dim]
+            pooled = image_features.mean(dim=1)
 
+        if return_per_shot:
+            return pooled, image_features
         return pooled
 
     def _fuse(
         self,
         text_proj: torch.Tensor,
-        image_proj: torch.Tensor
+        image_proj: torch.Tensor,
+        per_shot_image_proj: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """Fuse text and image projections.
 
         Args:
             text_proj: Text projection of shape [batch, proj_dim].
-            image_proj: Image projection of shape [batch, proj_dim].
+            image_proj: Pooled image projection of shape [batch, proj_dim].
+            per_shot_image_proj: Optional per-shot image projections
+                of shape [batch, num_shots, proj_dim] for attention fusion.
 
         Returns:
             Fused representation of shape [batch, fusion_dim].
@@ -405,7 +449,7 @@ class MultiModalHypernetwork(BaseHypernetwork):
         elif self.fusion_mode == "add":
             return text_proj + image_proj
         elif self.fusion_mode == "attention":
-            return self.fusion(text_proj, image_proj)
+            return self.fusion(text_proj, image_proj, per_shot_image_proj)
         else:
             raise ValueError(f"Unknown fusion_mode: {self.fusion_mode}")
 
@@ -432,9 +476,20 @@ class MultiModalHypernetwork(BaseHypernetwork):
 
         # --- Image branch (or fallback) ---
         if support_images is not None:
-            image_pooled = self._encode_images(support_images)  # [B, image_dim]
+            # For attention fusion, we need per-shot features as KV tokens
+            need_per_shot = (self.fusion_mode == "attention")
+            encode_result = self._encode_images(
+                support_images, return_per_shot=need_per_shot
+            )
+            if need_per_shot:
+                image_pooled, per_shot_features = encode_result
+                per_shot_proj = self.image_proj(per_shot_features)  # [B, K, proj_dim]
+            else:
+                image_pooled = encode_result
+                per_shot_proj = None
+
             image_proj = self.image_proj(image_pooled)  # [B, proj_dim]
-            fused = self._fuse(text_proj, image_proj)  # [B, fusion_dim]
+            fused = self._fuse(text_proj, image_proj, per_shot_proj)  # [B, fusion_dim]
         else:
             # Text-only fallback
             fused = self.text_only_proj(text_proj)  # [B, fusion_dim]
@@ -471,9 +526,11 @@ class MultiModalHypernetwork(BaseHypernetwork):
             dataset_descriptions: Dict mapping class names to text descriptions.
                 Format: {"class1": ["desc1", ...], "class2": [...], ...}
             aggregate: How to aggregate multiple predictions ("mean", "max", "median").
-            support_images: Optional support images. Shape depends on text_input_mode:
-                - dataset mode: [1, num_shots, C, H, W] (one set of shots)
-                - per_class mode: [num_classes, num_shots, C, H, W]
+            support_images: Optional support images.
+                Accepted shapes:
+                - [num_classes, num_shots, C, H, W] — per-class support images
+                  (dataset mode pools across classes; per_class mode uses directly)
+                - [1, num_shots, C, H, W] — single set of shots (broadcast)
 
         Returns:
             Single coefficient tensor for the dataset.
@@ -494,8 +551,13 @@ class MultiModalHypernetwork(BaseHypernetwork):
         dataset_descriptions: Dict[str, List[str]],
         aggregate: str,
         support_images: Optional[torch.Tensor],
+        text_chunk_size: int = 64,
     ) -> torch.Tensor:
-        """Predict by aggregating all descriptions into one embedding."""
+        """Predict by aggregating all descriptions into one embedding.
+
+        To avoid OOM with many descriptions, text is processed in chunks
+        while image features are pre-computed once and reused.
+        """
         all_descriptions = []
         for descriptions in dataset_descriptions.values():
             all_descriptions.extend(descriptions)
@@ -503,14 +565,54 @@ class MultiModalHypernetwork(BaseHypernetwork):
         if not all_descriptions:
             raise ValueError("No descriptions provided")
 
-        # Forward pass for each description (with shared images if provided)
-        with torch.no_grad():
-            all_coefs = self.forward(
-                all_descriptions,
-                support_images=support_images.expand(len(all_descriptions), -1, -1, -1, -1)
-                if support_images is not None else None,
-            )
+        # Pre-compute image features once (not per-description).
+        # If support_images is [num_classes, K, C, H, W], reshape to
+        # [1, num_classes*K, C, H, W] so all class shots are pooled together
+        # into a single dataset-level representation.
+        image_pooled = None
+        per_shot_proj = None
+        if support_images is not None:
+            if support_images.dim() == 5 and support_images.shape[0] > 1:
+                nc, k = support_images.shape[:2]
+                support_images = support_images.view(1, nc * k, *support_images.shape[2:])
 
+            need_per_shot = (self.fusion_mode == "attention")
+            encode_result = self._encode_images(
+                support_images, return_per_shot=need_per_shot
+            )
+            if need_per_shot:
+                image_pooled_raw, per_shot_features = encode_result
+                per_shot_proj = self.image_proj(per_shot_features)
+            else:
+                image_pooled_raw = encode_result
+            image_pooled = self.image_proj(image_pooled_raw)
+
+        # Process text in chunks, fusing with pre-computed image features
+        all_coefs = []
+        with torch.no_grad():
+            for start in range(0, len(all_descriptions), text_chunk_size):
+                chunk_descs = all_descriptions[start:start + text_chunk_size]
+                text_features = self._encode_text(chunk_descs)
+                text_proj = self.text_proj(text_features)
+
+                if image_pooled is not None:
+                    # Expand pre-computed image features to match chunk size
+                    img_exp = image_pooled.expand(len(chunk_descs), -1)
+                    ps_exp = (per_shot_proj.expand(len(chunk_descs), -1, -1)
+                              if per_shot_proj is not None else None)
+                    fused = self._fuse(text_proj, img_exp, ps_exp)
+                else:
+                    fused = self.text_only_proj(text_proj)
+
+                hidden = self.post_fusion_mlp(fused)
+                coef_flat = self.output(hidden)
+                if self.use_blockwise:
+                    coef = coef_flat.view(-1, self.num_task_vectors, self.num_blocks)
+                else:
+                    coef = coef_flat.view(-1, self.num_task_vectors)
+                all_coefs.append(coef)
+
+        all_coefs = torch.cat(all_coefs, dim=0)
         return self._aggregate_coefs(all_coefs, aggregate)
 
     def _predict_per_class(
