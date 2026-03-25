@@ -11,7 +11,6 @@ https://github.com/gortizji/tangent_task_arithmetic
 
 import os
 
-import open_clip
 import torch
 from tqdm import tqdm
 
@@ -35,7 +34,7 @@ def build_classification_head(model, dataset_name, template, data_location, devi
             texts = []
             for t in template:
                 texts.append(t(classname))
-            texts = open_clip.tokenize(texts).to(device)  # tokenize
+            texts = model.tokenize(texts).to(device)  # tokenize
             embeddings = model.encode_text(texts)  # embed with text encoder
             embeddings /= embeddings.norm(dim=-1, keepdim=True)
 
