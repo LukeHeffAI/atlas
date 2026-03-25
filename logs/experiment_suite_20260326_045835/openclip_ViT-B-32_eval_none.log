@@ -1,79 +1,0 @@
-****************************************************************************************************
-Evaluating pretrained models.
-****************************************************************************************************
-Evaluating on Cars
-====================================================================================================
-Evaluating on test split.
-Classification head for ViT-B-32 on CarsVal exists at checkpoints_openclip/ViT-B-32/head_CarsVal.pt
-Loading classification head from checkpoints_openclip/ViT-B-32/head_CarsVal.pt
-  0%|          | 0/63 [00:00<?, ?it/s]  2%|▏         | 1/63 [00:01<01:09,  1.13s/it]  5%|▍         | 3/63 [00:01<00:19,  3.02it/s] 10%|▉         | 6/63 [00:01<00:09,  6.33it/s] 13%|█▎        | 8/63 [00:01<00:06,  8.42it/s] 16%|█▌        | 10/63 [00:01<00:05, 10.08it/s] 19%|█▉        | 12/63 [00:01<00:04, 11.62it/s] 22%|██▏       | 14/63 [00:01<00:03, 13.09it/s] 25%|██▌       | 16/63 [00:01<00:03, 14.03it/s] 29%|██▊       | 18/63 [00:02<00:03, 14.83it/s] 32%|███▏      | 20/63 [00:02<00:02, 15.66it/s] 35%|███▍      | 22/63 [00:02<00:02, 16.75it/s] 38%|███▊      | 24/63 [00:02<00:02, 17.42it/s] 41%|████▏     | 26/63 [00:02<00:02, 16.50it/s] 44%|████▍     | 28/63 [00:02<00:02, 12.05it/s] 49%|████▉     | 31/63 [00:02<00:02, 14.48it/s] 54%|█████▍    | 34/63 [00:03<00:01, 14.83it/s] 57%|█████▋    | 36/63 [00:03<00:01, 13.58it/s] 60%|██████    | 38/63 [00:03<00:02, 11.63it/s] 65%|██████▌   | 41/63 [00:03<00:01, 14.25it/s] 70%|██████▉   | 44/63 [00:03<00:01, 15.75it/s] 73%|███████▎  | 46/63 [00:04<00:02,  7.66it/s] 78%|███████▊  | 49/63 [00:04<00:01,  9.83it/s] 83%|████████▎ | 52/63 [00:04<00:00, 11.98it/s] 86%|████████▌ | 54/63 [00:05<00:00,  9.11it/s] 90%|█████████ | 57/63 [00:05<00:00, 11.30it/s] 95%|█████████▌| 60/63 [00:05<00:00, 13.44it/s] 98%|█████████▊| 62/63 [00:05<00:00, 11.94it/s]100%|██████████| 63/63 [00:05<00:00, 10.96it/s]
-Done evaluating on Cars. Accuracy: 51.49%
-====================================================================================================
-Evaluating on val split.
-Classification head for ViT-B-32 on CarsVal exists at checkpoints_openclip/ViT-B-32/head_CarsVal.pt
-Loading classification head from checkpoints_openclip/ViT-B-32/head_CarsVal.pt
-  0%|          | 0/7 [00:00<?, ?it/s] 14%|█▍        | 1/7 [00:00<00:04,  1.28it/s] 57%|█████▋    | 4/7 [00:00<00:00,  5.41it/s]100%|██████████| 7/7 [00:01<00:00,  9.46it/s]100%|██████████| 7/7 [00:01<00:00,  6.67it/s]
-Done evaluating on CarsVal. Accuracy: 50.98%
-****************************************************************************************************
-Evaluating on DTD
-Error: Could not find checkpoints_openclip/ViT-B-32/DTDVal/finetuned.pt.
-****************************************************************************************************
-Evaluating on EuroSAT
-Error: Could not find checkpoints_openclip/ViT-B-32/EuroSATVal/finetuned.pt.
-****************************************************************************************************
-Evaluating on GTSRB
-Error: Could not find checkpoints_openclip/ViT-B-32/GTSRBVal/finetuned.pt.
-****************************************************************************************************
-Evaluating on MNIST
-Error: Could not find checkpoints_openclip/ViT-B-32/MNISTVal/finetuned.pt.
-****************************************************************************************************
-Evaluating on RESISC45
-Error: Could not find checkpoints_openclip/ViT-B-32/RESISC45Val/finetuned.pt.
-****************************************************************************************************
-Evaluating on SUN397
-Error: Could not find checkpoints_openclip/ViT-B-32/SUN397Val/finetuned.pt.
-****************************************************************************************************
-Evaluating on SVHN
-Error: Could not find checkpoints_openclip/ViT-B-32/SVHNVal/finetuned.pt.
-****************************************************************************************************
-Evaluating on CIFAR10
-Error: Could not find checkpoints_openclip/ViT-B-32/CIFAR10Val/finetuned.pt.
-****************************************************************************************************
-Evaluating on CIFAR100
-Error: Could not find checkpoints_openclip/ViT-B-32/CIFAR100Val/finetuned.pt.
-****************************************************************************************************
-Evaluating on ImageNet
-Error: Could not find checkpoints_openclip/ViT-B-32/ImageNetVal/finetuned.pt.
-****************************************************************************************************
-Evaluating on STL10
-Error: Could not find checkpoints_openclip/ViT-B-32/STL10Val/finetuned.pt.
-****************************************************************************************************
-Evaluating on Food101
-Error: Could not find checkpoints_openclip/ViT-B-32/Food101Val/finetuned.pt.
-****************************************************************************************************
-Evaluating on Caltech101
-Error: Could not find checkpoints_openclip/ViT-B-32/Caltech101Val/finetuned.pt.
-****************************************************************************************************
-Evaluating on Caltech256
-Error: Could not find checkpoints_openclip/ViT-B-32/Caltech256Val/finetuned.pt.
-****************************************************************************************************
-Evaluating on FGVCAircraft
-Error: Could not find checkpoints_openclip/ViT-B-32/FGVCAircraftVal/finetuned.pt.
-****************************************************************************************************
-Evaluating on Flowers102
-Error: Could not find checkpoints_openclip/ViT-B-32/Flowers102Val/finetuned.pt.
-****************************************************************************************************
-Evaluating on OxfordIIITPet
-Error: Could not find checkpoints_openclip/ViT-B-32/OxfordIIITPetVal/finetuned.pt.
-****************************************************************************************************
-Evaluating on CUB200
-Error: Could not find checkpoints_openclip/ViT-B-32/CUB200Val/finetuned.pt.
-****************************************************************************************************
-Evaluating on PascalVOC
-Error: Could not find checkpoints_openclip/ViT-B-32/PascalVOCVal/finetuned.pt.
-****************************************************************************************************
-Evaluating on Country211
-Error: Could not find checkpoints_openclip/ViT-B-32/Country211Val/finetuned.pt.
-****************************************************************************************************
-Evaluating on UCF101
-Error: Could not find checkpoints_openclip/ViT-B-32/UCF101Val/finetuned.pt.

@@ -1,796 +1,0 @@
-/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/open_clip/factory.py:450: UserWarning: QuickGELU mismatch between final model config (quick_gelu=False) and pretrained tag 'openai' (quick_gelu=True).
-  warnings.warn(
-/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/open_clip/factory.py:450: UserWarning: QuickGELU mismatch between final model config (quick_gelu=False) and pretrained tag 'openai' (quick_gelu=True).
-  warnings.warn(
-Warning: Missing checkpoint for DTD (source=real), skipping
-Warning: Missing checkpoint for EuroSAT (source=real), skipping
-Warning: Missing checkpoint for GTSRB (source=real), skipping
-Warning: Missing checkpoint for MNIST (source=real), skipping
-Warning: Missing checkpoint for RESISC45 (source=real), skipping
-Warning: Missing checkpoint for SVHN (source=real), skipping
-Warning: Missing checkpoint for CIFAR10 (source=real), skipping
-Warning: Missing checkpoint for CIFAR100 (source=real), skipping
-Warning: Missing checkpoint for STL10 (source=real), skipping
-Warning: Missing checkpoint for Food101 (source=real), skipping
-Warning: Missing checkpoint for Caltech101 (source=real), skipping
-Warning: Missing checkpoint for Caltech256 (source=real), skipping
-Warning: Missing checkpoint for FGVCAircraft (source=real), skipping
-Warning: Missing checkpoint for Flowers102 (source=real), skipping
-Warning: Missing checkpoint for OxfordIIITPet (source=real), skipping
-Warning: Missing checkpoint for CUB200 (source=real), skipping
-Warning: Missing checkpoint for PascalVOC (source=real), skipping
-Warning: Missing checkpoint for Country211 (source=real), skipping
-Warning: Missing checkpoint for UCF101 (source=real), skipping
-Warning: Missing checkpoint for SUN397 (source=real), skipping
-Warning: Missing checkpoint for ImageNet (source=real), skipping
-Loading ViT-B-32 pre-trained weights.
-Classification head for ViT-B-32 on CarsVal exists at checkpoints_openclip/ViT-B-32/head_CarsVal.pt
-Loading classification head from checkpoints_openclip/ViT-B-32/head_CarsVal.pt
-====================================================================================================
-Learning task vector coefficients on Cars with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED Cars / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Classification head for ViT-B-32 on DTDVal exists at checkpoints_openclip/ViT-B-32/head_DTDVal.pt
-Loading classification head from checkpoints_openclip/ViT-B-32/head_DTDVal.pt
-====================================================================================================
-Learning task vector coefficients on DTD with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED DTD / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on EuroSATVal at checkpoints_openclip/ViT-B-32/head_EuroSATVal.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/10 [00:00<?, ?it/s]100%|██████████| 10/10 [00:00<00:00, 134.29it/s]
-Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-WARNING:huggingface_hub.utils._http:Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-Saving classification head to checkpoints_openclip/ViT-B-32/head_EuroSATVal.pt
-====================================================================================================
-Learning task vector coefficients on EuroSAT with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED EuroSAT / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on GTSRBVal at checkpoints_openclip/ViT-B-32/head_GTSRBVal.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/43 [00:00<?, ?it/s]100%|██████████| 43/43 [00:00<00:00, 532.07it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_GTSRBVal.pt
-====================================================================================================
-Learning task vector coefficients on GTSRB with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED GTSRB / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on MNISTVal at checkpoints_openclip/ViT-B-32/head_MNISTVal.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/10 [00:00<?, ?it/s]100%|██████████| 10/10 [00:00<00:00, 582.48it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_MNISTVal.pt
-====================================================================================================
-Learning task vector coefficients on MNIST with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED MNIST / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on RESISC45Val at checkpoints_openclip/ViT-B-32/head_RESISC45Val.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/45 [00:00<?, ?it/s] 51%|█████     | 23/45 [00:00<00:00, 224.79it/s]100%|██████████| 45/45 [00:00<00:00, 222.10it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_RESISC45Val.pt
-====================================================================================================
-Learning task vector coefficients on RESISC45 with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED RESISC45 / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on SVHNVal at checkpoints_openclip/ViT-B-32/head_SVHNVal.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/10 [00:00<?, ?it/s]100%|██████████| 10/10 [00:00<00:00, 594.68it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_SVHNVal.pt
-====================================================================================================
-Learning task vector coefficients on SVHN with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED SVHN / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on CIFAR10Val at checkpoints_openclip/ViT-B-32/head_CIFAR10Val.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/10 [00:00<?, ?it/s]100%|██████████| 10/10 [00:00<00:00, 230.13it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_CIFAR10Val.pt
-====================================================================================================
-Learning task vector coefficients on CIFAR10 with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED CIFAR10 / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on CIFAR100Val at checkpoints_openclip/ViT-B-32/head_CIFAR100Val.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/100 [00:00<?, ?it/s] 23%|██▎       | 23/100 [00:00<00:00, 226.87it/s] 46%|████▌     | 46/100 [00:00<00:00, 223.41it/s] 69%|██████▉   | 69/100 [00:00<00:00, 221.46it/s] 92%|█████████▏| 92/100 [00:00<00:00, 219.55it/s]100%|██████████| 100/100 [00:00<00:00, 220.37it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_CIFAR100Val.pt
-====================================================================================================
-Learning task vector coefficients on CIFAR100 with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED CIFAR100 / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on STL10Val at checkpoints_openclip/ViT-B-32/head_STL10Val.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/10 [00:00<?, ?it/s]100%|██████████| 10/10 [00:00<00:00, 545.13it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_STL10Val.pt
-====================================================================================================
-Learning task vector coefficients on STL10 with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED STL10 / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on Food101Val at checkpoints_openclip/ViT-B-32/head_Food101Val.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/101 [00:00<?, ?it/s] 60%|██████    | 61/101 [00:00<00:00, 604.95it/s]100%|██████████| 101/101 [00:00<00:00, 611.33it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_Food101Val.pt
-====================================================================================================
-Learning task vector coefficients on Food101 with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED Food101 / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on Caltech256Val at checkpoints_openclip/ViT-B-32/head_Caltech256Val.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Files already downloaded and verified
-Building classification head.
-  0%|          | 0/257 [00:00<?, ?it/s]  5%|▌         | 14/257 [00:00<00:01, 134.41it/s] 11%|█         | 28/257 [00:00<00:01, 133.08it/s] 16%|█▋        | 42/257 [00:00<00:01, 133.04it/s] 22%|██▏       | 56/257 [00:00<00:01, 132.97it/s] 27%|██▋       | 70/257 [00:00<00:01, 133.08it/s] 33%|███▎      | 84/257 [00:00<00:01, 132.89it/s] 38%|███▊      | 98/257 [00:00<00:01, 132.84it/s] 44%|████▎     | 112/257 [00:00<00:01, 132.42it/s] 49%|████▉     | 126/257 [00:00<00:00, 132.60it/s] 54%|█████▍    | 140/257 [00:01<00:00, 132.83it/s] 60%|█████▉    | 154/257 [00:01<00:00, 132.90it/s] 65%|██████▌   | 168/257 [00:01<00:00, 132.62it/s] 71%|███████   | 182/257 [00:01<00:00, 132.37it/s] 76%|███████▋  | 196/257 [00:01<00:00, 132.52it/s] 82%|████████▏ | 210/257 [00:01<00:00, 132.52it/s] 87%|████████▋ | 224/257 [00:01<00:00, 132.62it/s] 93%|█████████▎| 238/257 [00:01<00:00, 132.53it/s] 98%|█████████▊| 252/257 [00:01<00:00, 132.49it/s]100%|██████████| 257/257 [00:01<00:00, 132.69it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_Caltech256Val.pt
-Files already downloaded and verified
-====================================================================================================
-Learning task vector coefficients on Caltech256 with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED Caltech256 / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on FGVCAircraftVal at checkpoints_openclip/ViT-B-32/head_FGVCAircraftVal.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/100 [00:00<?, ?it/s] 56%|█████▌    | 56/100 [00:00<00:00, 556.41it/s]100%|██████████| 100/100 [00:00<00:00, 556.73it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_FGVCAircraftVal.pt
-====================================================================================================
-Learning task vector coefficients on FGVCAircraft with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED FGVCAircraft / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on Flowers102Val at checkpoints_openclip/ViT-B-32/head_Flowers102Val.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/102 [00:00<?, ?it/s] 56%|█████▌    | 57/102 [00:00<00:00, 561.80it/s]100%|██████████| 102/102 [00:00<00:00, 574.65it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_Flowers102Val.pt
-====================================================================================================
-Learning task vector coefficients on Flowers102 with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED Flowers102 / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on OxfordIIITPetVal at checkpoints_openclip/ViT-B-32/head_OxfordIIITPetVal.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/37 [00:00<?, ?it/s]100%|██████████| 37/37 [00:00<00:00, 616.68it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_OxfordIIITPetVal.pt
-====================================================================================================
-Learning task vector coefficients on OxfordIIITPet with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED OxfordIIITPet / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on CUB200Val at checkpoints_openclip/ViT-B-32/head_CUB200Val.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Files already downloaded and verified
-Files already downloaded and verified
-Building classification head.
-  0%|          | 0/200 [00:00<?, ?it/s] 31%|███       | 62/200 [00:00<00:00, 614.21it/s] 62%|██████▎   | 125/200 [00:00<00:00, 618.90it/s] 94%|█████████▍| 188/200 [00:00<00:00, 619.78it/s]100%|██████████| 200/200 [00:00<00:00, 619.04it/s]
-/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/open_clip/factory.py:450: UserWarning: QuickGELU mismatch between final model config (quick_gelu=False) and pretrained tag 'openai' (quick_gelu=True).
-  warnings.warn(
-Saving classification head to checkpoints_openclip/ViT-B-32/head_CUB200Val.pt
-Files already downloaded and verified
-Files already downloaded and verified
-====================================================================================================
-Learning task vector coefficients on CUB200 with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED CUB200 / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on PascalVOCVal at checkpoints_openclip/ViT-B-32/head_PascalVOCVal.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-[dataset] VOC 2007 classification set=train number of classes=20  number of bndboxes=7844
-[dataset] VOC 2007 classification set=val number of classes=20  number of bndboxes=7818
-Building classification head.
-  0%|          | 0/20 [00:00<?, ?it/s]100%|██████████| 20/20 [00:00<00:00, 603.99it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_PascalVOCVal.pt
-[dataset] VOC 2007 classification set=train number of classes=20  number of bndboxes=7844
-[dataset] VOC 2007 classification set=val number of classes=20  number of bndboxes=7818
-====================================================================================================
-Learning task vector coefficients on PascalVOC with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED PascalVOC / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on Country211Val at checkpoints_openclip/ViT-B-32/head_Country211Val.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/211 [00:00<?, ?it/s] 22%|██▏       | 46/211 [00:00<00:00, 456.06it/s] 44%|████▎     | 92/211 [00:00<00:00, 413.28it/s] 64%|██████▎   | 134/211 [00:00<00:00, 307.74it/s] 85%|████████▌ | 180/211 [00:00<00:00, 351.37it/s]100%|██████████| 211/211 [00:00<00:00, 327.62it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_Country211Val.pt
-====================================================================================================
-Learning task vector coefficients on Country211 with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED Country211 / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on UCF101Val at checkpoints_openclip/ViT-B-32/head_UCF101Val.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/101 [00:00<?, ?it/s]  7%|▋         | 7/101 [00:00<00:01, 58.24it/s] 13%|█▎        | 13/101 [00:00<00:01, 49.48it/s] 22%|██▏       | 22/101 [00:00<00:01, 63.41it/s] 29%|██▊       | 29/101 [00:00<00:01, 53.32it/s] 36%|███▌      | 36/101 [00:00<00:01, 57.73it/s] 43%|████▎     | 43/101 [00:00<00:01, 58.00it/s] 49%|████▊     | 49/101 [00:00<00:00, 52.63it/s] 57%|█████▋    | 58/101 [00:01<00:00, 61.32it/s] 64%|██████▍   | 65/101 [00:01<00:00, 53.93it/s] 71%|███████▏  | 72/101 [00:01<00:00, 57.27it/s] 77%|███████▋  | 78/101 [00:01<00:00, 55.90it/s] 83%|████████▎ | 84/101 [00:01<00:00, 51.58it/s] 93%|█████████▎| 94/101 [00:01<00:00, 60.70it/s]100%|██████████| 101/101 [00:01<00:00, 53.85it/s]100%|██████████| 101/101 [00:01<00:00, 55.71it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_UCF101Val.pt
-====================================================================================================
-Learning task vector coefficients on UCF101 with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED UCF101 / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on Caltech101Val at checkpoints_openclip/ViT-B-32/head_Caltech101Val.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Files already downloaded and verified
-Building classification head.
-  0%|          | 0/101 [00:00<?, ?it/s] 14%|█▍        | 14/101 [00:00<00:00, 135.09it/s] 28%|██▊       | 28/101 [00:00<00:00, 133.76it/s] 42%|████▏     | 42/101 [00:00<00:00, 133.37it/s] 55%|█████▌    | 56/101 [00:00<00:00, 133.06it/s] 69%|██████▉   | 70/101 [00:00<00:00, 132.20it/s] 83%|████████▎ | 84/101 [00:00<00:00, 132.43it/s] 97%|█████████▋| 98/101 [00:00<00:00, 132.36it/s]100%|██████████| 101/101 [00:00<00:00, 132.66it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_Caltech101Val.pt
-Files already downloaded and verified
-====================================================================================================
-Learning task vector coefficients on Caltech101 with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED Caltech101 / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on SUN397Val at checkpoints_openclip/ViT-B-32/head_SUN397Val.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-Building classification head.
-  0%|          | 0/397 [00:00<?, ?it/s] 14%|█▍        | 56/397 [00:00<00:00, 553.99it/s] 28%|██▊       | 113/397 [00:00<00:00, 558.72it/s] 43%|████▎     | 169/397 [00:00<00:00, 558.53it/s] 57%|█████▋    | 225/397 [00:00<00:00, 558.82it/s] 71%|███████   | 282/397 [00:00<00:00, 561.24it/s] 85%|████████▌ | 339/397 [00:00<00:00, 561.34it/s]100%|█████████▉| 396/397 [00:00<00:00, 562.28it/s]100%|██████████| 397/397 [00:00<00:00, 560.57it/s]
-Saving classification head to checkpoints_openclip/ViT-B-32/head_SUN397Val.pt
-====================================================================================================
-Learning task vector coefficients on SUN397 with ViT-B-32 - 2 shots
-====================================================================================================
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED SUN397 / 2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-Traceback:
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 277, in main
-    comp_acc = train(task_vectors, args, comp_acc, cached_resources=cached_resources)
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 320, in train
-    setup_ddp(args.rank, args.world_size, port=args.port)
-  File "/home/luke/Documents/GitHub/atlas/src/distributed.py", line 93, in setup_ddp
-    torch.distributed.init_process_group(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
-    return func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 97, in wrapper
-    func_return = func(*args, **kwargs)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1806, in init_process_group
-    store, rank, world_size = next(rendezvous_iterator)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 281, in _env_rendezvous_handler
-    store = _create_c10d_store(
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/distributed/rendezvous.py", line 200, in _create_c10d_store
-    return TCPStore(
-torch.distributed.DistNetworkError: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Did not find classification head for ViT-B-32 on ImageNetVal at checkpoints_openclip/ViT-B-32/head_ImageNetVal.pt, building one from scratch.
-Loading ViT-B-32 pre-trained weights.
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FAILED setup for ImageNet: [Errno 2] No such file or directory: '/home/luke/data/imagenet/train'
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-====================================================================================================
-Run complete: 0 succeeded, 22 failed
-Failed evaluations logged to: results_openclip/ViT-B-32/failed_evaluations.json
-Re-run with --retry-failed to retry only the failed evaluations.
-  - Cars/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - DTD/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - EuroSAT/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - GTSRB/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - MNIST/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - RESISC45/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - SVHN/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - CIFAR10/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - CIFAR100/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - STL10/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - Food101/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - Caltech256/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - FGVCAircraft/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - Flowers102/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - OxfordIIITPet/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - CUB200/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - PascalVOC/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - Country211/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - UCF101/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - Caltech101/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - SUN397/2_shot: The server socket has failed to listen on any local network address. port: 12355, useIpv6: false, code: -98, name: EADDRINUSE, message: address already in use
-  - ImageNet/2_shot: Dataset setup failed: [Errno 2] No such file or directory: '/home/luke/data/imagenet/train'
-  - Cars/0.25_shot: element 0 of tensors does not require grad and does not have a grad_fn
-  - DTD/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/DTDVal does not exist.
-  - EuroSAT/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/EuroSATVal does not exist.
-  - GTSRB/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/GTSRBVal does not exist.
-  - MNIST/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/MNISTVal does not exist.
-  - RESISC45/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/RESISC45Val does not exist.
-  - SVHN/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/SVHNVal does not exist.
-  - CIFAR10/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/CIFAR10Val does not exist.
-  - CIFAR100/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/CIFAR100Val does not exist.
-  - STL10/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/STL10Val does not exist.
-  - Food101/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Food101Val does not exist.
-  - Caltech256/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Caltech256Val does not exist.
-  - FGVCAircraft/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/FGVCAircraftVal does not exist.
-  - Flowers102/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Flowers102Val does not exist.
-  - OxfordIIITPet/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/OxfordIIITPetVal does not exist.
-  - CUB200/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/CUB200Val does not exist.
-  - PascalVOC/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/PascalVOCVal does not exist.
-  - Country211/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Country211Val does not exist.
-  - UCF101/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/UCF101Val does not exist.
-  - Caltech101/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/Caltech101Val does not exist.
-  - SUN397/0.25_shot: Parent directory checkpoints_openclip/ViT-B-32/SUN397Val does not exist.
-  - ImageNet/0.25_shot: Dataset setup failed: [Errno 2] No such file or directory: '/home/luke/data/imagenet/train'
-====================================================================================================
-Traceback (most recent call last):
-  File "/home/luke/Documents/GitHub/atlas/src/learn_few_shots.py", line 717, in <module>
-    torch.multiprocessing.spawn(main, args=(args,), nprocs=args.world_size)
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 340, in spawn
-    return start_processes(fn, args, nprocs, join, daemon, start_method="spawn")
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 296, in start_processes
-    while not context.join():
-  File "/home/luke/anaconda3/envs/atlas/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 200, in join
-    raise ProcessExitedException(
-torch.multiprocessing.spawn.ProcessExitedException: process 0 terminated with exit code 1
