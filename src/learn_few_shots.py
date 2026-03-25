@@ -598,6 +598,8 @@ def train_adapter(ddp_model, ddp_loader, args, comp_acc, which='lpp'):
             loss = loss_fn(logits, labels)
             loss = loss / args.num_grad_accumulation
 
+        loss.backward()
+
         if (i + 1) % args.num_grad_accumulation == 0:
             scheduler(step)
             torch.nn.utils.clip_grad_norm_(params, 1.0)

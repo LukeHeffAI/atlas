@@ -159,7 +159,7 @@ def train(task_vectors, args, comp_acc={}):
     unlabeled = torch.tensor([i for i in range(len(dataset.test_dataset)) if i not in trusted])
     preds = torch.nn.functional.one_hot(amax, num_classes=classification_head.out_features)    
     trusted_bool = torch.zeros(len(preds), dtype=torch.bool)
-    trusted_bool[ids_c] = 1
+    trusted_bool[trusted] = 1
     
     asym_transforms = TwoAsymetricTransform(model.val_preprocess, preprocess_fn)
         
@@ -366,6 +366,8 @@ def train_adapter(ddp_model, ddp_loader, args, comp_acc, which='lpp'):
             labels = batch["labels"].to(logits.device)
             loss = loss_fn(logits, labels)
             loss = loss / args.num_grad_accumulation
+
+        loss.backward()
 
         if (i + 1) % args.num_grad_accumulation == 0:
             scheduler(step)

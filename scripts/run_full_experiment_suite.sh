@@ -18,6 +18,9 @@
 
 set -uo pipefail
 
+# Ensure project root is in PYTHONPATH for reliable imports
+export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$(pwd)"
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
