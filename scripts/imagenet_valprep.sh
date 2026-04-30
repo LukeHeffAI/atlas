@@ -3,7 +3,7 @@
 # imagenet_valprep.sh
 #
 # Reorganizes ImageNet ILSVRC2012 validation images in-place within
-# $DATA_LOCATION/imagenet_setup/val/ into WordNet ID subdirectories
+# $DATA_LOCATION/imagenet/val/ into WordNet ID subdirectories
 # (e.g. n01440764/) as expected by PyTorch's ImageFolder.
 #
 # If images are currently in human-readable class folders (e.g.
@@ -13,14 +13,14 @@
 # Prerequisites:
 #   Download the ImageNet validation set from https://image-net.org/
 #   (requires an account) and place images under
-#   $DATA_LOCATION/imagenet_setup/val/ — either as flat JPEGs or in
+#   $DATA_LOCATION/imagenet/val/ — either as flat JPEGs or in
 #   class-named subdirectories.
 #
 # Usage:
 #   ./scripts/imagenet_valprep.sh [DATA_LOCATION]
 #
 #   DATA_LOCATION  Root data directory (default: ~/data).
-#                  Operates on $DATA_LOCATION/imagenet_setup/val/.
+#                  Operates on $DATA_LOCATION/imagenet/val/.
 #
 # Examples:
 #   ./scripts/imagenet_valprep.sh              # uses ~/data
@@ -29,7 +29,7 @@
 set -euo pipefail
 
 DATA_LOCATION="${1:-$HOME/data}"
-VAL_DIR="${DATA_LOCATION}/imagenet_setup/val"
+VAL_DIR="${DATA_LOCATION}/imagenet/val"
 
 # Helper: check if any file matching a pattern exists (pipefail-safe)
 has_files() { find "$1" "${@:2}" -print -quit 2>/dev/null | grep -q .; }
