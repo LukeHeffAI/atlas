@@ -12,9 +12,18 @@ existing checkpoints and for models not available via HuggingFace
 (e.g., ResNet-based CLIP variants).
 """
 
+import os
+
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
+
+try:
+    from dotenv import load_dotenv
+    # Load repo-root .env if present, so HF_TOKEN etc. reach CLIPModel.from_pretrained.
+    load_dotenv()
+except ImportError:
+    pass
 
 # Internal model name → HuggingFace model ID
 HF_MODEL_MAP = {
@@ -159,6 +168,7 @@ def _load_openclip(name, pretrained, cache_dir):
 
 def _load_hf_clip(name, pretrained, cache_dir):
     from transformers import CLIPModel, CLIPProcessor, CLIPConfig
+    from transformers.utils import logging as hf_logging
 
     hf_name = HF_MODEL_MAP.get(name)
     if hf_name is None:
@@ -168,15 +178,23 @@ def _load_hf_clip(name, pretrained, cache_dir):
             f"Use --clip-backend openclip for other architectures."
         )
 
-    if pretrained is None:
-        # Random initialization (no pretrained weights)
-        print(f"Initializing HuggingFace CLIP model from scratch: {hf_name}")
-        config = CLIPConfig.from_pretrained(hf_name, cache_dir=cache_dir)
-        clip_model = CLIPModel(config)
-    else:
-        print(f"Loading HuggingFace CLIP model: {hf_name}")
-        clip_model = CLIPModel.from_pretrained(hf_name, cache_dir=cache_dir)
-    processor = CLIPProcessor.from_pretrained(hf_name, cache_dir=cache_dir)
+    # Silence the cosmetic "position_ids UNEXPECTED" load-report rows that
+    # transformers 5.x emits for the OpenAI CLIP weights on the Hub.  We keep
+    # error-level logs so real load failures still surface.
+    prev_verbosity = hf_logging.get_verbosity()
+    hf_logging.set_verbosity_error()
+    try:
+        if pretrained is None:
+            # Random initialization (no pretrained weights)
+            print(f"Initializing HuggingFace CLIP model from scratch: {hf_name}")
+            config = CLIPConfig.from_pretrained(hf_name, cache_dir=cache_dir)
+            clip_model = CLIPModel(config)
+        else:
+            print(f"Loading HuggingFace CLIP model: {hf_name}")
+            clip_model = CLIPModel.from_pretrained(hf_name, cache_dir=cache_dir)
+        processor = CLIPProcessor.from_pretrained(hf_name, cache_dir=cache_dir)
+    finally:
+        hf_logging.set_verbosity(prev_verbosity)
 
     tokenizer = processor.tokenizer
     train_preprocess, val_preprocess = _build_hf_transforms(processor.image_processor)

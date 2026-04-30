@@ -25,8 +25,10 @@ export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$(pwd)"
 # Configuration
 # ---------------------------------------------------------------------------
 
-CLIP_MODELS="ViT-B-32 ViT-B-16 ViT-L-14"
-OPENCLIP_MODELS="ViT-B-32 ViT-B-16 ViT-L-14"
+# CLIP_MODELS="ViT-B-32 ViT-B-16 ViT-L-14"
+# OPENCLIP_MODELS="ViT-B-32 ViT-B-16 ViT-L-14"
+CLIP_MODELS="ViT-B-32"
+OPENCLIP_MODELS="ViT-B-32"
 
 # Hypernetwork meta-learning configuration
 META_TRAIN_DATASETS="CIFAR10,EuroSAT,DTD,GTSRB,SVHN,Food101"

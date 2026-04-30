@@ -88,6 +88,13 @@ def setup_ddp(rank, world_size, port=12357):
     if torch.distributed.is_initialized():
         torch.distributed.destroy_process_group()
 
+    # Bind this process to its GPU *before* initialising NCCL so that
+    # init_process_group can accept ``device_id`` — this silences the
+    # "Guessing device ID based on global rank" warning and the related
+    # barrier() device-context warning.
+    torch.cuda.set_device(rank)
+    device = torch.device(f"cuda:{rank}")
+
     # Try the requested port first, then scan up to 100 alternatives
     for attempt_port in range(port, port + 100):
         os.environ["MASTER_PORT"] = str(attempt_port)
@@ -96,6 +103,7 @@ def setup_ddp(rank, world_size, port=12357):
                 "nccl",
                 rank=rank,
                 world_size=world_size,
+                device_id=device,
             )
             break
         except Exception as e:
@@ -107,7 +115,6 @@ def setup_ddp(rank, world_size, port=12357):
     else:
         raise RuntimeError(f"Could not find a free port in range [{port}, {port + 100})")
 
-    torch.cuda.set_device(rank)
     torch.distributed.barrier()
 
 

@@ -278,10 +278,35 @@ if __name__ == "__main__":
     args.print_every = 10
     args.ctr_dataset = "ImageNet" + "Val"
     args.save = get_checkpoint_dir(args)
-    with open(os.path.join(args.save, "zeroshot_accuracies.json"), 'r') as f:
+    zs_acc_path = os.path.join(args.save, "zeroshot_accuracies.json")
+    with open(zs_acc_path, 'r') as f:
         args.zs_acc = json.load(f)
     with open(os.path.join(args.save, "ft_accuracies.json"), 'r') as f:
         args.ft_acc = json.load(f)
+
+    # Task negation uses the control dataset purely for its zero-shot accuracy
+    # (no finetuned checkpoint required). If eval_single_task wasn't run for
+    # this backend/root, compute the control zs accuracy on demand and cache it.
+    if args.ctr_dataset not in args.zs_acc:
+        from src.modeling import ImageEncoder
+        from src.eval import eval_single_dataset
+        ctr_zs_path = os.path.join(args.save, args.ctr_dataset, "zeroshot.pt")
+        print(f"[prereq] '{args.ctr_dataset}' missing from {zs_acc_path}; computing now.")
+        if os.path.exists(ctr_zs_path):
+            ctr_encoder = torch.load(ctr_zs_path, map_location="cpu", weights_only=False)
+        else:
+            print(f"[prereq] No saved zero-shot encoder at {ctr_zs_path}; using fresh pretrained weights.")
+            ctr_encoder = ImageEncoder(args, keep_lang=False)
+        ctr_encoder = ctr_encoder.cuda()
+        args.device = "cuda"
+        args.zs_acc[args.ctr_dataset] = eval_single_dataset(
+            ctr_encoder, args.ctr_dataset, args
+        )["top1"]
+        with open(zs_acc_path, 'w') as f:
+            json.dump(args.zs_acc, f)
+        print(f"[prereq] Cached {args.ctr_dataset} zs accuracy = {100*args.zs_acc[args.ctr_dataset]:.2f}%.")
+        del ctr_encoder
+        torch.cuda.empty_cache()
 
     for dataset in datasets:
         args.tgt_dataset = dataset + "Val"

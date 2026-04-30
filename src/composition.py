@@ -12,7 +12,14 @@ from torch import nn
 from torch.func import jvp, functional_call
 
 def make_functional_with_buffers(model, disable_autograd_tracking=False):
-    """Compatibility shim: replicate the old functorch API using torch.func utilities."""
+    """Compatibility shim for the old functorch API, built on torch.func.
+
+    Returns ``(func, params, buffers, param_names)``.  ``param_names`` is the
+    ordered list matching ``params`` and lets callers align auxiliary tensors
+    (e.g. task-vector deltas) by name rather than position — required when
+    ``state_dict()`` and ``named_parameters()`` disagree (shared Parameters are
+    listed once by the latter, multiple times by the former).
+    """
     param_names = []
     params = []
     buffer_names = []
@@ -32,7 +39,43 @@ def make_functional_with_buffers(model, disable_autograd_tracking=False):
             state[n] = b
         return functional_call(model, state, args, kwargs)
 
-    return func, params, buffers
+    return func, params, buffers, param_names
+
+
+def _align_task_vectors_by_name(task_vectors, params, param_names, context=""):
+    """Return deltas aligned to ``param_names``, one inner list per task vector.
+
+    Missing keys become zero tensors matching the corresponding param's shape
+    and dtype.  Raises if fewer than half the names match — that almost always
+    means the task vector was built for a different CLIP backend (e.g.
+    OpenCLIP checkpoints used with ``--clip-backend=clip``, or vice versa).
+    """
+    aligned = []
+    for tv_idx, tv in enumerate(task_vectors):
+        matched = 0
+        deltas = []
+        for name, p in zip(param_names, params):
+            v = tv.vector.get(name)
+            if v is None:
+                deltas.append(torch.zeros_like(p, dtype=torch.float16))
+            else:
+                if v.shape != p.shape:
+                    raise RuntimeError(
+                        f"Task vector {tv_idx} key '{name}' has shape "
+                        f"{tuple(v.shape)} but model parameter has shape "
+                        f"{tuple(p.shape)}. {context}"
+                    )
+                deltas.append(v)
+                matched += 1
+        if matched < max(1, len(param_names) // 2):
+            raise RuntimeError(
+                f"Task vector {tv_idx}: only {matched}/{len(param_names)} "
+                f"parameter names matched. The checkpoint almost certainly "
+                f"came from a different CLIP backend (HuggingFace vs OpenCLIP). "
+                f"Check --clip-backend and --checkpoint-root. {context}"
+            )
+        aligned.append(deltas)
+    return aligned
 
 def mask_multiply(coefs, mask, params):
     if params.ndim != 3:
@@ -64,7 +107,7 @@ class WeightedImageEncoder(nn.Module):
         """
         super().__init__()
 
-        func, params, self.buffer = make_functional_with_buffers(model)
+        func, params, self.buffer, param_names = make_functional_with_buffers(model)
         # NOTE This is important to avoid the following error
         # NotImplementedError: Cannot copy out of meta tensor; no data!
         self.func = lambda p, b, x: func(p, b, x)
@@ -77,7 +120,13 @@ class WeightedImageEncoder(nn.Module):
         self.val_preprocess = model.val_preprocess
         self.cache_dir = model.cache_dir
 
-        self.dparams = [[tv.vector[k] for k in tv.vector] for tv in task_vectors]
+        # Align deltas to named_parameters order — state_dict order is NOT a
+        # safe proxy (e.g. shared logit_scale appears twice in state_dict but
+        # once in named_parameters; stale checkpoints may carry text keys).
+        self.dparams = _align_task_vectors_by_name(
+            task_vectors, params, param_names,
+            context="(WeightedImageEncoder)"
+        )
         self.blockwise = blockwise
         self.partition = partition
         if self.partition is not None:
@@ -189,7 +238,7 @@ class TextConditionedWeightedImageEncoder(nn.Module):
         super().__init__()
 
         # Decompose model
-        func, params, self.buffer = make_functional_with_buffers(model)
+        func, params, self.buffer, param_names = make_functional_with_buffers(model)
         self.func = lambda p, b, x: func(p, b, x)
         self.params = torch.nn.ParameterList(params)
         for p in self.params:
@@ -200,8 +249,11 @@ class TextConditionedWeightedImageEncoder(nn.Module):
         self.val_preprocess = model.val_preprocess
         self.cache_dir = getattr(model, 'cache_dir', None)
 
-        # Store task vector deltas
-        self.dparams = [[tv.vector[k] for k in tv.vector] for tv in task_vectors]
+        # Store task vector deltas aligned to named_parameters() order.
+        self.dparams = _align_task_vectors_by_name(
+            task_vectors, params, param_names,
+            context="(TextConditionedWeightedImageEncoder)"
+        )
         self.blockwise = blockwise
 
         # Hypernetwork for coefficient prediction
