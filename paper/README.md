@@ -6,13 +6,11 @@ This directory holds the LaTeX source for the submission.
 
 - `main.tex` — paper backbone (sections only; content as comments).
 - `references.bib` — bib file (seed entries as TODOs).
-- `neurips_2025.sty` — **placeholder** style file. The official `neurips_2026.sty`
-  is gated behind authenticated NeurIPS download pages; structurally the 2026
-  release is identical to 2025 every recent year. **Before submission**, drop
-  the official `neurips_2026.sty` here and update the `\usepackage` line in
-  `main.tex`.
-- `neurips_2025.bst` — natbib-compatible bibliography style shipped alongside
-  the sty file.
+- `neurips_2026.sty` — official NeurIPS 2026 style file.
+- `checklist.tex` — mandatory NeurIPS Paper Checklist (answers stubbed as
+  `\answerTODO`/`\justificationTODO`; `\input` from `main.tex`).
+- `neurips_2026_reference.tex` — the official template, kept verbatim as a
+  reference for option flags and example formatting. Not built.
 
 ## Build
 
@@ -26,11 +24,26 @@ pdflatex main.tex
 
 ## Submission build options
 
-Edit the `\usepackage` line in `main.tex`:
+Edit the `\usepackage` line in `main.tex`. The default (no option) is
+equivalent to `[main]` and produces an anonymized double-blind submission.
 
-| Option            | When to use                              |
-|-------------------|------------------------------------------|
-| `neurips_2026`    | Submission (anonymized, default)         |
-| `[preprint]`      | arXiv / public preprint                  |
-| `[final]`         | Camera-ready (only after acceptance)     |
-| `[nonatbib]`      | Avoid loading natbib (rarely needed)     |
+| Option flag                  | When to use                              |
+|------------------------------|------------------------------------------|
+| (default) / `[main]`         | Main Track submission                    |
+| `[position]`                 | Position Paper Track                     |
+| `[eandd]`                    | Evaluations & Datasets Track             |
+| `[eandd, nonanonymous]`      | E&D Track, single-blind opt-in           |
+| `[creativeai]`               | Creative AI Track                        |
+| `[sglblindworkshop]`         | Workshop (single-blind)                  |
+| `[dblblindworkshop]`         | Workshop (double-blind)                  |
+| `[preprint]`                 | arXiv / public preprint                  |
+| `[main, final]`              | Camera-ready (only after acceptance)     |
+| `[nonatbib]`                 | Avoid loading natbib (rarely needed)     |
+
+For workshop builds, also provide `\workshoptitle{...}` in the preamble.
+
+## Page limit reminder
+
+Main content limit is 9 pages. References, the appendix, and the checklist do
+**not** count against this limit. Papers without the checklist are
+desk-rejected.

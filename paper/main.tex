@@ -1,13 +1,11 @@
 % =============================================================================
 % NeurIPS 2026 submission - Main paper
 %
-% TODO(style-file): This draft currently loads `neurips_2025.sty`, which is the
-% latest mirror available on public GitHub at the time of scaffolding. The
-% official `neurips_2026.sty` is gated behind authenticated NeurIPS download
-% pages. Before submission, drop the official `neurips_2026.sty` (and the
-% matching `neurips_2026.tex` skeleton) into this directory and change the
-% \usepackage line below from `neurips_2025` to `neurips_2026`. The 2026 file
-% is structurally identical to 2025 in every recent year.
+% Files in this directory:
+%   neurips_2026.sty           - official 2026 style (loaded below)
+%   checklist.tex              - mandatory NeurIPS Paper Checklist
+%   neurips_2026_reference.tex - the official template, kept for reference only
+%   references.bib             - bib database
 % =============================================================================
 
 \documentclass{article}
@@ -15,14 +13,23 @@
 % if you need to pass options to natbib, use, e.g.:
 \PassOptionsToPackage{numbers, compress}{natbib}
 
-% Submission (anonymous) - default option
-\usepackage{neurips_2025}
+% Submission (default = main track, anonymized double-blind reviewing).
+\usepackage{neurips_2026}
 
-% Preprint (e.g. for arXiv) - swap to this when going public
-% \usepackage[preprint]{neurips_2025}
+% Other tracks (uncomment exactly one if applicable):
+%   \usepackage[main]{neurips_2026}              % Main Track (same as default)
+%   \usepackage[position]{neurips_2026}          % Position Paper Track
+%   \usepackage[eandd]{neurips_2026}             % Evaluations & Datasets Track
+%   \usepackage[eandd, nonanonymous]{neurips_2026}  % E&D single-blind opt-in
+%   \usepackage[creativeai]{neurips_2026}        % Creative AI Track
+%   \usepackage[sglblindworkshop]{neurips_2026}  % Workshop, single-blind
+%   \usepackage[dblblindworkshop]{neurips_2026}  % Workshop, double-blind
 
-% Camera-ready - swap to this only after acceptance
-% \usepackage[final]{neurips_2025}
+% Preprint (e.g. for arXiv) - swap to this when going public:
+%   \usepackage[preprint]{neurips_2026}
+
+% Camera-ready - swap to this only after acceptance, e.g.:
+%   \usepackage[main, final]{neurips_2026}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -291,9 +298,12 @@
 % =============================================================================
 % NeurIPS Paper Checklist (mandatory; absence is grounds for desk reject)
 % =============================================================================
-% TODO(checklist): The official 2026 .sty file ships with the checklist macros.
-% Once we swap the sty in (see TODO at top of file), copy the official
-% checklist template here and answer every item. Do this LAST, but do NOT
-% skip it.
+% The checklist file is the official NeurIPS 2026 template, with answers stubbed
+% as \answerTODO{}. Fill in every \answerTODO and \justificationTODO before
+% submission. Do this LAST, but do NOT skip it. The checklist does NOT count
+% against the 9-page main-content limit.
+
+\newpage
+\input{checklist.tex}
 
 \end{document}

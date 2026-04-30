@@ -37,10 +37,9 @@ Each task has a checkbox. Tick them off as you go.
       roughly 6–12 GPU-hours (100 epochs × 20 episodes/epoch × forward-backward
       through CLIP). With 3 seeds × text-only + multi-modal × 1 backbone,
       plan for 4–8 GPUs available continuously for 3 days.
-- [ ] **Pull the official `neurips_2026.sty`** from
-      <https://neurips.cc/Conferences/2026/CallForPapers> (requires login) and
-      drop it into `paper/`. Update the `\usepackage` line in `paper/main.tex`
-      (it currently uses the 2025 file as a placeholder).
+- [x] **Pull the official `neurips_2026.sty`** — done; the official sty,
+      reference template, and checklist are now in `paper/` and `main.tex`
+      loads `neurips_2026`.
 - [ ] **Verify the paper compiles end-to-end** with `pdflatex && bibtex && pdflatex × 2`.
 - [ ] **Create a results directory layout** so aggregation later is mechanical:
       `results/{model}/{method}/{dataset}/seed{N}.json`.
@@ -262,9 +261,10 @@ tables, and polish.
       print scale, color-blind-friendly palette.
 - [ ] **Add a "Reproducibility" paragraph** in the appendix (or end of
       methods) listing repo URL placeholder, hyperparameters, seeds, hardware.
-- [ ] **Begin the NeurIPS Paper Checklist.** This is mandatory and absence is
-      grounds for desk reject. The official 2026 sty file ships with the
-      checklist macros — answer every item honestly.
+- [ ] **Begin the NeurIPS Paper Checklist** in `paper/checklist.tex`. This is
+      mandatory and absence is grounds for desk reject. Replace every
+      `\answerTODO` with `\answerYes`, `\answerNo`, or `\answerNA`, and every
+      `\justificationTODO` with a 1–2 sentence justification.
 
 ---
 
