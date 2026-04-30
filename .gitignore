@@ -175,3 +175,4 @@ results/analysis/**
 
 # Junk files from malformed pip install (empty version-constraint files)
 =*
+.claude/scheduled_tasks.lock
