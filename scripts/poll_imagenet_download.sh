@@ -7,7 +7,9 @@
 # runs setup_imagenet.sh and removes itself from crontab.
 #
 # Usage (cron entry, every 15 minutes):
-#   */15 * * * * /home/luke/Documents/GitHub/atlas/scripts/poll_imagenet_download.sh
+#   */15 * * * * /path/to/repo/scripts/poll_imagenet_download.sh
+# (substitute /path/to/repo with the absolute path to your atlas checkout, or
+# use $HOME/atlas/scripts/poll_imagenet_download.sh, etc.)
 # =============================================================================
 set -euo pipefail
 

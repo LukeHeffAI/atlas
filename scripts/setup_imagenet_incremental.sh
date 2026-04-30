@@ -24,14 +24,38 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() { echo "[$(date '+%H:%M:%S')] $*"; }
 
+# ---------------------------------------------------------------------------
+# Preflight checks (mirrors setup_imagenet.sh — gives clearer errors than the
+# terse `tar: ... Cannot open` we'd otherwise hit under `set -e`).
+# Phase 1 only needs class tars already on disk; the main TRAIN_TAR is
+# optional in that case but required for Phase 2. VAL_TAR is required if
+# Phase 3 needs to extract.
+# ---------------------------------------------------------------------------
+existing_class_tars="$(find "$TRAIN_DIR" -maxdepth 1 -name 'n*.tar' 2>/dev/null | wc -l)"
+if [ ! -f "$TRAIN_TAR" ] && [ "$existing_class_tars" -eq 0 ]; then
+    echo "Error: Training archive not found at $TRAIN_TAR (and no class tars in $TRAIN_DIR)" >&2
+    exit 1
+fi
+if [ -f "$TRAIN_TAR" ] && [ ! -r "$TRAIN_TAR" ]; then
+    echo "Error: Training archive at $TRAIN_TAR is not readable" >&2
+    exit 1
+fi
+if [ ! -f "$VAL_TAR" ] && [ ! -d "$VAL_DIR" ]; then
+    echo "Error: Validation archive not found at $VAL_TAR (and $VAL_DIR does not exist)" >&2
+    exit 1
+fi
+if [ -f "$VAL_TAR" ] && [ ! -r "$VAL_TAR" ]; then
+    echo "Error: Validation archive at $VAL_TAR is not readable" >&2
+    exit 1
+fi
+
 mkdir -p "$TRAIN_DIR"
 
 # ---------------------------------------------------------------------------
 # Phase 1: Process existing class tars in train/
 # ---------------------------------------------------------------------------
-existing_tars="$(find "$TRAIN_DIR" -maxdepth 1 -name 'n*.tar' 2>/dev/null | wc -l)"
-if [ "$existing_tars" -gt 0 ]; then
-    log "Phase 1: Processing $existing_tars existing class tars..."
+if [ "$existing_class_tars" -gt 0 ]; then
+    log "Phase 1: Processing $existing_class_tars existing class tars..."
     count=0
     for class_tar in "$TRAIN_DIR"/n*.tar; do
         [ -f "$class_tar" ] || continue
@@ -41,11 +65,19 @@ if [ "$existing_tars" -gt 0 ]; then
             rm "$class_tar"
         else
             mkdir -p "$TRAIN_DIR/$synset"
-            tar xf "$class_tar" -C "$TRAIN_DIR/$synset" 2>/dev/null && rm "$class_tar"
+            # Let tar's own stderr through so corrupt class tars produce a
+            # diagnosable error message (previously suppressed by `2>/dev/null`,
+            # which left `set -e` exits unexplained).
+            if tar xf "$class_tar" -C "$TRAIN_DIR/$synset"; then
+                rm "$class_tar"
+            else
+                echo "Error: failed to extract class tar: $class_tar" >&2
+                exit 1
+            fi
         fi
         count=$((count + 1))
         if [ $((count % 50)) -eq 0 ]; then
-            log "  Processed $count / $existing_tars"
+            log "  Processed $count / $existing_class_tars"
         fi
     done
     log "  Phase 1 done: processed $count class tars"
@@ -56,7 +88,14 @@ fi
 # ---------------------------------------------------------------------------
 # Phase 2: Extract remaining classes from main archive
 # ---------------------------------------------------------------------------
-# Build set of already-completed synsets (have directories with images)
+# Note: this script writes each class tar to disk briefly (then deletes it),
+# rather than using extract_imagenet_stream.py's pure in-memory streaming.
+# That trade-off lets us pluck specific entries out of the outer archive on
+# resume, at the cost of ~2x peak disk per class. Use
+# extract_imagenet_stream.py instead if you want the stream-only flow.
+#
+# Build set of already-completed synsets (have directories with images) so we
+# can skip them without re-stating the filesystem inside the inner loop.
 log "Phase 2: Checking which classes still need extraction..."
 completed=0
 declare -A done_synsets
@@ -73,13 +112,41 @@ log "  $completed classes already complete"
 
 if [ "$completed" -lt 1000 ]; then
     remaining=$((1000 - completed))
+    if [ ! -f "$TRAIN_TAR" ]; then
+        echo "Error: $remaining classes still need extraction but $TRAIN_TAR is missing" >&2
+        exit 1
+    fi
     log "  Extracting $remaining remaining classes from $TRAIN_TAR (one at a time)..."
 
-    # List all class tars in the archive
-    tar tf "$TRAIN_TAR" | grep '^n.*\.tar$' | while read -r entry; do
+    # List all class tars in the archive. Some `tar` implementations emit
+    # entries with a leading `./`, so we strip it before matching. We also
+    # capture the listing into a temp file first so a `grep` non-match (or
+    # any later pipeline failure under `pipefail`) cannot abort the script
+    # silently before extraction begins.
+    listing="$(mktemp)"
+    trap 'rm -f "$listing"' EXIT
+    if ! tar tf "$TRAIN_TAR" > "$listing"; then
+        echo "Error: could not list contents of $TRAIN_TAR" >&2
+        exit 1
+    fi
+    # Normalise leading `./` and keep only `nNNNNNNNN.tar` entries.
+    class_entries="$(sed 's|^\./||' "$listing" | grep -E '^n[0-9]+\.tar$' || true)"
+    if [ -z "$class_entries" ]; then
+        echo "Error: no class tars (n*.tar) found inside $TRAIN_TAR" >&2
+        exit 1
+    fi
+
+    while IFS= read -r entry; do
+        [ -n "$entry" ] || continue
         synset="${entry%.tar}"
-        # Skip if already done
+        # Skip via the cached set populated above (avoids re-walking the FS).
+        if [ "${done_synsets[$synset]:-0}" = "1" ]; then
+            continue
+        fi
+        # Defensive: also skip if the dir already has JPEGs (e.g., a class
+        # finished mid-run and wasn't in the cache).
         if [ -d "$TRAIN_DIR/$synset" ] && [ "$(find "$TRAIN_DIR/$synset" -maxdepth 1 -name '*.JPEG' -print -quit 2>/dev/null)" ]; then
+            done_synsets["$synset"]=1
             continue
         fi
         # Extract this single class tar from the main archive
@@ -89,7 +156,10 @@ if [ "$completed" -lt 1000 ]; then
         tar xf "$TRAIN_DIR/$entry" -C "$TRAIN_DIR/$synset"
         # Delete the class tar immediately
         rm -f "$TRAIN_DIR/$entry"
-    done
+        done_synsets["$synset"]=1
+    done <<< "$class_entries"
+    rm -f "$listing"
+    trap - EXIT
     log "  Phase 2 done"
 else
     log "  All 1000 classes present, skipping Phase 2"
@@ -98,9 +168,18 @@ fi
 # ---------------------------------------------------------------------------
 # Phase 3: Validation set
 # ---------------------------------------------------------------------------
-val_classes="$(find "$VAL_DIR" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)"
-if [ "$val_classes" -ge 999 ]; then
-    log "Phase 3: Val already organized ($val_classes class dirs) — skipping"
+val_classes=0
+val_jpegs_total=0
+if [ -d "$VAL_DIR" ]; then
+    val_classes="$(find "$VAL_DIR" -mindepth 1 -maxdepth 1 -type d | wc -l)"
+    val_jpegs_total="$(find "$VAL_DIR" -name '*.JPEG' | wc -l)"
+fi
+# Require both the canonical 1000 class dirs and 50,000 JPEGs before
+# declaring val complete — a directory-only check can wave through a
+# half-organised tree and let the script proceed without rerunning
+# imagenet_valprep.sh.
+if [ "$val_classes" -eq 1000 ] && [ "$val_jpegs_total" -eq 50000 ]; then
+    log "Phase 3: Val already organized ($val_classes class dirs, $val_jpegs_total images) — skipping"
 else
     mkdir -p "$VAL_DIR"
     # Check if val images exist (flat or organized)

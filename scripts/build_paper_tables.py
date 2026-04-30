@@ -143,9 +143,13 @@ def _latex_backend_label(backend: str) -> str:
 def _negation_averages(data: dict | None, zs_acc: dict) -> tuple[float | None, float | None, float | None]:
     """Return (pretrained target avg, post-negation target avg, post-negation control avg).
 
-    Pre-trained target avg is taken from ``zeroshot_accuracies.json``
-    (``<dataset>Val``), post-negation from the ``learned_negations.json``
-    ``test`` / ``test_control`` fields (per-dataset)."""
+    Pre-trained target avg is taken from ``zeroshot_accuracies.json`` using the
+    test-split key (``<dataset>``) so it is comparable to the post-negation
+    numbers, which come from the ``test`` / ``test_control`` fields of
+    ``learned_negations.json`` (also test split). ``zeroshot_accuracies.json``
+    is written by ``eval_single_task.py`` and contains both ``<dataset>`` (test)
+    and ``<dataset>Val`` (val) keys; we deliberately use the former here.
+    """
     if data is None:
         return None, None, None
     pre, tgt_post, ctr_post = [], [], []
@@ -153,7 +157,7 @@ def _negation_averages(data: dict | None, zs_acc: dict) -> tuple[float | None, f
         entry = data.get(ds)
         if not entry:
             continue
-        pre.append(zs_acc.get(f"{ds}Val"))
+        pre.append(zs_acc.get(ds))
         tgt_post.append(entry.get("test"))
         ctr_post.append(entry.get("test_control"))
     return _mean(pre), _mean(tgt_post), _mean(ctr_post)
@@ -177,7 +181,9 @@ def build_negation_table(runs: Sequence[Run]) -> str:
     for run in runs:
         zs = load_zs_acc(run)
         pre, tgt, ctr = _negation_averages(load_negations(run), zs)
-        pretrained_ctr = zs.get(f"{'ImageNet'}Val")
+        # Use the test-split key for the control baseline too, to match the
+        # split used by the post-negation control numbers.
+        pretrained_ctr = zs.get("ImageNet")
         pre_row.extend([_fmt(pre), _fmt(pretrained_ctr)])
         atlas_row.extend([_fmt(tgt), _fmt(ctr)])
 
@@ -237,7 +243,10 @@ def build_addition_table(runs: Sequence[Run]) -> str:
     atlas_row = [r"aTLAS (ours)"]
     for run in runs:
         zs = load_zs_acc(run)
-        pre = _mean(zs.get(f"{ds}Val") for ds in TASK_ARITHMETIC_DATASETS)
+        # Pre-trained baseline must use the test-split key (``<dataset>``)
+        # to match the test-split metrics in ``learned_additions.json``'s
+        # ``test`` block. ``zeroshot_accuracies.json`` carries both keys.
+        pre = _mean(zs.get(ds) for ds in TASK_ARITHMETIC_DATASETS)
         abs_acc, rel_acc = _addition_averages(load_additions(run))
         pre_row.extend([_fmt(pre), "--"])
         atlas_row.extend([_fmt(abs_acc), _fmt(rel_acc)])
@@ -273,19 +282,28 @@ def build_addition_table(runs: Sequence[Run]) -> str:
 # --------------------------------------------------------------------------- #
 
 def _fewshot_average(data: dict | None, k: int) -> float | None:
-    """Average adapted-accuracy across the 22 datasets for k-shot.
+    """Average few-shot test accuracy across the 22 datasets for k-shot.
 
-    ``learn_few_shots.py`` writes ``{dataset}Val`` for the adapted accuracy
-    and ``{dataset}Val_zeroshot`` for the reference zero-shot — we average the
-    former. Missing datasets (not yet fine-tuned / not yet run) are skipped
-    rather than counted as zero.
+    ``learn_few_shots.py`` writes the adapted *test* accuracy under
+    ``{dataset}Val_trained`` (the target dataset key used during training has
+    a ``Val`` suffix; the trained metric is evaluated on the test split).
+    It also keeps ``{dataset}Val`` as the validation metric used for model
+    selection. For paper tables we want the test number, so we prefer
+    ``_trained`` and fall back to the bare ``{dataset}`` (older outputs)
+    or ``{dataset}Val`` (oldest outputs) for backward compatibility. Missing
+    datasets are skipped rather than counted as zero.
     """
     if data is None:
         return None
     bucket = data.get(f"{k}_shot")
     if not bucket:
         return None
-    accs = [bucket.get(f"{ds}Val") for ds in FEW_SHOT_DATASETS]
+    accs = [
+        bucket.get(f"{ds}Val_trained",
+                   bucket.get(f"{ds}_trained",
+                              bucket.get(ds, bucket.get(f"{ds}Val"))))
+        for ds in FEW_SHOT_DATASETS
+    ]
     return _mean(accs)
 
 
@@ -328,11 +346,18 @@ def build_fewshot_table(runs: Sequence[Run]) -> str:
 # --------------------------------------------------------------------------- #
 
 def _ufm_averages(data: dict | None, zs_acc: dict) -> tuple[float | None, float | None]:
-    """Return (zero-shot avg, aTLAS-UFM avg) across the 22 datasets."""
+    """Return (zero-shot avg, aTLAS-UFM avg) across the 22 datasets.
+
+    ``learn_ufm.py`` logs both ``{dataset}Val`` (validation metric used during
+    coefficient search) and ``{dataset}`` (test split, written by
+    ``eval_single_dataset``). The paper reports the test number, so we average
+    the bare ``{dataset}`` keys here for consistency. ``zeroshot_accuracies.json``
+    likewise stores both — we use ``{dataset}`` for the same reason.
+    """
     if data is None:
         return None, None
-    zs = _mean(zs_acc.get(f"{ds}Val") for ds in FEW_SHOT_DATASETS)
-    adapted = _mean(data.get(f"{ds}Val") for ds in FEW_SHOT_DATASETS)
+    zs = _mean(zs_acc.get(ds) for ds in FEW_SHOT_DATASETS)
+    adapted = _mean(data.get(ds) for ds in FEW_SHOT_DATASETS)
     return zs, adapted
 
 

@@ -11,9 +11,31 @@ Skips classes whose directories already exist and contain images (resume-safe).
 """
 import argparse
 import os
+import posixpath
 import sys
 import tarfile
 from pathlib import Path
+
+
+def _is_safe_member_name(name: str) -> bool:
+    """Reject tar member names that would escape the extraction directory.
+
+    Guards against absolute paths, parent-directory traversal (``..``), and
+    drive letters / UNC-style prefixes — the standard ``tarfile`` extractor
+    happily writes outside the destination otherwise (CVE-2007-4559).
+    """
+    if not name or name.startswith(("/", "\\")):
+        return False
+    # Normalise via posixpath to canonicalise ``./``, ``//``, and back-refs.
+    normalised = posixpath.normpath(name)
+    if normalised.startswith(("/", "..")) or normalised == "..":
+        return False
+    if any(part == ".." for part in normalised.split("/")):
+        return False
+    # Drive letters / UNC prefixes (rare in tar but cheap to reject)
+    if len(normalised) >= 2 and normalised[1] == ":":
+        return False
+    return True
 
 
 def main():
@@ -59,12 +81,19 @@ def main():
                 if class_tar_fileobj is None:
                     failed.append(synset)
                     continue
-                # Open the inner tar from the file object and extract all images
+                # Open the inner tar from the file object and extract all images.
+                # Validate each member name to avoid path-traversal extraction
+                # outside ``class_dir`` if the archive is malformed/untrusted.
                 with tarfile.open(fileobj=class_tar_fileobj, mode="r|") as inner:
                     for img_member in inner:
-                        if img_member.isfile():
-                            # Extract directly into class_dir
-                            inner.extract(img_member, path=class_dir, set_attrs=False)
+                        if not img_member.isfile():
+                            continue
+                        if not _is_safe_member_name(img_member.name):
+                            print(f"  WARN {synset}: skipping unsafe member "
+                                  f"{img_member.name!r}", file=sys.stderr)
+                            continue
+                        # Extract directly into class_dir
+                        inner.extract(img_member, path=class_dir, set_attrs=False)
                 extracted += 1
             except Exception as e:
                 print(f"  FAILED {synset}: {e}", file=sys.stderr)
@@ -72,9 +101,14 @@ def main():
                 continue
 
             if (extracted + skipped) % args.progress_every == 0:
-                n_done = len(list(train_dir.glob("n*")))
+                # Avoid re-walking the directory tree on every tick — on
+                # network filesystems that scan can dominate runtime. The
+                # running ``skipped + extracted`` counter is equivalent for
+                # progress purposes (we already enforce no double-counting
+                # via the ``any(class_dir.glob('*.JPEG'))`` skip check above).
+                n_done = skipped + extracted
                 print(f"  Progress: {total_classes} seen, {skipped} skipped, {extracted} newly extracted "
-                      f"({n_done} total dirs on disk)")
+                      f"({n_done} total dirs processed)")
 
     print()
     print(f"Done. Seen: {total_classes}, Skipped: {skipped}, Newly extracted: {extracted}, Failed: {len(failed)}")
