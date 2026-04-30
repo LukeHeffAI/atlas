@@ -1,0 +1,299 @@
+% =============================================================================
+% NeurIPS 2026 submission - Main paper
+%
+% TODO(style-file): This draft currently loads `neurips_2025.sty`, which is the
+% latest mirror available on public GitHub at the time of scaffolding. The
+% official `neurips_2026.sty` is gated behind authenticated NeurIPS download
+% pages. Before submission, drop the official `neurips_2026.sty` (and the
+% matching `neurips_2026.tex` skeleton) into this directory and change the
+% \usepackage line below from `neurips_2025` to `neurips_2026`. The 2026 file
+% is structurally identical to 2025 in every recent year.
+% =============================================================================
+
+\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+\PassOptionsToPackage{numbers, compress}{natbib}
+
+% Submission (anonymous) - default option
+\usepackage{neurips_2025}
+
+% Preprint (e.g. for arXiv) - swap to this when going public
+% \usepackage[preprint]{neurips_2025}
+
+% Camera-ready - swap to this only after acceptance
+% \usepackage[final]{neurips_2025}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{subcaption}
+
+% =============================================================================
+% TODO(title): Final title TBD. Working title below. Aim < 12 words.
+% Candidates:
+%   - "Predicting Anisotropic Task-Vector Coefficients from Text and a Few Shots"
+%   - "Multi-Modal Hypernetworks for Zero- and Few-Shot Task Vector Composition"
+%   - "From Description to Coefficients: Hypernetwork-Predicted aTLAS for CLIP"
+% =============================================================================
+\title{Predicting Anisotropic Task-Vector Coefficients from Text and a Few Shots}
+
+% =============================================================================
+% TODO(authors): Fill in real author block before submission.
+% Reminder: NeurIPS submission is double-blind; keep this anonymized in the
+% submission build. The default option (no [final]/[preprint]) anonymizes for us.
+% =============================================================================
+\author{%
+  Anonymous Authors \\
+  Anonymous Affiliation \\
+  \texttt{anonymous@example.com}
+}
+
+\begin{document}
+
+\maketitle
+
+% =============================================================================
+% ABSTRACT
+% TODO: Write last. ~150-200 words. Structure:
+%   1. Problem: adapting CLIP-class models to new tasks needs labeled data; aTLAS
+%      reduces it but still requires per-task coefficient learning.
+%   2. Approach: meta-train a hypernetwork that predicts aTLAS coefficients from
+%      a text description (zero-shot) or text + K support images (few-shot).
+%   3. Method highlights: dual-branch fusion, variable-shot meta-training,
+%      graceful text-only fallback.
+%   4. Results: headline numbers on held-out datasets at K in {0,1,2,4,8,16}.
+%   5. Takeaway: matches/beats per-task aTLAS at a fraction of the compute.
+% =============================================================================
+\begin{abstract}
+% TODO(abstract): Write final pass after results are locked.
+\end{abstract}
+
+% =============================================================================
+\section{Introduction}
+% =============================================================================
+% TODO(intro): ~1 page. Hit these beats in order:
+%   - Setup: CLIP zero-shot is convenient but trails fine-tuning; per-task
+%     fine-tuning is expensive.
+%   - Task vectors / task arithmetic give a cheap composition primitive.
+%   - aTLAS adds blockwise anisotropic scaling; learns coefficients per task.
+%   - Limitation: aTLAS still needs labeled adaptation data per task.
+%   - Our contribution: predict the coefficients directly, conditioned on a
+%     text description (and optionally K support images) - turns aTLAS into a
+%     genuinely zero-/few-shot method.
+%   - Bullet list of contributions:
+%       (i) text-to-coef hypernetwork formulation;
+%       (ii) multi-modal extension with text+image fusion;
+%       (iii) meta-training recipe with variable-K shots;
+%       (iv) empirical: matches per-task aTLAS, beats CLIP zero-shot, beats
+%            adapter baselines at low K.
+%   - Paper roadmap.
+
+% =============================================================================
+\section{Related Work}
+% =============================================================================
+
+\subsection{Task Vectors and Task Arithmetic}
+% TODO: Ilharco et al. 2023 (task arithmetic), Ortiz-Jimenez et al. (tangent
+% task arithmetic), Yadav et al. (TIES-merging), task vector negation, etc.
+% Frame: task vectors are scalar-weighted; we generalize to learned
+% block-anisotropic weights and predict them.
+
+\subsection{Anisotropic Scaling and aTLAS}
+% TODO: aTLAS (the prior paper this builds on). Briefly recap the contribution
+% and clarify what is and is not borrowed. Block coefficients, partition
+% variant (aTLAS x K), linearized variant.
+
+\subsection{Hypernetworks for Adaptation}
+% TODO: Ha et al. 2017, HyperNets for few-shot, HyperLoRA, etc. Distinguish:
+% prior hypernet work predicts weight matrices/LoRA; we predict task-vector
+% coefficients - far smaller output space, much cheaper to train.
+
+\subsection{Few-Shot and Zero-Shot Adaptation of CLIP}
+% TODO: CoOp, CoCoOp, Tip-Adapter (and Tip-F), LP++, WiSE-FT. We compare
+% directly to these. Note that these methods either learn prompts (CoOp) or
+% adapters; we learn a different primitive entirely.
+
+\subsection{Meta-Learning}
+% TODO: MAML and descendants briefly; ProtoNet for K-shot conditioning. Our
+% recipe is closer to amortized inference than gradient-based meta-learning.
+
+% =============================================================================
+\section{Background}
+% =============================================================================
+
+\subsection{CLIP and Task Vectors}
+% TODO: Define notation. Pretrained encoder f_theta_0; fine-tuned f_theta_t for
+% task t; task vector tau_t = theta_t - theta_0.
+
+\subsection{Anisotropic Task-Level Scaling (aTLAS)}
+% TODO: Block decomposition theta = (theta^{(1)}, ..., theta^{(B)}). aTLAS
+% composes K task vectors with per-block coefficients
+% \alpha \in R^{T x B}: theta_new = theta_0 + sum_t sum_b alpha_{t,b} tau_t^{(b)}.
+% Standard aTLAS learns alpha per target task via gradient descent on labeled
+% data; our setting amortizes this.
+
+% =============================================================================
+\section{Method}
+% =============================================================================
+
+\subsection{Problem Formulation}
+% TODO: Given a target task described by (i) a text description set D and
+% (ii) optionally K labeled support images per class, predict alpha so that
+% the composed encoder performs well on held-out test data of the task.
+% Key constraint: the prediction function is task-agnostic (single hypernet
+% used for all tasks at test time, no task-specific gradient updates).
+
+\subsection{Text-to-Coefficient Hypernetwork}
+% TODO: Architecture: CLIP text encoder (frozen) -> aggregate over descriptions
+% (mean) -> MLP -> alpha. Discuss aggregation: per-class vs. dataset-level.
+
+\subsection{Multi-Modal Hypernetwork}
+% TODO: Add a parallel image branch: OpenCLIP visual encoder (frozen) -> shot
+% pooling (mean or attention) over K shots per class -> projection -> fuse with
+% text projection. Three fusion modes: concat / add / cross-attention.
+% Graceful fallback: when K=0, route text projection through a learned
+% text_only_proj layer to keep dimensions consistent.
+
+\subsection{Meta-Training Procedure}
+% TODO: Episode = (task t, text D_t, K-shot support S_t, query batch Q_t).
+% Forward pass produces alpha_hat = h_phi(D_t, S_t); compose model;
+% cross-entropy loss on Q_t; gradient flows back through alpha_hat into phi.
+% Variable-K trick: at each episode randomly sample K in {0, 1, 2, 4, 8, 16}
+% (or uniform in [1, K_max]) so a single hypernetwork covers the full range.
+
+\subsection{Inference}
+% TODO: Forward h_phi once at test time, compose model, evaluate. No
+% per-task gradient steps. Compare costs to per-task aTLAS / Tip-F.
+
+% =============================================================================
+\section{Experiments}
+% =============================================================================
+
+\subsection{Experimental Setup}
+% TODO:
+%   - Backbones: ViT-B/32, ViT-B/16, ViT-L/14 (HuggingFace CLIP).
+%   - Meta-train tasks: CIFAR10, EuroSAT, DTD, GTSRB, SVHN, Food101.
+%   - Held-out (eval) tasks: Caltech101, Flowers102, Cars, RESISC45, SUN397.
+%   - K in {0, 1, 2, 4, 8, 16}; 3 seeds; report mean +/- std.
+%   - Baselines: CLIP zero-shot; per-task aTLAS; Tip-Adapter; Tip-Adapter-F;
+%     LP++; CoOp; WiSE-FT.
+%   - Hyperparameters: see appendix.
+
+\subsection{Main Results}
+% TODO: Headline table - rows = methods, columns = K levels, cells = mean
+% accuracy across held-out datasets +/- std over 3 seeds. Bold the best.
+% Companion figure: line plot of accuracy vs. K, one curve per method.
+% Per-dataset breakdown moves to appendix.
+
+\subsection{Multi-Modal vs. Text-Only}
+% TODO: Direct comparison table at K in {0, 1, 2, 4, 8, 16}. Expect
+% multi-modal > text-only by 5-15% at low K, gap shrinks as K grows.
+
+\subsection{Ablations}
+
+\subsubsection{Fusion Strategy}
+% TODO: concat vs. add vs. cross-attention. Single table; one number per
+% (fusion, K) combination.
+
+\subsubsection{Shot Pooling}
+% TODO: mean vs. attention pooling.
+
+\subsubsection{Hypernetwork Capacity}
+% TODO: small / medium / large architectures from CLAUDE.md.
+
+\subsubsection{Text Source}
+% TODO: manual vs. CLIP-style templates vs. GPT-4o-generated vs.
+% Claude-generated descriptions.
+
+\subsubsection{Variable-K Meta-Training}
+% TODO: training on a single K vs. variable K; show variable-K is robust
+% across all eval K.
+
+\subsection{Cross-Architecture Generalization}
+% TODO: train hypernetwork on ViT-B/32, evaluate on ViT-B/16 and ViT-L/14.
+% Even partial transfer is a strong selling point. May go to appendix if time
+% is short.
+
+\subsection{Compute Analysis}
+% TODO: wall-clock + FLOPs comparison: per-task aTLAS vs. our hypernetwork at
+% inference. Argue strong efficiency advantage.
+
+% =============================================================================
+\section{Discussion and Limitations}
+% =============================================================================
+% TODO:
+%   - When does multi-modal help most? (low K, visually distinctive tasks.)
+%   - When does it not help? (text-only sufficient for semantically clean
+%     tasks; failures when text descriptions are misleading.)
+%   - Limitations: tied to the meta-train dataset distribution; predicts only
+%     scalar coefficients (not full LoRA); domain shift at test time.
+%   - Broader impact: standard CLIP-class concerns (bias, dual use). Brief.
+
+% =============================================================================
+\section{Conclusion}
+% =============================================================================
+% TODO: Two-paragraph wrap. Restate contribution; future work (full LoRA
+% prediction, larger meta-train pools, cross-modal applications).
+
+% =============================================================================
+% References
+% =============================================================================
+% TODO(refs): Maintain references.bib in this directory. Cite at minimum:
+%   - Radford et al. 2021 (CLIP)
+%   - Wortsman et al. 2022 (WiSE-FT)
+%   - Ilharco et al. 2023 (task arithmetic)
+%   - Ortiz-Jimenez et al. 2023 (tangent task arithmetic)
+%   - aTLAS (NeurIPS 2024 - this paper's predecessor)
+%   - Ha et al. 2017 (hypernetworks)
+%   - Zhou et al. (CoOp / CoCoOp)
+%   - Zhang et al. (Tip-Adapter)
+%   - Huang et al. (LP++)
+%   - Yadav et al. (TIES-merging)
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+% =============================================================================
+\appendix
+% =============================================================================
+
+\section{Implementation Details}
+% TODO: full hyperparameters (learning rates, schedules, batch sizes, optimizer,
+% mixed precision settings). Hardware. Random seed protocol.
+
+\section{Dataset Details}
+% TODO: per-dataset summary; train/val/test sizes; meta-train vs. eval split
+% rationale. Mostly a table.
+
+\section{Per-Dataset Results}
+% TODO: full breakdown of main table by dataset, all methods, all K.
+
+\section{Additional Ablations}
+% TODO: anything that didn't fit in the main paper:
+%   - sensitivity to number of text descriptions per class
+%   - effect of freezing vs. unfreezing the text/image encoders
+%   - synthetic-data variant results (if included)
+
+\section{Failure Cases}
+% TODO: 1-2 qualitative examples where multi-modal underperforms text-only,
+% with brief analysis.
+
+% =============================================================================
+% NeurIPS Paper Checklist (mandatory; absence is grounds for desk reject)
+% =============================================================================
+% TODO(checklist): The official 2026 .sty file ships with the checklist macros.
+% Once we swap the sty in (see TODO at top of file), copy the official
+% checklist template here and answer every item. Do this LAST, but do NOT
+% skip it.
+
+\end{document}
