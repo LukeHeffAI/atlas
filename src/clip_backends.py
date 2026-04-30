@@ -12,6 +12,8 @@ existing checkpoints and for models not available via HuggingFace
 (e.g., ResNet-based CLIP variants).
 """
 
+import logging
+
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
@@ -164,6 +166,17 @@ def _load_openclip(name, pretrained, cache_dir):
     return model, train_preprocess, val_preprocess
 
 
+class _PositionIdsFilter(logging.Filter):
+    """Drop only the cosmetic `position_ids` UNEXPECTED-keys row that
+    transformers 5.x emits for the OpenAI CLIP weights on the Hub. All
+    other warnings (real load failures, missing-keys reports, etc.)
+    still surface."""
+
+    def filter(self, record):
+        msg = record.getMessage()
+        return "position_ids" not in msg
+
+
 def _load_hf_clip(name, pretrained, cache_dir):
     from transformers import CLIPModel, CLIPProcessor, CLIPConfig
     from transformers.utils import logging as hf_logging
@@ -176,11 +189,11 @@ def _load_hf_clip(name, pretrained, cache_dir):
             f"Use --clip-backend openclip for other architectures."
         )
 
-    # Silence the cosmetic "position_ids UNEXPECTED" load-report rows that
-    # transformers 5.x emits for the OpenAI CLIP weights on the Hub.  We keep
-    # error-level logs so real load failures still surface.
-    prev_verbosity = hf_logging.get_verbosity()
-    hf_logging.set_verbosity_error()
+    # Attach a targeted filter to the transformers modeling-utils logger so
+    # only the `position_ids` line is dropped — keep every other warning.
+    hf_logger = hf_logging.get_logger("transformers.modeling_utils")
+    pos_ids_filter = _PositionIdsFilter()
+    hf_logger.addFilter(pos_ids_filter)
     try:
         if pretrained is None:
             # Random initialization (no pretrained weights)
@@ -192,7 +205,7 @@ def _load_hf_clip(name, pretrained, cache_dir):
             clip_model = CLIPModel.from_pretrained(hf_name, cache_dir=cache_dir)
         processor = CLIPProcessor.from_pretrained(hf_name, cache_dir=cache_dir)
     finally:
-        hf_logging.set_verbosity(prev_verbosity)
+        hf_logger.removeFilter(pos_ids_filter)
 
     tokenizer = processor.tokenizer
     train_preprocess, val_preprocess = _build_hf_transforms(processor.image_processor)

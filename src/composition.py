@@ -57,7 +57,7 @@ def _align_task_vectors_by_name(task_vectors, params, param_names, context=""):
         for name, p in zip(param_names, params):
             v = tv.vector.get(name)
             if v is None:
-                deltas.append(torch.zeros_like(p, dtype=torch.float16))
+                deltas.append(torch.zeros_like(p))
             else:
                 if v.shape != p.shape:
                     raise RuntimeError(

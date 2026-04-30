@@ -25,10 +25,10 @@ export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$(pwd)"
 # Configuration
 # ---------------------------------------------------------------------------
 
-# CLIP_MODELS="ViT-B-32 ViT-B-16 ViT-L-14"
-# OPENCLIP_MODELS="ViT-B-32 ViT-B-16 ViT-L-14"
-CLIP_MODELS="ViT-B-32"
-OPENCLIP_MODELS="ViT-B-32"
+# Override these from the calling shell to widen / narrow the matrix, e.g.
+#   CLIP_MODELS="ViT-B-32 ViT-B-16 ViT-L-14" ./scripts/run_full_experiment_suite.sh
+CLIP_MODELS="${CLIP_MODELS:-ViT-B-32}"
+OPENCLIP_MODELS="${OPENCLIP_MODELS:-ViT-B-32}"
 
 # Hypernetwork meta-learning configuration
 META_TRAIN_DATASETS="CIFAR10,EuroSAT,DTD,GTSRB,SVHN,Food101"
