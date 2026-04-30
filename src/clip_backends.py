@@ -12,9 +12,18 @@ existing checkpoints and for models not available via HuggingFace
 (e.g., ResNet-based CLIP variants).
 """
 
+import logging
+
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
+
+try:
+    from dotenv import load_dotenv
+    # Load repo-root .env if present, so HF_TOKEN etc. reach CLIPModel.from_pretrained.
+    load_dotenv()
+except ImportError:
+    pass
 
 # Internal model name → HuggingFace model ID
 HF_MODEL_MAP = {
@@ -157,8 +166,20 @@ def _load_openclip(name, pretrained, cache_dir):
     return model, train_preprocess, val_preprocess
 
 
+class _PositionIdsFilter(logging.Filter):
+    """Drop only the cosmetic `position_ids` UNEXPECTED-keys row that
+    transformers 5.x emits for the OpenAI CLIP weights on the Hub. All
+    other warnings (real load failures, missing-keys reports, etc.)
+    still surface."""
+
+    def filter(self, record):
+        msg = record.getMessage()
+        return "position_ids" not in msg
+
+
 def _load_hf_clip(name, pretrained, cache_dir):
     from transformers import CLIPModel, CLIPProcessor, CLIPConfig
+    from transformers.utils import logging as hf_logging
 
     hf_name = HF_MODEL_MAP.get(name)
     if hf_name is None:
@@ -168,15 +189,23 @@ def _load_hf_clip(name, pretrained, cache_dir):
             f"Use --clip-backend openclip for other architectures."
         )
 
-    if pretrained is None:
-        # Random initialization (no pretrained weights)
-        print(f"Initializing HuggingFace CLIP model from scratch: {hf_name}")
-        config = CLIPConfig.from_pretrained(hf_name, cache_dir=cache_dir)
-        clip_model = CLIPModel(config)
-    else:
-        print(f"Loading HuggingFace CLIP model: {hf_name}")
-        clip_model = CLIPModel.from_pretrained(hf_name, cache_dir=cache_dir)
-    processor = CLIPProcessor.from_pretrained(hf_name, cache_dir=cache_dir)
+    # Attach a targeted filter to the transformers modeling-utils logger so
+    # only the `position_ids` line is dropped — keep every other warning.
+    hf_logger = hf_logging.get_logger("transformers.modeling_utils")
+    pos_ids_filter = _PositionIdsFilter()
+    hf_logger.addFilter(pos_ids_filter)
+    try:
+        if pretrained is None:
+            # Random initialization (no pretrained weights)
+            print(f"Initializing HuggingFace CLIP model from scratch: {hf_name}")
+            config = CLIPConfig.from_pretrained(hf_name, cache_dir=cache_dir)
+            clip_model = CLIPModel(config)
+        else:
+            print(f"Loading HuggingFace CLIP model: {hf_name}")
+            clip_model = CLIPModel.from_pretrained(hf_name, cache_dir=cache_dir)
+        processor = CLIPProcessor.from_pretrained(hf_name, cache_dir=cache_dir)
+    finally:
+        hf_logger.removeFilter(pos_ids_filter)
 
     tokenizer = processor.tokenizer
     train_preprocess, val_preprocess = _build_hf_transforms(processor.image_processor)

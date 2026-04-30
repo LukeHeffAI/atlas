@@ -1,23 +1,28 @@
 #!/bin/bash
 set -e
 
-MODEL=${1:-ViT-B-32}
-echo "Running few-shot adaptation experiments with model: $MODEL"
+export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$(pwd)"
 
-# Basic aTLAS for different shot settings
+MODEL=${1:-ViT-B-32}
+BACKEND=${2:-clip}
+CKPT_ROOT=${3:-checkpoints_${BACKEND}}
+
+COMMON=(--model="$MODEL" --clip-backend="$BACKEND" --checkpoint-root="$CKPT_ROOT")
+
+echo "Running few-shot adaptation: model=$MODEL backend=$BACKEND root=$CKPT_ROOT"
+
 echo "Running basic aTLAS experiments..."
 for SHOT in 1 2 4 8 16; do
     echo "  Training with $SHOT shots..."
-    python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample $SHOT
+    python src/learn_few_shots.py "${COMMON[@]}" --blockwise-coef --subsample $SHOT
 done
 
-# aTLAS with adapters (LP++ and Tip)
 echo "Running aTLAS with adapters..."
 for SHOT in 1 2 4 8 16; do
     echo "  Training with $SHOT shots + Tip adapter..."
-    python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample $SHOT --adapter tip
+    python src/learn_few_shots.py "${COMMON[@]}" --blockwise-coef --subsample $SHOT --adapter tip
     echo "  Training with $SHOT shots + LP++ adapter..."
-    python src/learn_few_shots.py --model=$MODEL --blockwise-coef --subsample $SHOT --adapter lpp
+    python src/learn_few_shots.py "${COMMON[@]}" --blockwise-coef --subsample $SHOT --adapter lpp
 done
 
 echo "Few-shot experiments complete!"

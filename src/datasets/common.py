@@ -18,7 +18,12 @@ import random
 from tqdm import tqdm
 
 import torchvision.datasets as datasets
+from PIL import ImageFile
 from torch.utils.data import Dataset, DataLoader, Sampler, random_split
+
+# Tolerate truncated JPEGs (ImageNet ships with a handful). PIL otherwise
+# raises OSError mid-epoch and kills the DataLoader worker.
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 class SubsetSampler(Sampler):
     def __init__(self, indices):
@@ -30,9 +35,25 @@ class SubsetSampler(Sampler):
     def __len__(self):
         return len(self.indices)
 
+def _valid_non_empty_image(path):
+    """Accept any file that torchvision considers an image AND is non-empty.
+
+    ImageNet ILSVRC2012 ships a small number of truncated/zero-byte JPEGs
+    (most famously ``n01818515_3542.JPEG``) that crash PIL in DataLoader
+    workers.  Filtering them at dataset construction time avoids the crash
+    without discarding the rest of the class.
+    """
+    if not datasets.folder.is_image_file(path):
+        return False
+    try:
+        return os.path.getsize(path) > 0
+    except OSError:
+        return False
+
+
 class ImageFolderWithPaths(datasets.ImageFolder):
     def __init__(self, path, transform, flip_label_prob=0.0):
-        super().__init__(path, transform)
+        super().__init__(path, transform, is_valid_file=_valid_non_empty_image)
         self.flip_label_prob = flip_label_prob
         if self.flip_label_prob > 0:
             print(f'Flipping labels with probability {self.flip_label_prob}')
