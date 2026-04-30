@@ -90,12 +90,16 @@ Do NOT run project-wide validation (`ruff`, `mypy`, `npx tsc`, `npx eslint`, `py
 
 Spawn specialist agents via the `Agent` tool for depth on matching domains:
 
+Always-vendored agents:
 - ML code → `ml-engineer`
-- Frontend / UI → `frontend-engineer` and/or `ux-design-advisor`
+- Frontend / UI → `frontend-engineer`
 - Backend / API / Django / Celery / DB → `backend-engineer`
 - Data / SQL / analytics logic → `data-analyst`
 - Cross-layer refactor → `systems-architect`
-- Greyhound-domain code → `greyhound-racing-expert`
+
+Environment-dependent agents (dispatch only if present in `.claude/agents/` or the harness's built-in set):
+- UX / interaction depth → `ux-design-advisor` (otherwise raise the question to the user)
+- Greyhound-domain code → `greyhound-racing-expert` (otherwise treat as ordinary backend/ML code)
 
 Pass the PR number, your ledger of concerns, and a scope directive in the dispatch prompt. Incorporate their findings.
 

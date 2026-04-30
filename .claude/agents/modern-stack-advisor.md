@@ -67,12 +67,15 @@ Be terse. One entry per decision area. Skip areas already locked in unless a fla
 ## Decision Areas to Cover
 
 ### Language & Runtime
-- Language version (Python 3.12+ with `uv`, Node 22 LTS)
+- Language version (greenfield: Python 3.12+ with `uv`, Node 22 LTS)
 - Runtime environment (Bun vs Node, CPython vs PyPy)
 - Type system usage (strict TypeScript, Pyright/mypy)
 
+> Respect existing project constraints: if the repo already pins an older Python (e.g. this repo uses conda + Python 3.10 via `environment.yml` for PyTorch 1.13.1 + functorch compatibility), stay on the pinned version and treat the recommendations below as guidance for *new* projects, not migration mandates.
+
 ### Project & Dependency Management
-- Python: `uv` (strongly preferred — replaces pip/poetry/pyenv/virtualenv)
+- Python (greenfield): `uv` (strongly preferred — replaces pip/poetry/pyenv/virtualenv)
+- Python (existing conda/pip projects): keep the existing tool unless the user explicitly asks to migrate
 - JS/TS: `pnpm` or `bun`, monorepo tools (Turborepo, Nx)
 
 ### Frameworks

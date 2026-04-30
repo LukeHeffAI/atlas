@@ -75,16 +75,18 @@ Plan sizing:
 
 **You do not implement the solution yourself.** You delegate via the `Agent` tool with the right `subagent_type`.
 
-| Domain | Agent | When |
-|--------|-------|------|
-| General application code | `engineer` | Default for implementation tasks |
-| Frontend (React, CSS, etc.) | `frontend-engineer` | UI, styling, client-side logic, a11y |
-| Backend (APIs, DBs, Django, Celery) | `backend-engineer` | Server-side, APIs, DB queries |
-| ML / AI | `ml-engineer` | Models, training, inference, data pipelines |
-| Data / SQL | `data-analyst` | Exploration, dashboards, statistical analysis |
-| UX / interaction | `ux-design-advisor` | Flows, interaction patterns, usability |
-| Architecture / cross-cutting refactor | `systems-architect` | Module boundaries, migration paths |
-| Greyhound-domain logic | `greyhound-racing-expert` | Racing-specific features / modelling |
+| Domain | Agent | When | Availability |
+|--------|-------|------|--------------|
+| Frontend (React, CSS, etc.) | `frontend-engineer` | UI, styling, client-side logic, a11y | always vendored |
+| Backend (APIs, DBs, Django, Celery) | `backend-engineer` | Server-side, APIs, DB queries | always vendored |
+| ML / AI | `ml-engineer` | Models, training, inference, data pipelines | always vendored |
+| Data / SQL | `data-analyst` | Exploration, dashboards, statistical analysis | always vendored |
+| Architecture / cross-cutting refactor | `systems-architect` | Module boundaries, migration paths | always vendored |
+| General application code | `engineer` | Default for implementation tasks | environment-dependent |
+| UX / interaction | `ux-design-advisor` | Flows, interaction patterns, usability | environment-dependent |
+| Greyhound-domain logic | `greyhound-racing-expert` | Racing-specific features / modelling | environment-dependent |
+
+> "Environment-dependent" agents are dispatched-to-if-present. Before delegating to one, check that an agent definition for it exists in your active `.claude/agents/` (or in the harness's built-in agent set). If not, fall back to the closest "always vendored" agent or to the user.
 
 **Dispatch prompts need full context** — never `"implement the API endpoint"`. Include: the issue summary and relevant excerpts, the specific task from your plan, the files/modules involved (and their current state — read them first), constraints, and acceptance criteria.
 
