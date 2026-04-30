@@ -111,17 +111,28 @@
 % =============================================================================
 
 \subsection{Task Vectors and Task Arithmetic}
+Task arithmetic~\cite{ilharcoEditingModelsTask2022} treats the difference
+between fine-tuned and pretrained weights as a composable ``task vector''
+that can be added or negated to edit model behavior. Tangent task
+arithmetic~\cite{ortiz-jimenezTaskArithmeticTangent2023} extends this to the
+linearized regime, and weight-space averaging methods such as model
+soups~\cite{wortsmanModelSoupsAveraging2022} demonstrate that simple linear
+combinations of fine-tunes can match or surpass individual checkpoints.
 % TODO: Frame: task vectors are scalar-weighted; we generalize to learned
 % block-anisotropic weights and predict them.
-%   \cite{ilharcoEditingModelsTask2022}        % task arithmetic
-%   \cite{ortiz-jimenezTaskArithmeticTangent2023}  % tangent task arithmetic
-%   \cite{wortsmanModelSoupsAveraging2022}     % model soups
 % TODO(missing-bib): Yadav et al. TIES-Merging (NeurIPS 2023).
 
 \subsection{Anisotropic Scaling and aTLAS}
-% TODO: Briefly recap the contribution and clarify what is and is not borrowed.
-% Block coefficients, partition variant (aTLAS x K), linearized variant.
-%   \cite{zhangKnowledgeCompositionUsing2024}  % aTLAS predecessor (NeurIPS '24)
+Our work directly builds on aTLAS~\cite{zhangKnowledgeCompositionUsing2024},
+which introduces anisotropic task-level scaling: rather than weighting an
+entire task vector by a single scalar, aTLAS learns a separate coefficient
+per parameter block, exposing the low intrinsic dimensionality of pretrained
+models for cheap composition. We adopt the aTLAS coefficient parameterization
+unchanged and ask a different question: instead of fitting these coefficients
+per task by gradient descent, can a single amortized model predict them from
+a task description and a handful of support images?
+% TODO: Mention partition variant (aTLAS x K) and linearized variant when
+% setting up the experimental sweep.
 
 \subsection{Hypernetworks for Adaptation}
 % TODO: Distinguish: prior hypernet work predicts weight matrices/LoRA; we
@@ -129,12 +140,14 @@
 % TODO(missing-bib): Ha et al. HyperNetworks (ICLR 2017); any HyperLoRA work.
 
 \subsection{Few-Shot and Zero-Shot Adaptation of CLIP}
-% TODO: We compare to these. Note that these methods either learn prompts or
-% adapters; we learn a different primitive (task-vector coefficients).
-%   \cite{radfordLearningTransferableVisual2021}    % CLIP (zero-shot baseline)
-%   \cite{zhouLearningPromptVisionLanguage2022}     % CoOp
-%   \cite{khattakMaPLeMultimodalPrompt2023}         % MaPLe (multi-modal prompt)
-%   \cite{wortsmanRobustFinetuningZeroshot2022}     % WiSE-FT
+The dominant zero- and few-shot baselines for CLIP-class
+models~\cite{radfordLearningTransferableVisual2021} either tune text prompts
+(CoOp~\cite{zhouLearningPromptVisionLanguage2022},
+MaPLe~\cite{khattakMaPLeMultimodalPrompt2023}) or interpolate between
+fine-tuned and pretrained weights
+(WiSE-FT~\cite{wortsmanRobustFinetuningZeroshot2022}). We compare against
+these but operate on a different primitive --- aTLAS coefficients --- and
+predict that primitive in a forward pass rather than learning it per task.
 % TODO(missing-bib): CoCoOp (Zhou et al. 2022); Tip-Adapter (Zhang et al. 2022);
 % LP++ (Huang et al. 2024).
 
@@ -149,18 +162,26 @@
 % =============================================================================
 
 \subsection{CLIP and Task Vectors}
-% TODO: Define notation. Pretrained encoder f_theta_0; fine-tuned f_theta_t for
-% task t; task vector tau_t = theta_t - theta_0.
-%   \cite{radfordLearningTransferableVisual2021}    % CLIP
-%   \cite{ilharcoEditingModelsTask2022}             % task vectors
+We follow the standard CLIP~\cite{radfordLearningTransferableVisual2021}
+setup with a pretrained image encoder $f_{\theta_0}$ and per-task
+fine-tunes $f_{\theta_t}$. The task vector $\tau_t = \theta_t - \theta_0$
+acts as the unit of composition~\cite{ilharcoEditingModelsTask2022}.
+% TODO: expand notation as needed once method section is drafted.
 
 \subsection{Anisotropic Task-Level Scaling (aTLAS)}
-% TODO: Block decomposition theta = (theta^{(1)}, ..., theta^{(B)}). aTLAS
-% composes K task vectors with per-block coefficients
-% \alpha \in R^{T x B}: theta_new = theta_0 + sum_t sum_b alpha_{t,b} tau_t^{(b)}.
-% Standard aTLAS learns alpha per target task via gradient descent on labeled
-% data; our setting amortizes this.
-%   \cite{zhangKnowledgeCompositionUsing2024}        % aTLAS
+The anisotropic task-level scaling formulation we adopt is due to
+Zhang~et~al.~\cite{zhangKnowledgeCompositionUsing2024}. Briefly, parameters
+are partitioned into blocks $\theta = (\theta^{(1)}, \ldots, \theta^{(B)})$,
+and $T$ task vectors are composed with per-block coefficients
+$\alpha \in \mathbb{R}^{T \times B}$:
+\[
+\theta_{\text{new}} = \theta_0 + \sum_{t=1}^{T} \sum_{b=1}^{B}
+\alpha_{t,b}\, \tau_t^{(b)}.
+\]
+In the original formulation $\alpha$ is fit per target task via gradient
+descent on labeled adaptation data; our contribution is to amortize this
+fit so that $\alpha$ is predicted in a single forward pass from a task
+description and (optionally) a few support images.
 
 % =============================================================================
 \section{Method}

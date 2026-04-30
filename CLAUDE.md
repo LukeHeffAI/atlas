@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the official implementation of **aTLAS** (Anisotropic Task-Level Anisotropic Scaling) from the NeurIPS 2024 paper "Knowledge Composition using Task Vectors with Learned Anisotropic Scaling". The project explores task vector composition for knowledge transfer in vision models, specifically using CLIP models with learned anisotropic scaling coefficients.
+This repository is forked from the **official aTLAS implementation** released by Zhang et al. alongside their NeurIPS 2024 paper *"Knowledge Composition using Task Vectors with Learned Anisotropic Scaling"*. **aTLAS itself is their work, not ours** — we are colleagues building directly on top of it. The aTLAS algorithm (anisotropic block-level scaling of task vectors), its training scripts (`learn_task_negation.py`, `learn_task_addition.py`, `learn_few_shots.py`, `learn_ufm.py`), and the core `WeightedImageEncoder` / `WeightedLinearizedModel` machinery in `src/composition.py` all originate in the upstream aTLAS codebase and should be cited as Zhang et al. 2024 (`zhangKnowledgeCompositionUsing2024` in `paper/NeurIPS26.bib`).
 
-**Recent Extension**: Text-based zero-shot adaptation via hypernetworks that predict aTLAS coefficients from text descriptions alone, enabling adaptation without task-specific images.
+**Our contribution (this fork / NeurIPS 2026 submission)** is an *extension*: text-based zero- and few-shot adaptation via hypernetworks that **predict** aTLAS coefficients from a text description of the target task, optionally combined with a small set of support images. The aTLAS coefficient parameterization itself is unchanged; we replace the per-task gradient-descent fit with an amortized forward pass through a meta-trained hypernetwork. Code we added lives primarily under `src/hypernetworks/`, `src/meta_learning/`, `src/text_descriptions/`, `src/text2image/`, and the `learn_text_to_coef.py` / `learn_multimodal_to_coef.py` / `eval_text_adaptation.py` / `eval_multimodal_adaptation.py` entry points.
+
+When writing about this project (papers, READMEs, comments), always frame aTLAS as *prior work we build on*, never as something we created. The paper draft in `paper/main.tex` follows this convention and should be the source of truth for phrasing.
 
 ## Environment Setup
 
