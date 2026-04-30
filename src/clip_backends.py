@@ -12,8 +12,6 @@ existing checkpoints and for models not available via HuggingFace
 (e.g., ResNet-based CLIP variants).
 """
 
-import os
-
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
