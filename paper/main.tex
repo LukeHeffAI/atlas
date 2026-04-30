@@ -111,29 +111,38 @@
 % =============================================================================
 
 \subsection{Task Vectors and Task Arithmetic}
-% TODO: Ilharco et al. 2023 (task arithmetic), Ortiz-Jimenez et al. (tangent
-% task arithmetic), Yadav et al. (TIES-merging), task vector negation, etc.
-% Frame: task vectors are scalar-weighted; we generalize to learned
+% TODO: Frame: task vectors are scalar-weighted; we generalize to learned
 % block-anisotropic weights and predict them.
+%   \cite{ilharcoEditingModelsTask2022}        % task arithmetic
+%   \cite{ortiz-jimenezTaskArithmeticTangent2023}  % tangent task arithmetic
+%   \cite{wortsmanModelSoupsAveraging2022}     % model soups
+% TODO(missing-bib): Yadav et al. TIES-Merging (NeurIPS 2023).
 
 \subsection{Anisotropic Scaling and aTLAS}
-% TODO: aTLAS (the prior paper this builds on). Briefly recap the contribution
-% and clarify what is and is not borrowed. Block coefficients, partition
-% variant (aTLAS x K), linearized variant.
+% TODO: Briefly recap the contribution and clarify what is and is not borrowed.
+% Block coefficients, partition variant (aTLAS x K), linearized variant.
+%   \cite{zhangKnowledgeCompositionUsing2024}  % aTLAS predecessor (NeurIPS '24)
 
 \subsection{Hypernetworks for Adaptation}
-% TODO: Ha et al. 2017, HyperNets for few-shot, HyperLoRA, etc. Distinguish:
-% prior hypernet work predicts weight matrices/LoRA; we predict task-vector
-% coefficients - far smaller output space, much cheaper to train.
+% TODO: Distinguish: prior hypernet work predicts weight matrices/LoRA; we
+% predict task-vector coefficients - far smaller output space, much cheaper.
+% TODO(missing-bib): Ha et al. HyperNetworks (ICLR 2017); any HyperLoRA work.
 
 \subsection{Few-Shot and Zero-Shot Adaptation of CLIP}
-% TODO: CoOp, CoCoOp, Tip-Adapter (and Tip-F), LP++, WiSE-FT. We compare
-% directly to these. Note that these methods either learn prompts (CoOp) or
-% adapters; we learn a different primitive entirely.
+% TODO: We compare to these. Note that these methods either learn prompts or
+% adapters; we learn a different primitive (task-vector coefficients).
+%   \cite{radfordLearningTransferableVisual2021}    % CLIP (zero-shot baseline)
+%   \cite{zhouLearningPromptVisionLanguage2022}     % CoOp
+%   \cite{khattakMaPLeMultimodalPrompt2023}         % MaPLe (multi-modal prompt)
+%   \cite{wortsmanRobustFinetuningZeroshot2022}     % WiSE-FT
+% TODO(missing-bib): CoCoOp (Zhou et al. 2022); Tip-Adapter (Zhang et al. 2022);
+% LP++ (Huang et al. 2024).
 
 \subsection{Meta-Learning}
-% TODO: MAML and descendants briefly; ProtoNet for K-shot conditioning. Our
-% recipe is closer to amortized inference than gradient-based meta-learning.
+% TODO: Brief; our recipe is closer to amortized inference than
+% gradient-based meta-learning.
+% TODO(missing-bib): Finn et al. MAML (ICML 2017); Snell et al. ProtoNet
+% (NeurIPS 2017).
 
 % =============================================================================
 \section{Background}
@@ -142,6 +151,8 @@
 \subsection{CLIP and Task Vectors}
 % TODO: Define notation. Pretrained encoder f_theta_0; fine-tuned f_theta_t for
 % task t; task vector tau_t = theta_t - theta_0.
+%   \cite{radfordLearningTransferableVisual2021}    % CLIP
+%   \cite{ilharcoEditingModelsTask2022}             % task vectors
 
 \subsection{Anisotropic Task-Level Scaling (aTLAS)}
 % TODO: Block decomposition theta = (theta^{(1)}, ..., theta^{(B)}). aTLAS
@@ -149,6 +160,7 @@
 % \alpha \in R^{T x B}: theta_new = theta_0 + sum_t sum_b alpha_{t,b} tau_t^{(b)}.
 % Standard aTLAS learns alpha per target task via gradient descent on labeled
 % data; our setting amortizes this.
+%   \cite{zhangKnowledgeCompositionUsing2024}        % aTLAS
 
 % =============================================================================
 \section{Method}
@@ -256,19 +268,33 @@
 % =============================================================================
 % References
 % =============================================================================
-% TODO(refs): Maintain references.bib in this directory. Cite at minimum:
-%   - Radford et al. 2021 (CLIP)
-%   - Wortsman et al. 2022 (WiSE-FT)
-%   - Ilharco et al. 2023 (task arithmetic)
-%   - Ortiz-Jimenez et al. 2023 (tangent task arithmetic)
-%   - aTLAS (NeurIPS 2024 - this paper's predecessor)
-%   - Ha et al. 2017 (hypernetworks)
-%   - Zhou et al. (CoOp / CoCoOp)
-%   - Zhang et al. (Tip-Adapter)
-%   - Huang et al. (LP++)
-%   - Yadav et al. (TIES-merging)
+% Bibliography source: NeurIPS26.bib (Better-BibTeX export from Zotero).
+%
+% Confirmed citation keys for must-cite work (use these directly in \cite{}):
+%   - CLIP (Radford et al. 2021)            radfordLearningTransferableVisual2021
+%   - aTLAS (Zhang et al. 2024)             zhangKnowledgeCompositionUsing2024
+%   - Task arithmetic (Ilharco et al.)      ilharcoEditingModelsTask2022
+%   - Tangent task arithmetic (Ortiz-J.)    ortiz-jimenezTaskArithmeticTangent2023
+%   - WiSE-FT (Wortsman et al. 2022)        wortsmanRobustFinetuningZeroshot2022
+%   - Model Soups (Wortsman et al. 2022)    wortsmanModelSoupsAveraging2022
+%   - CoOp (Zhou et al. 2022)               zhouLearningPromptVisionLanguage2022
+%   - MaPLe (Khattak et al. 2023)           khattakMaPLeMultimodalPrompt2023
+%   - Stable Diffusion (Rombach et al.)     rombachHighResolutionImageSynthesis2022
+%   - DALL-E (Ramesh et al. 2021)           rameshZeroShotTexttoImageGeneration2021
+%
+% TODO(missing-refs): the following were NOT found in the Zotero export and
+% need to be added manually before submission. Without them the related-work
+% and baseline-comparison sections will be incomplete:
+%   - Ha, Dai, Le. HyperNetworks. ICLR 2017.
+%   - Zhang et al. Tip-Adapter. ECCV 2022.
+%   - Huang et al. LP++ (CVPR 2024 best-fit).
+%   - Yadav et al. TIES-Merging. NeurIPS 2023.
+%   - Zhou et al. Conditional Prompt Learning (CoCoOp). CVPR 2022.
+%   - Finn et al. MAML. ICML 2017.
+%   - Snell et al. Prototypical Networks. NeurIPS 2017.
+%   - Cherti et al. OpenCLIP / reproducible scaling laws. CVPR 2023.
 \bibliographystyle{plainnat}
-\bibliography{references}
+\bibliography{NeurIPS26}
 
 % =============================================================================
 \appendix
